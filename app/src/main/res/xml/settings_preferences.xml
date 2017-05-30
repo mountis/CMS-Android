@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/title_accounts">
+        <Preference
+            android:key="@string/key_manage_team"
+            android:title="@string/pref_manage_team"/>
+        <Preference
+            android:key="@string/key_change_password"
+            android:title="@string/pref_change_password"/>
+        <Preference
+            android:key="@string/key_signout"
+            android:title="@string/pref_signout"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/title_build_information">
+        <Preference
+            android:key="@string/key_build_information"
+            android:title="@string/app_build_version"/>
+    </PreferenceCategory>
+</PreferenceScreen>

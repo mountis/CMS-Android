@@ -1,0 +1,294 @@
+<resources>
+    <!--App Strings -->
+    <string name="app_name">Augimas</string>
+    <string name="app_build_version">0.1</string>
+    <string name="firebase_user_id">ID</string>
+
+    <!-- Firebase Strings -->
+    <string name="firebase_user">User</string>
+    <string name="firebase_chat">Chat</string>
+    <string name="firebase_message">Message</string>
+    <string name="firebase_object">Firebase.Object</string>
+    <string name="firebase_team">Team</string>
+    <string name="firebase_team_role">Team.Role</string>
+    <string name="firebase_team_status">Team.Status</string>
+    <string name="firebase_member">Member</string>
+    <string name="firebase_member_role">Member.Role</string>
+    <string name="firebase_member_status">Member.Status</string>
+    <string name="firebase_branding_element">BrandingElement</string>
+    <string name="firebase_branding_element_status">BrandingElement.Status</string>
+
+    <string name="firebase_chat_object">Chat</string>
+    <string name="firebase_user_object">User</string>
+    <string name="firebase_message_object">Message</string>
+    <string name="firebase_team_object">Team</string>
+    <string name="firebase_team_role_object">Team Role</string>
+    <string name="firebase_team_status_role">Team Status</string>
+    <string name="firebase_member_object">Member</string>
+    <string name="firebase_member_role_object">Member Role</string>
+    <string name="firebase_member_status_role">Member Status</string>
+    <string name="firebase_branding_element_object">Branding Element</string>
+    <string name="firebase_branding_element_status_object">Branding Element Status</string>
+
+    <!-- Firebase Directory Strings -->
+    <string name="firebase_users_directory">users</string>
+    <string name="firebase_chats_directory">chats</string>
+    <string name="firebase_members_directory">members</string>
+    <string name="firebase_messages_directory">messages</string>
+    <string name="firebase_teams_directory">teams</string>
+    <string name="firebase_url_directory">https://augimas-25621.firebaseio.com/</string>
+
+    <!--XML Title Strings -->
+    <string name="title_accounts">Accounts</string>
+    <string name="title_add_contact">Add Contact</string>
+    <string name="title_update_contact">Update Contact</string>
+    <string name="title_build_information">Build Information</string>
+
+    <!--XML Action Strings -->
+    <string name="action_settings">Settings</string>
+
+    <!--XML Preferences Strings -->
+    <string name="pref_signout">Sign Out</string>
+    <string name="pref_manage_team">Manage Team</string>
+    <string name="pref_change_password">Change Password</string>
+
+    <!-- XML Preference Key Strings -->
+    <string name="key_signout">signout</string>
+    <string name="key_manage_team">manageTeam</string>
+    <string name="key_change_password">changePassword</string>
+    <string name="key_build_information">buildInformation</string>
+
+    <!-- XML Field Strings -->
+    <string name="age_text">age</string>
+    <string name="email_text">email</string>
+    <string name="nickname_text">nickname</string>
+    <string name="password_text">password</string>
+    <string name="username_text">username</string>
+    <string name="chat_name_text">chat name</string>
+    <string name="full_name_text">full name</string>
+    <string name="confirm_password_text">confirm password</string>
+    <string name="username_or_email_text">username or email</string>
+    <string name="enter_username_or_email_text">Enter username or email</string>
+
+    <!--XML Label Strings -->
+    <string name="or_text">Or</string>
+    <string name="sign_in_text">Sign in</string>
+    <string name="sign_up_text">Sign up</string>
+    <string name="sign_in_text_capital">SIGN IN</string>
+    <string name="sign_up_text_capital">SIGN UP</string>
+
+    <!-- XML Button Strings -->
+    <string name="save_text">save</string>
+    <string name="submit_text">submit</string>
+    <string name="cancel_text">cancel</string>
+    <string name="delete_text">delete</string>
+    <string name="update_text">update</string>
+    <string name="forgot_password_text">Forgot password?</string>
+
+    <!--Feature Strings -->
+    <string name="feature_unavailable">Feature unavailable.</string>
+
+    <!-- Strings related to login -->
+    <string name="required_field">Field required.</string>
+    <string name="required_email">Email required.</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="required_username">Username required.</string>
+    <string name="required_password">Password required.</string>
+    <string name="required_full_name">Full name required.</string>
+    <string name="required_confirm_password">Confirm password required.</string>
+
+    <!-- Error Strings -->
+    <string name="error_incorrect_signup_general">You failed to create an account.</string>
+    <string name="error_invalid_email">Email invalid.</string>
+    <string name="error_field_required">Field required.</string>
+    <string name="error_incorrect_password">Incorrect password.</string>
+    <string name="error_password_mismatch">Passwords don\'t match</string>
+    <string name="error_user_not_found">User not found for input.</string>
+    <string name="error_incorrect_signin_general">Failed to sign in.</string>
+    <string name="error_contact_duplicate">You have already added this contact.</string>
+    <string name="error_invalid_password_length">Password must be longer than 5 characters.</string>
+    <string name="error_username_duplicate">That username already exists! Please try another one.</string>
+    <string name="error_incorrect_signin_detail_1">Failed to sign in. Incorrect username and/or password.</string>
+
+    <!-- Success Strings -->
+    <string name="success_contact_updated">Contact updated.</string>
+    <string name="success_contact_deleted">Contact deleted.</string>
+    <string name="success_signin">You successfully signed in!</string>
+    <string name="success_signup">You successfully signed up!</string>
+
+    <!-- Activity/Fragments Strings -->
+    <string name="home_activity">HomeActivity</string>
+    <string name="home_fragment">HomeFragment</string>
+    <string name="chat_activity">ChatActivity</string>
+    <string name="chat_fragment">ChatFragment</string>
+    <string name="sign_in_activity">SignInActivity</string>
+    <string name="sign_in_fragment">SignInFragment</string>
+    <string name="sign_up_activity">SignUpActivity</string>
+    <string name="sign_up_fragment">SignUpFragment</string>
+    <string name="chats_list_activity">ChatsListActivity</string>
+    <string name="chats_list_fragment">ChatsListFragment</string>
+    <string name="clients_list_activity">ClientsListFragment</string>
+    <string name="branding_elements_list_fragment">BrandingElementsListFragment</string>
+    <string name="notifications_fragment">NotificationsFragment</string>
+
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_chat">Chat</string>
+    <string name="title_settings">Settings</string>
+
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_notifications">Notifications</string>
+
+    <!--Error Preventative Strings -->
+    <item name="masked" type="id" />
+    <item name="visible" type="id" />
+    <string name="title_activity_user_settings">User Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="reminder_date_spinner_items">
+        <item>Today</item>
+        <item>Tomorrow</item>
+        <item>Set date...</item>
+    </string-array>
+
+    <string-array name="reminder_time_spinner_items">
+        <item>Morning</item>
+        <item>Afternoon</item>
+        <item>Evening</item>
+        <item>Night</item>
+        <item>Set time...</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="check_connection">checkConnection</string>
+    <string name="welcome_back_text">Welcome back</string>
+    <string name="success_signout">User signed out.</string>
+    <string name="title_change_password">Change Password</string>
+    <string name="success_password_updated">Password updated.</string>
+    <string name="add_account_text">Add Account</string>
+    <string name="ok_text">Ok</string>
+    <string name="success_account_switched">Account switched.</string>
+    <string name="title_recover_password">Recover Password</string>
+    <string name="email_me_text">EMAIL ME</string>
+    <string name="dialog_email_me_text">EMAIL ME</string>
+    <string name="dialog_cancel_text">CANCEL</string>
+    <string name="success_email_sent">Email sent!</string>
+    <string name="progress_signing_in">Signing in...</string>
+    <string name="progress_signing_up">Creating account...</string>
+    <string name="error_password_updated">There was an issue updating your password.</string>
+    <string name="updating_password_text">Updating password...</string>
+    <string name="new_password_text">new password</string>
+    <string name="current_password_text">current password</string>
+    <string name="success_contact_added">Contact added.</string>
+    <string name="title_create_chat">Create Chat</string>
+    <string name="message_text">message text</string>
+    <string name="timestamp_text">timestamp</string>
+    <string name="send_text">Send</string>
+    <string name="error_user_duplicate">User is already in chat.</string>
+    <string name="success_user_added_to_chat">User added to chat.</string>
+    <string name="action_add_user">Add User</string>
+    <string name="action_rename_chat">Rename Chat</string>
+    <string name="title_rename_chat">Rename Chat</string>
+    <string name="enter_chat_name">Enter chatname.</string>
+    <string name="display_name_text">display name</string>
+    <string name="last_message_text">last message text</string>
+    <string name="last_message_sent_stamp_text">last time sent</string>
+    <string name="Aa_hint">Aa</string>
+    <string name="title_message_detail">Message Detail</string>
+    <string name="reminder_text">Reminder</string>
+    <string name="title_text">title</string>
+    <string name="title_edit_reminder">Edit Reminder</string>
+    <string name="error_chat_duplicate">You are already in a chat with the user.</string>
+    <string name="title_message">Message</string>
+    <string name="text_edit_reminder">Edit Reminder</string>
+    <string name="text_details">Details</string>
+    <string name="text_delete">Delete</string>
+    <string name="text_forward">Forward</string>
+    <string name="text_copy_text">Copy Text</string>
+    <string name="success_text_copied_to_clipboard">Text copied to clipboard.</string>
+    <string name="firebase_branding_elements_directory">branding_elements</string>
+    <string name="firebase_branding_element_directory">branding_element_indv</string>
+    <string name="title_activity_testt">Testt</string>
+    <string name="title_admin_request">Admin Request</string>
+    <string name="request_code">request code</string>
+    <string name="request">REQUEST</string>
+    <string name="title_activity_team_management">TeamManagementActivity</string>
+    <string name="invite">INVITE</string>
+    <string name="branding_element_name">branding element</string>
+    <string name="mission_statement_text">mission statement</string>
+    <string name="domain_name_text">domain name</string>
+    <string name="domain_text">.com</string>
+    <string name="social_media_text">social media</string>
+    <string name="social_media_name_text">social media name</string>
+    <string name="title_element_status_updater">Update Element Status</string>
+    <string name="notification_text">notification text</string>
+    <string name="team_name_text">team name</string>
+    <string name="team_member_name">team member name</string>
+    <string name="title_invite_member">Invite Member</string>
+</resources>
