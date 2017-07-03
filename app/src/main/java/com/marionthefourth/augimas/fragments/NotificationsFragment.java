@@ -1,7 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,14 +10,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.NotificationsAdapter;
-import com.marionthefourth.augimas.classes.Notification;
-import com.marionthefourth.augimas.classes.Team;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.Constants.Bools.PROTOTYPE_MODE;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
+import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 
 public final class NotificationsFragment extends Fragment {
 
@@ -38,18 +45,60 @@ public final class NotificationsFragment extends Fragment {
             if (PROTOTYPE_MODE) {
                 loadPrototypeNotifications(recyclerView);
             } else {
-                if (getArguments() != null) {
-
-//
-                }
+                loadNotificationData(recyclerView);
             }
         }
 
-
-
-
-
         return view;
+    }
+
+    private void loadNotificationData(final RecyclerView recyclerView) {
+
+        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUser = new User(dataSnapshot);
+                    if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                        FirebaseHelper.getReference(getContext(),R.string.firebase_notifications_directory).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.hasChildren()) {
+                                    final ArrayList<Notification> notifications = new ArrayList<>();
+                                    for (DataSnapshot notificationReference:dataSnapshot.getChildren()) {
+                                        final Notification notificationItem = new Notification(notificationReference);
+                                        if (notificationItem.goesToUID(currentUser.getTeamUID())) {
+                                            notifications.add(notificationItem);
+                                        }
+
+                                    }
+                                    recyclerView.setAdapter(new NotificationsAdapter(getContext(),notifications));
+
+                                } else {
+                                    recyclerView.setAdapter(null);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    } else {
+                        recyclerView.setAdapter(null);
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        });
+
     }
 
     private void loadPrototypeNotifications(RecyclerView recyclerView) {
@@ -62,13 +111,11 @@ public final class NotificationsFragment extends Fragment {
         // Display a Client Approved Element Notification
 
         ArrayList<Notification> notifications = new ArrayList<>();
-        notifications.add(new Notification("needs approval.",google));
-        notifications.add(new Notification("updated their Mission Statement.",walmart));
-        notifications.add(new Notification("approved their Domain Name.",aol));
+        notifications.add(new Notification(google, Notification.NotificationVerbType.APPROVE));
+        notifications.add(new Notification(walmart, Notification.NotificationVerbType.UPDATE, BrandingElement.ElementType.MISSION_STATEMENT));
+        notifications.add(new Notification(aol, Notification.NotificationVerbType.APPROVE, BrandingElement.ElementType.DOMAIN_NAME));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            recyclerView.setAdapter(new NotificationsAdapter(getContext(),notifications));
-        }
+        recyclerView.setAdapter(new NotificationsAdapter(getContext(),notifications));
 
     }
 

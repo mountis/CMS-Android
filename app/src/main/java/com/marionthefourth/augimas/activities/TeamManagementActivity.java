@@ -8,7 +8,7 @@ import android.view.MenuItem;
 
 import com.marionthefourth.augimas.R;
 
-public class TeamManagementActivity extends AppCompatActivity {
+public final class TeamManagementActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,9 +16,8 @@ public class TeamManagementActivity extends AppCompatActivity {
         setContentView(R.layout.activity_team_management);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+//        AppBarLayout appBar = (AppBarLayout) findViewById(R.id.appbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
     }
 
 
@@ -26,15 +25,15 @@ public class TeamManagementActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             default:
-                transitionUserBackToHomeScreen(this);
+                transitionUserBackToHomeScreen();
                 return true;
         }
 
     }
 
-    private void transitionUserBackToHomeScreen(AppCompatActivity activity) {
-        Intent homeIntent = new Intent(activity, HomeActivity.class);
-        activity.startActivityForResult(homeIntent, 0);
+    private void transitionUserBackToHomeScreen() {
+        Intent homeIntent = new Intent(this, HomeActivity.class);
+        startActivityForResult(homeIntent, 0);
     }
 
 }

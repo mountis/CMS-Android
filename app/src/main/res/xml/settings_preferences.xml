@@ -1,5 +1,4 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
     <PreferenceCategory
         android:title="@string/title_accounts">
         <Preference
@@ -17,5 +16,11 @@
         <Preference
             android:key="@string/key_build_information"
             android:title="@string/app_build_version"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/title_miscellaneous">
+        <Preference
+            android:key="@string/key_questionnaire"
+            android:title="@string/app_questtionaire"/>
     </PreferenceCategory>
 </PreferenceScreen>

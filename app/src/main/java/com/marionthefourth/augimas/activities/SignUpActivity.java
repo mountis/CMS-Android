@@ -1,13 +1,13 @@
 package com.marionthefourth.augimas.activities;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.marionthefourth.augimas.R;
 
-public class SignUpActivity extends AppCompatActivity {
+public final class SignUpActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,18 +16,13 @@ public class SignUpActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            default:
-                transitionUserBackToSignInScreen(this);
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
                 return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-    }
-
-    private void transitionUserBackToSignInScreen(AppCompatActivity activity) {
-        Intent signInIntent = new Intent(activity, SignInActivity.class);
-        activity.startActivityForResult(signInIntent, 0);
     }
 }

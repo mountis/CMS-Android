@@ -29,8 +29,9 @@
 
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/list_item_team_member_role"
-            android:layout_width="wrap_content"
-            android:gravity="end"
+            android:layout_width="match_parent"
+            android:gravity="right"
+            android:layout_gravity="right"
             android:layout_height="match_parent"/>
     </android.support.v7.widget.LinearLayoutCompat>
 </android.support.design.widget.CoordinatorLayout>

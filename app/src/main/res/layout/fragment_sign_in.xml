@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="#E0DBE1"
     android:fitsSystemWindows="true"
+    android:padding="@dimen/default_padding"
     tools:context="com.marionthefourth.augimas.activities.SignInActivity"
     tools:showIn="@layout/activity_sign_in">
 

@@ -1,30 +1,43 @@
 package com.marionthefourth.augimas.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.classes.Team;
-import com.marionthefourth.augimas.classes.User;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
+
 public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.ViewHolder> {
 
-    private Context context;
     private Team team;
+    private Context context;
+    private User currentUser;
     private ArrayList<User> members = new ArrayList<>();
 
-    public TeamMembersAdapter(Context context, Team team, ArrayList<User> members) {
-        this.context = context;
+    public TeamMembersAdapter(Context context, Team team, ArrayList<User> members, User currentUser) {
         this.team = team;
+        this.context = context;
         this.members = members;
+        this.currentUser = currentUser;
     }
 
     @Override
@@ -35,20 +48,141 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
     }
 
     @Override
-    public void onBindViewHolder(TeamMembersAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(final TeamMembersAdapter.ViewHolder holder, int position) {
         holder.userItem = members.get(position);
-        holder.mTeamMemberNameLabel.setText(holder.userItem.getFullname());
+        holder.mTeamMemberNameLabel.setText(holder.userItem.getName());
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context,android.R.layout.simple_spinner_item,User.getAllMemberRoles());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        final ArrayList<FirebaseEntity.EntityRole> roles = FirebaseEntity.EntityRole.getAllRoles();
+
+        roles.remove(FirebaseEntity.EntityRole.DEFAULT);
+
+        final ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<FirebaseEntity.EntityRole>(context,R.layout.spinner_item_team_member,R.id.team_member_role, roles) {
+            public boolean areAllItemsEnabled() {
+                return false;
+            }
+
+            @Override
+            public View getDropDownView(final int position, final View convertView, ViewGroup parent){
+                View v = convertView;
+                if (v == null) {
+                    Context mContext = this.getContext();
+                    LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    v = vi.inflate(R.layout.row, null);
+                }
+
+                final TextView tv = (TextView) v.findViewById(R.id.spinnerTarget);
+//                tv.setText(testarray.get(position));
+
+                final View finalV = v;
+                FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final User currentUserItem = new User(dataSnapshot);
+                            if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+                                if (position == FirebaseEntity.EntityRole.OWNER.toInt(false)) {
+                                    tv.setTextColor(Color.GRAY);
+                                    finalV.setEnabled(false);
+                                }
+                            }
+
+                            if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                if (position == FirebaseEntity.EntityRole.ADMIN.toInt(false)) {
+                                    tv.setTextColor(Color.GRAY);
+                                    finalV.setEnabled(false);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+                return finalV;
+            }
+
+        };
+        adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         holder.mTeamMemberRoleSpinner.setAdapter(adapter);
 
-        for (int i = 0; i < User.getAllMemberRoles().size();i++) {
-            if (User.getMemberRoleString(holder.userItem.getMemberRole()).equals(User.getAllMemberRoles().get(i))) {
+        holder.mTeamMemberRoleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(final AdapterView<?> parent, View view, int position, long id) {
+                FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final User modifyingUserItem = new User(dataSnapshot);
+                            final FirebaseEntity.EntityRole selectedRole = (FirebaseEntity.EntityRole)parent.getSelectedItem();
+
+                            modifyingUserItem.setRole(selectedRole);
+
+                            switch (selectedRole) {
+                                case OWNER:
+                                case ADMIN:
+                                case EDITOR:
+                                case CHATTER:
+                                case VIEWER:
+                                    modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.APPROVED);
+                                    break;
+                                case NONE:
+                                    modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.AWAITING);
+                                    break;
+                                case DEFAULT:
+                                    break;
+                            }
+
+                            update(context,modifyingUserItem);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        for (int i = 0; i < FirebaseEntity.EntityRole.getAllRoles().size(); i++) {
+            if (holder.userItem.getRole().equals(FirebaseEntity.EntityRole.getRole(i))) {
                 holder.mTeamMemberRoleSpinner.setSelection(i);
-                if (i == 0) {
-                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                }
+
+                FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final User currentUserItem = new User(dataSnapshot);
+                            if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+                                if (!currentUserItem.hasInclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
+                                }
+                            } else {
+//                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.OWNER)) {
+//                                    roles.remove(FirebaseEntity.EntityRole.OWNER);
+//                                }
+//
+//                                holder.mTeamMemberRoleSpinner.getAdapter().
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
                 break;
             }
         }

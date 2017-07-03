@@ -16,7 +16,7 @@
         <android.support.v7.widget.AppCompatCheckBox
             android:layout_marginLeft="5dp"
             android:id="@+id/social_media_name_available_check_box"
-            android:clickable="false"
+            android:clickable="true"
             android:layout_width="wrap_content"
             android:layout_height="match_parent" />
 

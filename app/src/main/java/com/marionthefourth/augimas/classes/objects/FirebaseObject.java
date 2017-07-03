@@ -1,8 +1,4 @@
-// Marion Rucker
-// APD2 - C201703
-// FirebaseObject.java
-
-package com.marionthefourth.augimas.classes;
+package com.marionthefourth.augimas.classes.objects;
 
 import android.os.Bundle;
 import android.os.Parcel;
@@ -11,27 +7,27 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.google.firebase.database.Exclude;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static com.marionthefourth.augimas.classes.Constants.Ints.FIREBASE_CONTENT_CONTACT;
-import static com.marionthefourth.augimas.classes.Constants.Ints.FIREBASE_USER;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_CONTENT_CONTACT;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_USER;
 
 public abstract class FirebaseObject implements Serializable, Parcelable {
 
-    protected String uid;
+    private String uid;
     @Exclude
-    protected int fields;
+    private int fields;
     @Exclude
-    protected int objectType = R.string.firebase_object;
+    private int objectType = R.string.firebase_object;
 
-    public abstract String getField(int index);
-    public int getFeilds() { return fields; }
-    public int getObjectType() { return objectType; }
+    public final int getFields() { return fields; }
+    public abstract String getField(final int index);
 
-    public Bundle toBundle(AppCompatActivity appCompatActivity, int FIREBASE_CONTENT) {
+    public Bundle toBundle(final AppCompatActivity appCompatActivity, final int FIREBASE_CONTENT) {
         Bundle bundle = new Bundle();
         String resource = null;
         switch (FIREBASE_CONTENT) {
@@ -49,12 +45,12 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
         return bundle;
     }
 
-    public String getUID() {
+    public final String getUID() {
         return uid;
     }
-    public void setUID(String uid) { this.uid = uid; }
+    public final void setUID(final String uid) { this.uid = uid; }
 
-    public static String[] stringArrayFromBundle(Bundle bundle, String fieldResources[]) {
+    public final static String[] stringArrayFromBundle(final Bundle bundle, final String fieldResources[]) {
         String stringArray[] = new String[fieldResources.length];
         for (int i = 0; i < fieldResources.length;i++) {
             stringArray[i] = bundle.getString(fieldResources[i]);
@@ -62,7 +58,7 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
         return stringArray;
     }
 
-    public static FirebaseObject fromBundle(AppCompatActivity appCompatActivity, Bundle bundle, int FIREBASE_CONTENT) {
+    public final static FirebaseObject fromBundle(final AppCompatActivity appCompatActivity, final Bundle bundle, final int FIREBASE_CONTENT) {
         String resource = "";
         switch (FIREBASE_CONTENT) {
                 case FIREBASE_USER:
@@ -82,13 +78,13 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
         return null;
     }
 
-    public static Bundle toBundle(AppCompatActivity appCompatActivity, ArrayList<FirebaseObject> items) {
+    public final static Bundle toBundle(final AppCompatActivity appCompatActivity, final ArrayList<FirebaseObject> items) {
         Bundle bundle = new Bundle();
         bundle.putSerializable(appCompatActivity.getResources().getString(R.string.firebase_object),items);
         return bundle;
     }
 
-    public static FirebaseObject getFirebaseObjectFromFields(ArrayList<String> fields, int OBJECT_TYPE) {
+    public final static FirebaseObject getFirebaseObjectFromFields(final ArrayList<String> fields, final int OBJECT_TYPE) {
 
         switch (OBJECT_TYPE) {
             case FIREBASE_USER:
@@ -102,8 +98,10 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
         return null;
     }
 
-    public abstract int describeContents();
-    public abstract void writeToParcel(Parcel parcel, int i);
-    public abstract Map<String, String> toMap();
     public abstract String description();
+    public abstract int describeContents();
+    public abstract Map<String, String> toMap();
+
+    @Override
+    public final void writeToParcel(final Parcel dest, final int flags) { dest.writeSerializable(this); }
 }

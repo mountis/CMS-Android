@@ -12,9 +12,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.classes.Chat;
-import com.marionthefourth.augimas.classes.Message;
-import com.marionthefourth.augimas.classes.Team;
+import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.communication.Message;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.fragments.ChatListFragment;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 

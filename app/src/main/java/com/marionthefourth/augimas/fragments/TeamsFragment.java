@@ -14,9 +14,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.TeamsAdapter;
-import com.marionthefourth.augimas.classes.Constants;
-import com.marionthefourth.augimas.classes.Team;
-import com.marionthefourth.augimas.classes.User;
+import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
@@ -67,19 +68,17 @@ public class TeamsFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.hasChildren()) {
                         final ArrayList<Team> teamItems = new ArrayList<>();
-                        // Get contacts that belong to the User
-                        for (DataSnapshot contactReference : dataSnapshot.getChildren()) {
-                            Team teamItem = new Team(contactReference);
-                            if (teamItem.getUserUIDs().equals(user.getUID())) {
-                                teamItems.add(new Team(contactReference));
+                        // Get All Teams
+                        for (DataSnapshot teamReference : dataSnapshot.getChildren()) {
+                            if ((new Team(teamReference).getType().equals(FirebaseEntity.EntityType.THEM))) {
+                                teamItems.add(new Team(teamReference));
                             }
                         }
 
                         if (teamItems.size() == 0) {
                             recyclerView.setAdapter(null);
                         } else {
-                            // Get User Information for each Contact
-//                            getCorrespondingUsersForContacts(view, recyclerView, teamItems);
+                            recyclerView.setAdapter(new TeamsAdapter(getContext(),teamItems,mListener));
                         }
                     } else {
                         recyclerView.setAdapter(null);
@@ -89,6 +88,7 @@ public class TeamsFragment extends Fragment {
                 @Override
                 public void onCancelled(DatabaseError error) {
                     // Failed to read value
+                    recyclerView.setAdapter(null);
                 }
             });
         }

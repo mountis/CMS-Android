@@ -9,7 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.classes.Team;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.dialogs.TeamStatusDialog;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
 
 import java.util.ArrayList;
@@ -39,16 +40,22 @@ public class TeamsAdapter extends RecyclerView.Adapter<TeamsAdapter.ViewHolder> 
         // Fill ViewHolder
         holder.mDisplayLabel.setText(holder.teamItem.getName());
         holder.mIconLetter.setText(holder.mDisplayLabel.getText().toString().substring(0,1));
-        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.mView.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
                     mListener.onTeamsFragmentInteraction(context, holder.teamItem);
-                    return true;
                 }
+            }
+        });
+
+        holder.mIconLetter.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                new TeamStatusDialog(holder.mView,holder);
                 return false;
             }
         });

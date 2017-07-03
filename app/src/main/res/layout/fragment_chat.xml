@@ -28,6 +28,7 @@
             tools:listitem="@layout/list_item_message"/>
 
         <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/chat_input_section"
             android:orientation="horizontal"
             android:layout_gravity="bottom"
             android:padding="2dp"

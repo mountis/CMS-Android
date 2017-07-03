@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.marionthefourth.augimas">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -13,23 +14,68 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- Activities -->
         <activity android:name=".activities.SignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.SignUpActivity" />
-        <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.HomeActivity" />
-        <activity android:name=".activities.ChatActivity" />
         <activity
             android:name=".activities.TeamManagementActivity"
-            android:label="@string/title_activity_team_management"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".activities.BrandingElementsActivity"/>
-        <activity android:name=".activities.BrandingElementActivity"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.QuestionnaireActivity"
+            android:label="@string/title_activity_questionnaire"
+            android:parentActivityName=".activities.QuestionnaireActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.marionthefourth.augimas.activities.QuestionnaireHomeActivity" />
+        </activity>
+        <activity
+            android:name=".activities.SignUpActivity"
+            android:parentActivityName=".activities.SignInActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.SignInActivity"/>
+        </activity>
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:parentActivityName=".activities.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity"/>
+        </activity>
+        <activity android:name=".activities.HomeActivity" />
+        <activity android:name=".activities.ChatActivity" />
+        <activity android:name=".activities.BrandingElementsActivity"
+            android:parentActivityName=".activities.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity"/>
+        </activity>
+        <activity android:name=".activities.BrandingElementActivity" />
+        <activity android:name=".activities.NotificationActivity"
+            android:parentActivityName=".activities.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity"/>
+        </activity>
+        <activity android:name=".activities.QuestionnaireHomeActivity"/>
+
+        <!-- Services -->
+        <service android:name=".services.AugimasMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".services.AugimasInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
-
-
 </manifest>

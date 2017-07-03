@@ -2,14 +2,17 @@ package com.marionthefourth.augimas.helpers;
 
 import android.app.ProgressDialog;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputEditText;
 import android.view.View;
 import android.widget.Toast;
 
 import com.marionthefourth.augimas.R;
 
-import static com.marionthefourth.augimas.classes.Constants.Ints.PROGRESS_DIALOG;
-import static com.marionthefourth.augimas.classes.Constants.Ints.SNACKBAR;
-import static com.marionthefourth.augimas.classes.Constants.Ints.TOAST;
+import java.util.ArrayList;
+
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 public final class FragmentHelper {
 
@@ -55,5 +58,31 @@ public final class FragmentHelper {
         loadingProgress.setCancelable(false); // disable dismiss by tapping outside of the dialog
         loadingProgress.show();
         return loadingProgress;
+    }
+
+    public static boolean fieldsAreFilled(ArrayList<TextInputEditText> editTexts) {
+        for (int i = 0; i < editTexts.size(); i++) {
+            if (editTexts.get(i).getText().equals("")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean fieldsPassWhitelist(ArrayList<TextInputEditText> editTexts) {
+        String[] whitelist = new String[] {
+            "augimas","augimus","augeemas","augeemus"
+        };
+        for (int i = 0; i < editTexts.size(); i++) {
+            for (int j = 0; j < whitelist.length; j++) {
+                if (editTexts.get(i).getText().toString().toLowerCase().equals(whitelist[j])) {
+                    return false;
+                }
+            }
+
+        }
+
+        return true;
     }
 }

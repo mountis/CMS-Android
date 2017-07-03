@@ -27,24 +27,24 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.classes.Constants;
-import com.marionthefourth.augimas.classes.FirebaseObject;
-import com.marionthefourth.augimas.classes.User;
+import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.FirebaseObject;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.classes.Constants.Ints.CONFIRM_PASSWORD;
-import static com.marionthefourth.augimas.classes.Constants.Ints.EMAIL;
-import static com.marionthefourth.augimas.classes.Constants.Ints.MINIMUM_PASSWORD_COUNT;
-import static com.marionthefourth.augimas.classes.Constants.Ints.PASSWORD;
-import static com.marionthefourth.augimas.classes.Constants.Ints.PROGRESS_DIALOG;
-import static com.marionthefourth.augimas.classes.Constants.Ints.SIGN_IN_TEXT_BUTTON;
-import static com.marionthefourth.augimas.classes.Constants.Ints.SIGN_UP_BUTTON;
-import static com.marionthefourth.augimas.classes.Constants.Ints.SNACKBAR;
-import static com.marionthefourth.augimas.classes.Constants.Ints.USERNAME;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.CONFIRM_PASSWORD;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.EMAIL;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.MINIMUM_PASSWORD_COUNT;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.PASSWORD;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_IN_TEXT_BUTTON;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_BUTTON;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.USERNAME;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getReference;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
@@ -85,7 +85,7 @@ public final class SignUpFragment extends Fragment {
     }
 
     private ArrayList<Button> getAllButtonViews(View view) {
-        // Button IDS
+        // Button IDs
         final int BUTTON_VIEW_IDS[] = {
                 R.id.button_sign_up,
                 R.id.text_button_sign_in
@@ -99,8 +99,8 @@ public final class SignUpFragment extends Fragment {
         return buttons;
     }
 
-    private ArrayList<TextInputEditText> getAllEditTextViews(View view) {
-        // TextInputEditText View IDS
+    private ArrayList<TextInputEditText> getAllEditTextViews(final View view) {
+        // TextInputEditText View IDs
         final int INPUT_VIEW_IDS[] = {
                 R.id.input_username,
                 R.id.input_password,
@@ -116,8 +116,8 @@ public final class SignUpFragment extends Fragment {
         return inputs;
     }
 
-    private ArrayList<TextInputLayout> getAllTextInputLayoutViews(View view) {
-        // Text Input Layout IDS
+    private ArrayList<TextInputLayout> getAllTextInputLayoutViews(final View view) {
+        // Text Input Layout IDs
         final int TEXT_INPUT_LAYOUT_IDS[] = {
                 R.id.input_layout_username,
                 R.id.input_layout_password,
@@ -134,10 +134,10 @@ public final class SignUpFragment extends Fragment {
         return layouts;
     }
 
-    private void populateTextInputsWithDataFromIntent(ArrayList<TextInputEditText> inputs) {
+    private void populateTextInputsWithDataFromIntent(final ArrayList<TextInputEditText> inputs) {
         if (getActivity().getIntent() != null) {
-            final String passwordText = getActivity().getIntent().getStringExtra(Constants.Strings.PASSWORD);
-            final String usernameOrEmailText = getActivity().getIntent().getStringExtra(Constants.Strings.USERNAME_OR_EMAIL);
+            final String passwordText = getActivity().getIntent().getStringExtra(Constants.Strings.Fields.PASSWORD);
+            final String usernameOrEmailText = getActivity().getIntent().getStringExtra(Constants.Strings.Fields.USERNAME_OR_EMAIL);
             // Check if text from intent is Username or Email and set it to the appropriate field
             if (isValidEmail(usernameOrEmailText)) {
                 inputs.get(EMAIL).setText(usernameOrEmailText);
@@ -150,7 +150,7 @@ public final class SignUpFragment extends Fragment {
         }
     }
 
-    private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
+    private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
         for (int i = 0; i < layouts.size();i++) {
             final int finalI = i;
             inputs.get(i).setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -187,7 +187,7 @@ public final class SignUpFragment extends Fragment {
         }
     }
 
-    private void setupSignInButtonsOnClickListener(Button signInButton) {
+    private void setupSignInButtonsOnClickListener(final Button signInButton) {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -203,7 +203,7 @@ public final class SignUpFragment extends Fragment {
                 if (PROTOTYPE_MODE) {
                     FirebaseHelper.signin(view,null);
                 } else {
-                    if (Constants.FeaturesAvailable.SIGN_UP) {
+                    if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
                             if (passwordsMatch(view,layouts,inputs)) {
                                 if (passwordLengthIsAppropriate(view,layouts,inputs)) {
@@ -402,7 +402,7 @@ public final class SignUpFragment extends Fragment {
     }
 
     private FirebaseObject getFirebaseContentFromFields(int FIREBASE_CONTENT) {
-        // Edit Text View IDS
+        // Edit Text View IDs
         final int INPUT_VIEW_IDS[] = {
                 R.id.input_username,
                 R.id.input_password,

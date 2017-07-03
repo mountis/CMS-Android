@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageButton;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,22 +17,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.MessageListAdapter;
-import com.marionthefourth.augimas.classes.Chat;
-import com.marionthefourth.augimas.classes.Constants;
-import com.marionthefourth.augimas.classes.Message;
-import com.marionthefourth.augimas.classes.Team;
-import com.marionthefourth.augimas.classes.User;
+import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.communication.Channel;
+import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.communication.Message;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.classes.Constants.Ints.SNACKBAR;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
+import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChatFragment extends Fragment implements MessageListAdapter.OnMessageListFragmentInteractionListener {
 
+    public static ChatFragment newInstance(FirebaseEntity.EntityType type, String channelUID) {
+        Bundle args = new Bundle();
+        args.putString(Constants.Strings.UIDs.CHANNEL_UID,channelUID);
+
+        ChatFragment fragment = new ChatFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public ChatFragment() {}
 
@@ -40,25 +52,23 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.message_list_recycler_view);
+        final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.message_list_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        TextInputEditText inputField = (TextInputEditText)view.findViewById(R.id.input_message_text);
-        AppCompatImageButton sendButton = (AppCompatImageButton)view.findViewById(R.id.button_send);
+        final TextInputEditText inputField = (TextInputEditText)view.findViewById(R.id.input_message_text);
+        final AppCompatImageButton sendButton = (AppCompatImageButton)view.findViewById(R.id.button_send);
+
+        determineToDisplayChatInputSection(view);
 
         if (PROTOTYPE_MODE) {
-            Chat chat = new Chat("Chat");
-            loadPrototypeMessages(recyclerView,chat);
+            Channel channel = new Channel();
+            loadPrototypeMessages(recyclerView,channel);
         } else {
             if (getArguments() != null) {
 
-                setupSendButtonClickListener(sendButton, inputField, getArguments());
+                setupSendButtonClickListener(sendButton, inputField);
 
-                loadMessages(
-                        recyclerView,
-                        (Chat) getArguments().getSerializable(Constants.Strings.CHATS),
-                        (ArrayList<User>) getArguments().getSerializable(Constants.Strings.USER)
-                );
+                loadMessages(recyclerView);
             }
         }
 
@@ -66,7 +76,30 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         return view;
     }
 
-    private void loadPrototypeMessages(RecyclerView recyclerView, Chat chat) {
+    private void determineToDisplayChatInputSection(final View view) {
+        final LinearLayoutCompat chatInputSection = (LinearLayoutCompat)view.findViewById(R.id.chat_input_section);
+        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUser = new User (dataSnapshot);
+                    if (currentUser != null && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                        chatInputSection.setVisibility(View.VISIBLE);
+                    } else {
+                        chatInputSection.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                chatInputSection.setVisibility(View.GONE);
+            }
+        });
+
+    }
+
+    private void loadPrototypeMessages(RecyclerView recyclerView, Channel channel) {
         ArrayList<Message> messages = new ArrayList<>();
         ArrayList<User> users = new ArrayList<>();
         users.add(new User("zaynewaynes"));
@@ -78,12 +111,12 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         users.add(new User("probablytheowner"));
         users.get(3).setUID("11114");
 
-        messages.add(new Message(chat,users.get(3),"Guess what guys?"));
-        messages.add(new Message(chat,users.get(2),"Whats?"));
-        messages.add(new Message(chat,users.get(1),"Sup?"));
-        messages.add(new Message(chat,users.get(0),"Doc"));
-        messages.add(new Message(chat,users.get(3),"We're live!"));
-        messages.add(new Message(chat,users.get(2),"Ain't that something special"));
+        messages.add(new Message(channel,users.get(3),"Guess what guys?"));
+        messages.add(new Message(channel,users.get(2),"Whats?"));
+        messages.add(new Message(channel,users.get(1),"Sup?"));
+        messages.add(new Message(channel,users.get(0),"Doc"));
+        messages.add(new Message(channel,users.get(3),"We're live!"));
+        messages.add(new Message(channel,users.get(2),"Ain't that something special"));
 
         ArrayList<User> adminUsers = new ArrayList<>();
         adminUsers.add(new User("roliepolie"));
@@ -91,62 +124,96 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         adminUsers.add(new User("karmapolice"));
         adminUsers.get(1).setUID("31111");
 
-        messages.add(new Message(chat,adminUsers.get(0),"I think so :D"));
-        messages.add(new Message(chat,adminUsers.get(1),"Everyone put your hands up! :)"));
+        messages.add(new Message(channel,adminUsers.get(0),"I think so :D"));
+        messages.add(new Message(channel,adminUsers.get(1),"Everyone put your hands up! :)"));
 
         ArrayList<Team> teams = new ArrayList<>();
         teams.add(new Team("Augimas","51515",adminUsers));
-        teams.add(new Team(chat.getNickname(),"51591",users));
+//        teams.add(new Team(chat.getNickname(),"51591",users));
 
-        recyclerView.setAdapter(new MessageListAdapter(getContext(),chat,messages,adminUsers,users,teams,ChatFragment.this));
+        recyclerView.setAdapter(new MessageListAdapter(getContext(),channel,messages,adminUsers,users,teams,ChatFragment.this));
 
     }
 
-    private void setupSendButtonClickListener(final AppCompatImageButton sendButton, final TextInputEditText inputField, final Bundle bundle) {
+    private void setupSendButtonClickListener(final AppCompatImageButton sendButton, final TextInputEditText inputField) {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!inputField.getText().toString().equals("")) {
-                    Message message = new Message(
-                            (Chat) bundle.getSerializable(Constants.Strings.CHATS),
-                            FirebaseHelper.getCurrentUser(),
-                            inputField.getText().toString()
-                    );
+                FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final User currentUser = new User(dataSnapshot);
+                            if (currentUser != null && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                                if (!inputField.getText().toString().equals("")) {
+                                    // Get Channel UID
+                                    Message message = new Message(
+                                            getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID),
+                                            currentUser.getUID(),
+                                            inputField.getText().toString()
+                                    );
 
-                    // Save Message to Firebase
-                    save(getContext(),FirebaseHelper.getCurrentUser(),message);
+                                    // Save Message to Firebase
+                                    save(getContext(),message);
 
-                    // Clear input text
-                    inputField.setText("");
-                } else {
-                    display(getView(),SNACKBAR,R.string.required_field);
-                }
+                                    // Clear input text
+                                    inputField.setText("");
+                                } else {
+                                    display(getView(),SNACKBAR,R.string.required_field);
+                                }
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         });
     }
 
-    private void loadMessages(final RecyclerView recyclerView, final Chat chat, final ArrayList<User> users) {
+    private void loadMessages(final RecyclerView recyclerView) {
         // Load Messages from Firebase
         FirebaseHelper.getReference(getContext(),R.string.firebase_messages_directory).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<Message> messages = new ArrayList<>();
+                final ArrayList<Message> messages = new ArrayList<>();
                 if (dataSnapshot.hasChildren()) {
                     for (DataSnapshot messageReference:dataSnapshot.getChildren()) {
                         Message messageItem = new Message(messageReference);
 
-                        if (messageItem.isFromChat(chat)) {
+                        if (messageItem.getChannelUID().equals(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID))) {
                             messages.add(messageItem);
                         }
                     }
 
-                    if (messages.size() > 0) {
-//                        recyclerView.setAdapter(new MessageListAdapter(getContext(),chat,messages,users,ChatFragment.this));
-                        return;
-                    } else {
-                        recyclerView.setAdapter(null);
-                        return;
-                    }
+                    FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_channels_directory).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                final Channel currentChannel = new Channel(dataSnapshot);
+                                if (currentChannel != null) {
+                                    // Read Name of Channel
+                                    if (currentChannel.getName().equals("")) {
+                                        // Get Both Team UIDs
+                                        getBothTeamUIDs(recyclerView,currentChannel,messages);
+                                    } else {
+                                        // Only Get Current Team UID
+                                        getOneTeamUID(recyclerView,currentChannel,messages);
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 } else {
                     recyclerView.setAdapter(null);
                     return;
@@ -155,6 +222,159 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
             @Override
             public void onCancelled(DatabaseError databaseError) {}
+        });
+
+    }
+
+    public void getOneTeamUID(final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUser = new User(dataSnapshot);
+                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
+                        FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    final Team currentTeam = new Team(dataSnapshot);
+                                    if (currentTeam != null) {
+                                        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                                    final ArrayList<User> teamMembers = new ArrayList<>();
+                                                    for(DataSnapshot userReference:dataSnapshot.getChildren()) {
+                                                        final User userItem = new User(userReference);
+                                                        if (userItem.getTeamUID().equals(currentTeam.getUID())) {
+                                                            teamMembers.add(userItem);
+                                                        }
+
+                                                    }
+
+                                                    if (messages.size() > 0) {
+                                                        final ArrayList<Team> sortedTeams = new ArrayList<>();
+                                                        final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
+
+                                                        recyclerView.setAdapter(new MessageListAdapter(getContext(),currentChannel,messages,teamMembers,currentTeam,ChatFragment.this));
+                                                        return;
+                                                    } else {
+                                                        recyclerView.setAdapter(null);
+                                                        return;
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getBothTeamUIDs(final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+        FirebaseHelper.getReference(getContext(),R.string.firebase_chats_directory).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final Chat currentChat = new Chat(dataSnapshot);
+                    if (currentChat != null) {
+                        final ArrayList<ArrayList<User>> teamUsers = new ArrayList<>();
+                        teamUsers.add(new ArrayList<User>());
+                        teamUsers.add(new ArrayList<User>());
+                        final ArrayList<Team> teams = new ArrayList<>();
+                        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                    for (DataSnapshot userReference:dataSnapshot.getChildren()) {
+                                        final User userItem = new User(userReference);
+                                        for (int i = 0; i < currentChat.getTeamUIDs().size(); i++) {
+                                            if (userItem != null && userItem.getTeamUID().equals(currentChat.getTeamUIDs().get(i))) {
+                                                teamUsers.get(i).add(userItem);
+                                            }
+                                        }
+
+                                    }
+
+                                    FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
+                                                    final Team teamItem = new Team(teamReference);
+                                                    for (int i = 0; i < currentChat.getTeamUIDs().size(); i++) {
+                                                        if (teamItem.getUID().equals(currentChat.getTeamUIDs().get(i))) {
+                                                            teams.add(teamItem);
+                                                        }
+                                                    }
+                                                }
+
+                                                if (messages.size() > 0) {
+                                                    final ArrayList<Team> sortedTeams = new ArrayList<>();
+                                                    final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
+
+                                                    if (teams.get(0).getType().equals(FirebaseEntity.EntityType.US)) {
+                                                        for (int i = 0; i < teams.size(); i++) {
+                                                            sortedTeams.add(teams.get(i));
+                                                            sortedTeamUsers.add(teamUsers.get(i));
+                                                        }
+                                                    } else {
+                                                        for (int i = teams.size()-1; i > -1; i--) {
+                                                            sortedTeams.add(teams.get(i));
+                                                            sortedTeamUsers.add(teamUsers.get(i));
+                                                        }
+                                                    }
+                                                    recyclerView.setAdapter(new MessageListAdapter(getContext(),currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1),sortedTeams,ChatFragment.this));
+                                                    return;
+                                                } else {
+                                                    recyclerView.setAdapter(null);
+                                                    return;
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
         });
 
     }

@@ -36,7 +36,10 @@
     <string name="firebase_members_directory">members</string>
     <string name="firebase_messages_directory">messages</string>
     <string name="firebase_teams_directory">teams</string>
+    <string name="firebase_notifications_directory">notifications</string>
+    <string name="firebase_channels_directory">channels</string>
     <string name="firebase_url_directory">https://augimas-25621.firebaseio.com/</string>
+
 
     <!--XML Title Strings -->
     <string name="title_accounts">Accounts</string>
@@ -272,8 +275,8 @@
     <string name="text_forward">Forward</string>
     <string name="text_copy_text">Copy Text</string>
     <string name="success_text_copied_to_clipboard">Text copied to clipboard.</string>
-    <string name="firebase_branding_elements_directory">branding_elements</string>
-    <string name="firebase_branding_element_directory">branding_element_indv</string>
+    <string name="firebase_branding_elements_directory">brandingElements</string>
+    <string name="firebase_branding_element_contents_directory">brandingElements</string>
     <string name="title_activity_testt">Testt</string>
     <string name="title_admin_request">Admin Request</string>
     <string name="request_code">request code</string>
@@ -291,4 +294,29 @@
     <string name="team_name_text">team name</string>
     <string name="team_member_name">team member name</string>
     <string name="title_invite_member">Invite Member</string>
+    <string name="title_join_team">Join Team</string>
+    <string name="title_create_team">Create Team</string>
+    <string name="welcome_to_augimas">Welcome to Augimas!</string>
+    <string name="failed_request">:(</string>
+    <string name="invite_button_text">Invite</string>
+    <string name="update_button_text">Update</string>
+    <string name="leave_button_text">Leave</string>
+    <string name="title_leave_team">Leaving Team</string>
+    <string name="leave_team_confirmation_message">Are you sure you want to leave this team? This action cannot be undone.</string>
+    <string name="leave_team_button">LEAVE TEAM</string>
+    <string name="title_activity_tabbed_chat">TabbedChatActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_chat_spinner">ChatSpinnerActivity</string>
+    <string name="title_team_status_updater">Update Team Status</string>
+    <string name="key_questionnaire">questionnaire</string>
+    <string name="app_questtionaire">Questionnaire</string>
+    <string name="title_miscellaneous">Misc.</string>
+    <string name="begin_questionnaire_text">BEGIN QUESTIONNAIRE</string>
+    <string name="occupation_text">occupation</string>
+    <string name="view_questionnaires_text">VIEW QUESTIONNAIRES</string>
+    <string name="sex_text">sex</string>
+    <string name="title_activity_questionnaire">QuestionnaireActivity</string>
 </resources>

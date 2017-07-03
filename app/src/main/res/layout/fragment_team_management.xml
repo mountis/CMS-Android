@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.marionthefourth.augimas.fragments.TeamManagementFragment"
+    android:padding="@dimen/default_padding"
+    tools:context="com.marionthefourth.augimas.activities.TeamManagementActivity"
     tools:showIn="@layout/activity_team_management">
 
     <android.support.v7.widget.LinearLayoutCompat
-        android:id="@+id/no_team_layout"
-        android:visibility="gone"
-        android:layout_width="0dp"
         android:gravity="center"
+        android:visibility="gone"
         android:orientation="vertical"
-        android:layout_height="0dp"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="0dp"
-        tools:ignore="MissingConstraints">
+        android:id="@+id/no_team_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_create_team"
             style="@style/ButtonTheme"
-            android:text="@string/sign_in_text_capital"
+            android:text="@string/title_create_team"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -35,20 +33,17 @@
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_join_team"
             style="@style/ButtonTheme"
-            android:text="@string/sign_in_text_capital"
+            android:text="@string/title_join_team"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
     </android.support.v7.widget.LinearLayoutCompat>
-
     <android.support.v7.widget.LinearLayoutCompat
-        android:id="@+id/in_team_layout"
-        android:visibility="visible"
+        android:visibility="gone"
         android:orientation="vertical"
-        android:layout_width="395dp"
-        android:layout_height="531dp"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp">
+        android:id="@+id/in_team_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <android.support.design.widget.TextInputLayout
             android:id="@+id/input_layout_team_name"
@@ -81,11 +76,12 @@
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_update_team_info"
             style="@style/ButtonTheme"
-            android:text="@string/update_text"
+            android:text="@string/update_button_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
         <android.support.v7.widget.RecyclerView
+            android:layout_weight="1"
             android:id="@+id/team_member_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,15 +91,17 @@
             tools:listitem="@layout/list_item_team_member" />
 
         <android.support.v7.widget.AppCompatButton
-            android:id="@+id/button_invite_member"
             style="@style/ButtonTheme"
-            android:text="@string/invite"
+            android:text="@string/invite_button_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/button_invite_member"/>
 
-
-
+        <android.support.v7.widget.AppCompatButton
+            style="@style/ButtonTheme"
+            android:text="@string/leave_button_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_leave_team"/>
     </android.support.v7.widget.LinearLayoutCompat>
-
-
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>

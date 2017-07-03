@@ -9,5 +9,7 @@
     android:layout_height="match_parent"
     app:layoutManager="LinearLayoutManager"
     android:fitsSystemWindows="true"
+    android:background="#fff"
+    android:padding="@dimen/default_padding"
     tools:context="com.marionthefourth.augimas.fragments.NotificationsFragment"
     tools:listitem="@layout/list_item_notification" />
