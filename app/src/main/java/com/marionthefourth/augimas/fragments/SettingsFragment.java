@@ -1,29 +1,33 @@
 package com.marionthefourth.augimas.fragments;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.activities.QuestionnaireActivity;
-import com.marionthefourth.augimas.activities.TeamManagementActivity;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.dialogs.AdminRequestDialog;
 import com.marionthefourth.augimas.dialogs.ChangePasswordDialog;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
-import java.util.ArrayList;
-
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
+import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
+import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class SettingsFragment extends PreferenceFragment {
 
@@ -36,28 +40,64 @@ public final class SettingsFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_preferences);
 
+        final Activity activity = getActivity();
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUser = new User(dataSnapshot);
+                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
+                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    final Team teamItem = new Team(dataSnapshot);
+                                    if (teamItem != null) {
+                                        final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                                        if (actionBar != null) {
+                                            actionBar.setTitle(teamItem.getName());
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        view.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.backgroundMain));
-        setupPreferences(view);
+        final Activity activity = getActivity();
+        view.setBackgroundColor(ContextCompat.getColor(activity, R.color.backgroundMain));
+        setupPreferences(activity,view);
         return view;
     }
 
-    private void setupPreferences(final View containingView) {
+    private void setupPreferences(final Activity activity, final View containingView) {
 
         Preference switchAccountPreference = findPreference(Constants.Strings.MANAGE_TEAM_KEY);
         switchAccountPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                transitionToTeamManagementScreen();
+                transitionToTeamManagementScreen(activity);
                 return true;
             }
         });
 
-        Preference changePasswordPreference = findPreference(Constants.Strings.CHANGE_PASSWORD_KEY);
+        Preference changePasswordPreference = findPreference(Constants.Strings.UPDATE_ACCOUNT_INFO_KEY);
         changePasswordPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -70,7 +110,7 @@ public final class SettingsFragment extends PreferenceFragment {
         signOutPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                FirebaseHelper.logout((AppCompatActivity) getActivity(),true);
+                FirebaseHelper.logout((AppCompatActivity) activity,true);
                 return true;
             }
         });
@@ -82,7 +122,7 @@ public final class SettingsFragment extends PreferenceFragment {
                 buildButtonTapped++;
 
                 if (buildButtonTapped == 5) {
-                    new AdminRequestDialog(containingView);
+                    new AdminRequestDialog(activity,containingView);
                     buildButtonTapped = 0;
                 }
 
@@ -95,8 +135,8 @@ public final class SettingsFragment extends PreferenceFragment {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     if (Constants.Bools.FeaturesAvailable.DISPLAY_QUESTIONNAIRE) {
-                        Intent questionnaireHomeIntent = new Intent(getActivity(), QuestionnaireActivity.class);
-                        startActivity(questionnaireHomeIntent);
+//                        Intent questionnaireHomeIntent = new Intent(activity, QuestionnaireActivity.class);
+//                        startActivity(questionnaireHomeIntent);
                         return true;
                     } else {
                         display(containingView,TOAST,R.string.feature_unavailable);
@@ -108,17 +148,9 @@ public final class SettingsFragment extends PreferenceFragment {
 
     }
 
-    private void transitionToTeamManagementScreen() {
-        Intent teamManagementIntent = new Intent(getActivity().getApplicationContext(), TeamManagementActivity.class);
-        getActivity().startActivity(teamManagementIntent);
+    private void transitionToTeamManagementScreen(final Activity activity) {
+        handleNonSupportFragmentRemoval(getFragmentManager());
+        ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.container, new TeamManagementFragment()).commit();
     }
 
-    private boolean fieldsArentFilled(ArrayList<EditText> inputs) {
-        for (int i = 0; i < inputs.size();i++) {
-            if (inputs.get(i).getText().toString().equals("")) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

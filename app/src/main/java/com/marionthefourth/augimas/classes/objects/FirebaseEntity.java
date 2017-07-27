@@ -17,11 +17,6 @@ public abstract class FirebaseEntity extends FirebaseObject {
     public enum EntityType {
         US, THEM, DEFAULT;
 
-        @Override
-        public String toString() {
-            return super.toString();
-        }
-
         public String toMapStyleString() {
             return String.valueOf(this.toInt(true));
         }

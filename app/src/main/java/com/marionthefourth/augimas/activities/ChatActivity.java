@@ -34,7 +34,7 @@ public final class ChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tabbed_chat);
+        setContentView(R.layout.activity_chat);
 
         setupActionBar(getSupportActionBar());
 
@@ -92,20 +92,20 @@ public final class ChatActivity extends AppCompatActivity {
     private void setTabText(final TabLayout tabLayout) {
         final ArrayList<String> teamUIDs = getTeamUIDsFromIntent();
 
-        FirebaseHelper.getReference(getApplicationContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                         // Get Current Team
-                        FirebaseHelper.getReference(getApplicationContext(),R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        FirebaseHelper.getReference(ChatActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        tabLayout.getTabAt(1).setText(currentTeam.getName());
+                                        tabLayout.getTabAt(FirebaseEntity.EntityType.US.toInt(false)).setText(currentTeam.getName());
 
                                         // get other Team
                                         setTabTextToOtherTeamName(tabLayout,teamUIDs);
@@ -140,7 +140,7 @@ public final class ChatActivity extends AppCompatActivity {
 
     private void setTabTextToOtherTeamName(final TabLayout tabLayout, ArrayList<String> teamUIDs) {
         // Pull the Team from Firebase matching the other Team UID
-        FirebaseHelper.getReference(getApplicationContext(),R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(this,R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -171,7 +171,7 @@ public final class ChatActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return ChatFragment.newInstance(FirebaseEntity.EntityType.getType(position),getChannelUIDsFromIntent().get(position));
+            return ChatFragment.newInstance(getChannelUIDsFromIntent().get(position));
         }
 
         @Override

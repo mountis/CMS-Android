@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -38,13 +39,13 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.CONFIRM_PASSWORD;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.EMAIL;
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.MINIMUM_PASSWORD_COUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.PASSWORD;
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.USERNAME;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.MINIMUM_PASSWORD_COUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_IN_TEXT_BUTTON;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_BUTTON;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.USERNAME;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getReference;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
@@ -69,17 +70,19 @@ public final class SignUpFragment extends Fragment {
         // Add all Layouts to an ArrayList
         final ArrayList<TextInputLayout> layouts = getAllTextInputLayoutViews(view);
 
+        final Activity activity = getActivity();
+
         // Read Data from Intent and fill Appropriate Fields
-        populateTextInputsWithDataFromIntent(inputs);
+        populateTextInputsWithDataFromIntent(activity,inputs);
 
         // Set OnFocusChangeListener to all Inputs & Add TextChangedListener to all Inputs
         setupTextInputsWithFocusAndTextChangedListeners(layouts,inputs);
 
         // Sign In Button (Connect to Firebase & Transition to Home)
-        setupSignUpButtonsOnClickListener(layouts,inputs,view,buttons.get(SIGN_UP_BUTTON));
+        setupSignUpButtonsOnClickListener(activity,layouts,inputs,view,buttons.get(SIGN_UP_BUTTON));
 
         // Sign Up Button (Transition to Sign In)
-        setupSignInButtonsOnClickListener(buttons.get(SIGN_IN_TEXT_BUTTON));
+        setupSignInButtonsOnClickListener(activity,buttons.get(SIGN_IN_TEXT_BUTTON));
 
         return view;
     }
@@ -134,10 +137,10 @@ public final class SignUpFragment extends Fragment {
         return layouts;
     }
 
-    private void populateTextInputsWithDataFromIntent(final ArrayList<TextInputEditText> inputs) {
-        if (getActivity().getIntent() != null) {
-            final String passwordText = getActivity().getIntent().getStringExtra(Constants.Strings.Fields.PASSWORD);
-            final String usernameOrEmailText = getActivity().getIntent().getStringExtra(Constants.Strings.Fields.USERNAME_OR_EMAIL);
+    private void populateTextInputsWithDataFromIntent(final Activity activity, final ArrayList<TextInputEditText> inputs) {
+        if (activity.getIntent() != null) {
+            final String passwordText = activity.getIntent().getStringExtra(Constants.Strings.Fields.PASSWORD);
+            final String usernameOrEmailText = activity.getIntent().getStringExtra(Constants.Strings.Fields.USERNAME_OR_EMAIL);
             // Check if text from intent is Username or Email and set it to the appropriate field
             if (isValidEmail(usernameOrEmailText)) {
                 inputs.get(EMAIL).setText(usernameOrEmailText);
@@ -187,21 +190,21 @@ public final class SignUpFragment extends Fragment {
         }
     }
 
-    private void setupSignInButtonsOnClickListener(final Button signInButton) {
+    private void setupSignInButtonsOnClickListener(final Activity activity, final Button signInButton) {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                activity.finish();
             }
         });
     }
 
-    private void setupSignUpButtonsOnClickListener(final ArrayList<TextInputLayout> layouts,final ArrayList<TextInputEditText> inputs, final View view,Button signUpButton) {
+    private void setupSignUpButtonsOnClickListener(final Activity activity, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final View view, Button signUpButton) {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (PROTOTYPE_MODE) {
-                    FirebaseHelper.signin(view,null);
+                    FirebaseHelper.signin(activity, view,null);
                 } else {
                     if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
@@ -210,7 +213,7 @@ public final class SignUpFragment extends Fragment {
                                     if (isAValidEmail(view,layouts,inputs)) {
                                         // Connect to Firebase & Attempt to Sign up
                                         dismissKeyboard(view);
-                                        createUser(view, (User) getFirebaseContentFromFields(Constants.Ints.FIREBASE_USER));
+                                        createUser(activity,view, (User) getFirebaseContentFromFields(Constants.Ints.FIREBASE_USER));
                                     }
                                 }
                             }
@@ -326,13 +329,13 @@ public final class SignUpFragment extends Fragment {
         return true;
     }
 
-    private void createUser(final View view, final User user) {
+    private void createUser(final Activity activity, final View view, final User user) {
         final Context context = view.getContext();
         final ProgressDialog loadingProgress = display(view,PROGRESS_DIALOG,R.string.progress_signing_up);
         // Ensure that the User is not null
         if (user != null) {
             // Get a reference to the users location of the database
-            final DatabaseReference usersRef = getReference(context,R.string.firebase_users_directory);
+            final DatabaseReference usersRef = getReference(activity,R.string.firebase_users_directory);
             usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -353,9 +356,9 @@ public final class SignUpFragment extends Fragment {
                             }
                         }
 
-                        firebaseCreateUser(view,loadingProgress,user,usersRef);
+                        firebaseCreateUser(activity,view,loadingProgress,user,usersRef);
                     } else {
-                        firebaseCreateUser(view,loadingProgress,user,usersRef);
+                        firebaseCreateUser(activity,view,loadingProgress,user,usersRef);
                     }
 
                 }
@@ -370,7 +373,7 @@ public final class SignUpFragment extends Fragment {
         }
     }
 
-    private void firebaseCreateUser(final View view, final ProgressDialog loadingProgress,final User user, final DatabaseReference usersRef) {
+    private void firebaseCreateUser(final Activity activity, final View view, final ProgressDialog loadingProgress,final User user, final DatabaseReference usersRef) {
         final Context context = view.getContext();
         final FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword()).addOnCompleteListener((AppCompatActivity) context, new OnCompleteListener<AuthResult>() {
@@ -393,7 +396,7 @@ public final class SignUpFragment extends Fragment {
                     loadingProgress.show();
                     display(view,SNACKBAR,R.string.success_signup);
                     // Sign in the new user
-                    FirebaseHelper.signin(view,user);
+                    FirebaseHelper.signin(activity,view,user);
                 }
             }
 

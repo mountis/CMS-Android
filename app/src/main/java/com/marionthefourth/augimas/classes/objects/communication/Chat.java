@@ -77,6 +77,16 @@ public final class Chat extends FirebaseCommunication {
         }
     }
 
+    public boolean hasTeam(String teamUID) {
+        for (int i = 0; i < teamUIDs.size();i++) {
+            if (teamUID.equals(teamUIDs.get(i))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public String getField(final int index) {
         return null;

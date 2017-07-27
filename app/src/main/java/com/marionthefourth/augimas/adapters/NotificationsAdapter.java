@@ -1,6 +1,6 @@
 package com.marionthefourth.augimas.adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -23,11 +23,11 @@ import java.util.ArrayList;
 
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity activity;
     private ArrayList<Notification> notifications = new ArrayList<>();
 
-    public NotificationsAdapter(Context context, ArrayList<Notification> notifications) {
-        this.context = context;
+    public NotificationsAdapter(Activity activity, ArrayList<Notification> notifications) {
+        this.activity = activity;
         this.notifications = notifications;
     }
 
@@ -41,14 +41,13 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     @Override
     public void onBindViewHolder(final NotificationsAdapter.ViewHolder holder, int position) {
         holder.notificationItem = notifications.get(position);
-
         pullSubjectAndObjectItems(holder);
     }
 
     private void pullSubjectAndObjectItems(final ViewHolder holder) {
         switch (holder.notificationItem.getSubjectType()) {
             case MEMBER:
-                FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -56,7 +55,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (teamMember != null) {
                                 holder.mIconLetterMoniker.setText(teamMember.getName().substring(0,1));
                                 holder.notificationItem.setSubject(teamMember);
-
                                 pullObjectItem(holder);
                             }
                         }
@@ -69,7 +67,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case TEAM:
-                FirebaseHelper.getReference(context,R.string.firebase_teams_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -98,7 +96,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         switch (holder.notificationItem.getObjectType()) {
 
             case BRANDING_ELEMENT:
-                FirebaseHelper.getReference(context,R.string.firebase_branding_element_status).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -115,7 +113,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case CHAT:
-                FirebaseHelper.getReference(context,R.string.firebase_chats_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -132,7 +130,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case MEMBER:
-                FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -149,7 +147,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case TEAM:
-                FirebaseHelper.getReference(context,R.string.firebase_teams_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {

@@ -454,14 +454,14 @@ public final class Notification extends FirebaseContent {
 
         switch (objectType) {
             case BRANDING_ELEMENT:
-                objectPart = ((BrandingElement)getSubject()).getType().toString();
+                objectPart = ((BrandingElement)getObject()).getType().toString();
                 break;
             case CHAT:
                 objectPart = "Chat";
                 break;
             case MEMBER:
             case TEAM:
-                objectPart = ((FirebaseEntity)getSubject()).getName();
+                objectPart = ((FirebaseEntity)getObject()).getName();
                 break;
             case DEFAULT:
                 break;
@@ -518,9 +518,9 @@ public final class Notification extends FirebaseContent {
     public NotificationSubjectType setSubject(final FirebaseObject subject) {
         this.subject = subject;
         setSubjectUID(subject.getUID());
-        if (object instanceof User) {
+        if (subject instanceof User) {
             setSubjectType(NotificationSubjectType.MEMBER);
-        } else if (object instanceof Team) {
+        } else if (subject instanceof Team) {
             setSubjectType(NotificationSubjectType.TEAM);
         } else {
             return NotificationSubjectType.DEFAULT;

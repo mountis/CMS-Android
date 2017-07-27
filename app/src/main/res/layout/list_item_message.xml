@@ -36,6 +36,7 @@
                 android:clickable="false"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:textColor="#fff"
                 android:layout_marginLeft="5dp"
                 android:layout_gravity="bottom"
                 android:background="@drawable/circle"

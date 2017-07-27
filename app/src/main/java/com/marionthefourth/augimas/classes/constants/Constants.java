@@ -18,6 +18,7 @@ public final class Constants {
             public static final String SUBJECT_UID = "subjectUID";
             public static final String MESSAGE_UID = "messageUID";
             public static final String TEAM_UID = "teamUID";
+            public static final String USER_UID = "userUID";
             public static final String TEAM_UIDS = "teamUIDs";
             public static final String MEMBER_UIDS = "memberUIDS";
             public static final String RECEIVER_UID = "receiverUID";
@@ -57,6 +58,29 @@ public final class Constants {
             public static final String MISSION_STATEMENT = "missionStatement";
         }
 
+        public static final class Questionnaire {
+            public static final class Questions {
+                public static final String QUESTION_01 = "How satisfied overall were you with the UI/Layout of this screen?";
+                public static final String QUESTION_02 = "Do you have any suggestions for the UI/Layout of the app?";
+                public static final String QUESTION_03 = "Was there anything that stood out to you that you liked or wanted to see more of throughout the app?";
+                public static final String QUESTION_04 = "Did you have any issues with this screen? If so please list it below.";
+                public static final String QUESTION_05 = "How satisfied overall were you with your User Experience on this screen?";
+                public static final String QUESTION_06 = "Are there any additional features you want available on this screen?";
+
+            }
+
+            public static final class Screens {
+                public static final String SCREEN_01 = "Sign In";
+                public static final String SCREEN_02 = "Sign Up";
+                public static final String SCREEN_03 = "Home";
+                public static final String SCREEN_04 = "Dashboard";
+                public static final String SCREEN_05 = "Chats";
+                public static final String SCREEN_06 = "Notifications";
+                public static final String SCREEN_07 = "Settings";
+                public static final String SCREEN_08 = "Team Management";
+                public static final String SCREEN_09 = "Branding Element";
+            }
+        }
 
         // Firebase
         public static final String USER = "user";
@@ -89,7 +113,7 @@ public final class Constants {
         // Preference Key Items
         public static final String SIGN_OUT_KEY = "signout";
         public static final String MANAGE_TEAM_KEY = "manageTeam";
-        public static final String CHANGE_PASSWORD_KEY = "changePassword";
+        public static final String UPDATE_ACCOUNT_INFO_KEY = "updateAccountInfo";
         public static final String BUILD_VERSION_KEY = "buildInformation";
 
         public static final String ADMIN_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";
@@ -100,6 +124,21 @@ public final class Constants {
         public static final String NO_VALUE = "0x81BAC";
         public static final String YES_VALUE = "0xA4BEF";
 
+        public static final class Fragments {
+            public static final String SETTINGS = "Settings";
+            public static final String SIGN_IN = "Sign In";
+            public static final String SIGN_UP = "Sign Up";
+            public static final String HOME = "Home";
+            public static final String CHAT = "Chat";
+            public static final String CHAT_LIST = "Chat List";
+            public static final String BRANDING_ELEMENT = "Branding Element";
+            public static final String BRANDING_ELEMENTS = "Branding Elements";
+            public static final String NOTIFICATIONS = "Notifications";
+            public static final String TEAM_MANAGEMENT = "Team Management";
+            public static final String TEAMS = "Teams";
+            public static final String QUESTIONNAIRE = "Questionnaire";
+
+        }
 
     }
 
@@ -375,12 +414,30 @@ public final class Constants {
                 public static final int TWITTER     = 1;
                 public static final int INSTAGRAM   = 2;
                 public static final int REDDIT      = 3;
+                public static final int GAB         = 4;
+                public static final int LINKEDIN    = 5;
+                public static final int PINTEREST   = 6;
+                public static final int SNAPCHAT    = 7;
+                public static final int TUMBLR      = 8;
+                public static final int VIBER       = 9;
+                public static final int WECHAT      = 10;
+                public static final int WEIBO       = 11;
+                public static final int YOUTUBE     = 12;
             }
             public static final class IDs {
-                public static final int FACEBOOK = 0x0A1941FD;
-                public static final int TWITTER = 0x0B2860AB;
-                public static final int INSTAGRAM = 0x0C37895A;
-                public static final int REDDIT = 0x0D46057F;
+                public static final int FACEBOOK    = 0x0A1941FD;
+                public static final int TWITTER     = 0x0B2860AB;
+                public static final int INSTAGRAM   = 0x0C37895A;
+                public static final int REDDIT      = 0x0D46057F;
+                public static final int GAB         = 0x0140124C;
+                public static final int LINKEDIN    = 0x05105AAB;
+                public static final int PINTEREST   = 0x013591CA;
+                public static final int SNAPCHAT    = 0x013A5013;
+                public static final int TUMBLR      = 0x20395BCA;
+                public static final int VIBER       = 0x1059129F;
+                public static final int WECHAT      = 0xAB1529CA;
+                public static final int WEIBO       = 0xABC959EF;
+                public static final int YOUTUBE     = 0XBCDEF941;
             }
         }
         public static final class BrandingElementTypes {
@@ -414,15 +471,17 @@ public final class Constants {
             public static final boolean SIGN_IN = true;
             public static final boolean RECOVER_PASSWORD = true;
             public static final boolean CHANGE_PASSWORD = true;
-            public static final boolean INVITE_TEAM_MEMBER = false;
-            public static final boolean UPDATE_TEAM_MEMBER_ROLE = false;
+            public static final boolean INVITE_TEAM_MEMBER = true;
+            public static final boolean UPDATE_TEAM_MEMBER_ROLE = true;
+            public static final boolean DISPLAY_DASHBOARD = true;
             public static final boolean SIGN_OUT = true;
             public static final boolean REQUEST_ADMIN_ROLE = true;
-            public static final boolean SEND_CHAT_MESSAGE = false;
-            public static final boolean UPDATE_TEAM_STATUS = false;
-            public static final boolean DISPLAY_CHATS = false;
-            public static final boolean DISPLAY_NOTIFICATIONS = false;
+            public static final boolean SEND_CHAT_MESSAGE = true;
+            public static final boolean UPDATE_TEAM_STATUS = true;
+            public static final boolean DISPLAY_CHATS = true;
+            public static final boolean DISPLAY_NOTIFICATIONS = true;
             public static final boolean DISPLAY_QUESTIONNAIRE = false;
+            public static final boolean DISPLAY_SETTINGS = true;
         }
     }
 }

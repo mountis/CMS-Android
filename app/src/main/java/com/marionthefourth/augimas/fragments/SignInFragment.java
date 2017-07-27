@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -62,6 +63,7 @@ public final class SignInFragment extends Fragment {
         final ArrayList<TextInputLayout> layouts = getAllTextInputLayoutViews(view);
 
         final User user = new User();
+        final Activity activity = getActivity();
         // Check if user was already logged in
 //        checkIfUserIsLoggedIn(view,user);
 
@@ -69,31 +71,30 @@ public final class SignInFragment extends Fragment {
         setupTextInputsWithFocusAndTextChangedListeners(layouts,inputs);
 
         // Sign In Button (Connect to Firebase & Transition to Home)
-        setupSignInButtonsOnClickListener(layouts,inputs,view,buttons.get(SIGN_IN_BUTTON),user);
+        setupSignInButtonsOnClickListener(activity,layouts,inputs,view,buttons.get(SIGN_IN_BUTTON),user);
 
         // Sign Up Button (Transition to Sign Up)
-        setupSignUpButtonsOnClickListener(view,buttons.get(SIGN_UP_TEXT_BUTTON));
+        setupSignUpButtonsOnClickListener(activity,view,buttons.get(SIGN_UP_TEXT_BUTTON));
 
         // Forgot Password Button (Transition to Forgot Password Section)
-        setupForgotPasswordButtonsOnClickListener(view,buttons.get(FORGOT_PASSWORD_BUTTON));
+        setupForgotPasswordButtonsOnClickListener(activity,view,buttons.get(FORGOT_PASSWORD_BUTTON));
 
         //            initializeAdminSDK();
 
-        checkIfUserIsLoggedIn(view,getCurrentUser());
+        checkIfUserIsLoggedIn(activity,view,getCurrentUser());
 
         return view;
     }
 
-    private void checkIfUserIsLoggedIn(final View view, final User user) {
+    private void checkIfUserIsLoggedIn(final Activity activity, final View view, final User user) {
         // TODO: Set Joint UID for User before signing in
 
         // Attempt to get the current user if null, they aren't logged in
         if (user != null) {
-
             final ProgressDialog loadingProgress = build(view,R.string.progress_signing_in);
             // Display Toast to the User, welcoming them back
             FirebaseHelper.getReference(
-                    view.getContext(),
+                    activity,
                     R.string.firebase_users_directory
             ).child(user.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -107,13 +108,9 @@ public final class SignInFragment extends Fragment {
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     loadingProgress.dismiss();
-
                 }
             });
-
         }
-
-
     }
 
     private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
@@ -148,12 +145,12 @@ public final class SignInFragment extends Fragment {
             });
         }
     }
-    private void setupSignUpButtonsOnClickListener(final View view, final Button button) {
+    private void setupSignUpButtonsOnClickListener(final Activity activity, final View view, final Button button) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent signUpIntent = new Intent(view.getContext(), SignUpActivity.class);
-                getActivity().startActivity(signUpIntent);
+                activity.startActivity(signUpIntent);
             }
         });
     }
@@ -172,7 +169,7 @@ public final class SignInFragment extends Fragment {
 
         return buttons;
     }
-    private void setupSignInButtonsOnClickListener(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final View view, final Button button, final User user) {
+    private void setupSignInButtonsOnClickListener(final Activity activity, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final View view, final Button button, final User user) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,7 +190,7 @@ public final class SignInFragment extends Fragment {
                         display(view,SNACKBAR,R.string.feature_unavailable);
                     }
 
-                    FirebaseHelper.signin(view,user);
+                    FirebaseHelper.signin(activity,view,user);
                 }
             }
         });
@@ -257,11 +254,11 @@ public final class SignInFragment extends Fragment {
         }
         return inputs;
     }
-    private void setupForgotPasswordButtonsOnClickListener(final View view, final Button button) {
+    private void setupForgotPasswordButtonsOnClickListener(final Activity activity, final View view, final Button button) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new RecoverPasswordDialog(view);
+                new RecoverPasswordDialog(activity,view);
             }
         });
     }

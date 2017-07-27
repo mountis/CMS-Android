@@ -317,11 +317,9 @@ public class BrandingElement extends FirebaseContent {
             setTeamUID(brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue().toString());
         }
 
+        initContents(type);
         fillContents(brandingElementSnapshot);
 
-        if (getContents().size() == 0) {
-            initContents(type);
-        }
 
     }
 
@@ -329,11 +327,10 @@ public class BrandingElement extends FirebaseContent {
 
         int currentIndex = 0;
         switch (getType()) {
-
             case DOMAIN_NAME:
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
-                        getContents().add(brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
+                        getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
                     }
                     currentIndex++;
                 }
@@ -341,7 +338,7 @@ public class BrandingElement extends FirebaseContent {
             case SOCIAL_MEDIA_NAME:
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
-                        getContents().add(brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
+                        getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
                     }
                     currentIndex++;
 
@@ -419,7 +416,7 @@ public class BrandingElement extends FirebaseContent {
         if (!getStatus().equals(null)) {
             result.put(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS,getStatus().toMapStyleString());
         }
-        if (!getTeamUID().equals(null)) {
+        if (getTeamUID() != null) {
             result.put(Constants.Strings.UIDs.TEAM_UID,getTeamUID());
         }
         saveContents(result);

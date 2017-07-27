@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -36,11 +37,11 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChatFragment extends Fragment implements MessageListAdapter.OnMessageListFragmentInteractionListener {
 
-    public static ChatFragment newInstance(FirebaseEntity.EntityType type, String channelUID) {
-        Bundle args = new Bundle();
+    public static ChatFragment newInstance(final String channelUID) {
+        final Bundle args = new Bundle();
         args.putString(Constants.Strings.UIDs.CHANNEL_UID,channelUID);
 
-        ChatFragment fragment = new ChatFragment();
+        final ChatFragment fragment = new ChatFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,27 +59,25 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         final TextInputEditText inputField = (TextInputEditText)view.findViewById(R.id.input_message_text);
         final AppCompatImageButton sendButton = (AppCompatImageButton)view.findViewById(R.id.button_send);
 
-        determineToDisplayChatInputSection(view);
+        final Activity activity = getActivity();
+        determineToDisplayChatInputSection(activity,view);
 
         if (PROTOTYPE_MODE) {
             Channel channel = new Channel();
-            loadPrototypeMessages(recyclerView,channel);
+            loadPrototypeMessages(activity,recyclerView,channel);
         } else {
             if (getArguments() != null) {
-
-                setupSendButtonClickListener(sendButton, inputField);
-
-                loadMessages(recyclerView);
+                setupSendButtonClickListener(activity,sendButton, inputField);
+                loadMessages(activity,recyclerView);
             }
         }
-
 
         return view;
     }
 
-    private void determineToDisplayChatInputSection(final View view) {
+    private void determineToDisplayChatInputSection(final Activity activity, final View view) {
         final LinearLayoutCompat chatInputSection = (LinearLayoutCompat)view.findViewById(R.id.chat_input_section);
-        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -99,7 +98,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    private void loadPrototypeMessages(RecyclerView recyclerView, Channel channel) {
+    private void loadPrototypeMessages(final Activity activity, final RecyclerView recyclerView, final Channel channel) {
         ArrayList<Message> messages = new ArrayList<>();
         ArrayList<User> users = new ArrayList<>();
         users.add(new User("zaynewaynes"));
@@ -129,17 +128,16 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
         ArrayList<Team> teams = new ArrayList<>();
         teams.add(new Team("Augimas","51515",adminUsers));
-//        teams.add(new Team(chat.getNickname(),"51591",users));
 
-        recyclerView.setAdapter(new MessageListAdapter(getContext(),channel,messages,adminUsers,users,teams,ChatFragment.this));
+        recyclerView.setAdapter(new MessageListAdapter(activity,channel,messages,adminUsers,users,teams,ChatFragment.this));
 
     }
 
-    private void setupSendButtonClickListener(final AppCompatImageButton sendButton, final TextInputEditText inputField) {
+    private void setupSendButtonClickListener(final Activity activity, final AppCompatImageButton sendButton, final TextInputEditText inputField) {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -154,7 +152,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     );
 
                                     // Save Message to Firebase
-                                    save(getContext(),message);
+                                    save(activity,message);
 
                                     // Clear input text
                                     inputField.setText("");
@@ -176,9 +174,9 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         });
     }
 
-    private void loadMessages(final RecyclerView recyclerView) {
+    private void loadMessages(final Activity activity, final RecyclerView recyclerView) {
         // Load Messages from Firebase
-        FirebaseHelper.getReference(getContext(),R.string.firebase_messages_directory).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_messages_directory).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final ArrayList<Message> messages = new ArrayList<>();
@@ -191,7 +189,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                         }
                     }
 
-                    FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_channels_directory).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addValueEventListener(new ValueEventListener() {
+                    FirebaseHelper.getReference(activity,R.string.firebase_channels_directory).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
@@ -200,10 +198,10 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     // Read Name of Channel
                                     if (currentChannel.getName().equals("")) {
                                         // Get Both Team UIDs
-                                        getBothTeamUIDs(recyclerView,currentChannel,messages);
+                                        getBothTeamUIDs(activity,recyclerView,currentChannel,messages);
                                     } else {
                                         // Only Get Current Team UID
-                                        getOneTeamUID(recyclerView,currentChannel,messages);
+                                        getOneTeamUID(activity,recyclerView,currentChannel,messages);
                                     }
                                 }
                             }
@@ -226,20 +224,20 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    public void getOneTeamUID(final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
-        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+    public void getOneTeamUID(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -256,7 +254,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         final ArrayList<Team> sortedTeams = new ArrayList<>();
                                                         final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
 
-                                                        recyclerView.setAdapter(new MessageListAdapter(getContext(),currentChannel,messages,teamMembers,currentTeam,ChatFragment.this));
+                                                        recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers,currentTeam,ChatFragment.this));
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
@@ -291,8 +289,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    private void getBothTeamUIDs(final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
-        FirebaseHelper.getReference(getContext(),R.string.firebase_chats_directory).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
+    private void getBothTeamUIDs(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+        FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -302,7 +300,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                         teamUsers.add(new ArrayList<User>());
                         teamUsers.add(new ArrayList<User>());
                         final ArrayList<Team> teams = new ArrayList<>();
-                        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -316,7 +314,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
                                     }
 
-                                    FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
+                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -336,15 +334,18 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     if (teams.get(0).getType().equals(FirebaseEntity.EntityType.US)) {
                                                         for (int i = 0; i < teams.size(); i++) {
                                                             sortedTeams.add(teams.get(i));
-                                                            sortedTeamUsers.add(teamUsers.get(i));
+                                                            if (teamUsers.size() > i) {
+                                                                sortedTeamUsers.add(teamUsers.get(i));
+                                                            }
                                                         }
                                                     } else {
                                                         for (int i = teams.size()-1; i > -1; i--) {
                                                             sortedTeams.add(teams.get(i));
-                                                            sortedTeamUsers.add(teamUsers.get(i));
-                                                        }
+                                                            if (teamUsers.size() > i) {
+                                                                sortedTeamUsers.add(teamUsers.get(i));
+                                                            }                                                        }
                                                     }
-                                                    recyclerView.setAdapter(new MessageListAdapter(getContext(),currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1),sortedTeams,ChatFragment.this));
+                                                    recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1),sortedTeams,ChatFragment.this));
                                                     return;
                                                 } else {
                                                     recyclerView.setAdapter(null);
@@ -381,6 +382,12 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     @Override
     public void onMessageListFragmentInteraction(View view, Message messageItem, User userItem) {
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
 
     }
 }

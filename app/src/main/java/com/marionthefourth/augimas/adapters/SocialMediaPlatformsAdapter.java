@@ -1,6 +1,6 @@
 package com.marionthefourth.augimas.adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -32,15 +32,17 @@ import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMediaPlatformsAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity activity;
     private BrandingElement socialMediaElement;
     private ArrayList<String> socialMediaPlatforms = new ArrayList<>();
 
-    public SocialMediaPlatformsAdapter(Context context, BrandingElement socialMediaElement) {
-        this.context = context;
+    public SocialMediaPlatformsAdapter(Activity activity, BrandingElement socialMediaElement) {
+        this.activity = activity;
         this.socialMediaElement = socialMediaElement;
         this.socialMediaPlatforms = socialMediaElement.getContents();
-        socialMediaPlatforms.remove(0);
+        if (socialMediaPlatforms.size() >= 1) {
+            socialMediaPlatforms.remove(0);
+        }
     }
 
 
@@ -57,7 +59,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
             holder.mSocialMediaNameAvailableCheckBox.setChecked(true);
         }
 
-        FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -88,7 +90,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
 
                 final String VALUE = value;
 
-                FirebaseHelper.getReference(context,R.string.firebase_branding_elements_directory).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -96,7 +98,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
 
                             elementItem.getContents().set(position+1,VALUE);
 
-                            update(context,elementItem);
+                            update(activity,elementItem);
                         }
                     }
 

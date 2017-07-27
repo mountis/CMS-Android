@@ -3,7 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#01579b</color>
-    <color name="backgroundMain">#E0DBE1</color>
+    <color name="backgroundMain">#fff</color>
     <color name="senderNotUser">#000</color>
     <color name="yourMessageBubbleBackgroundColor">#2195f2</color>
     <color name="theirMessageBubbleBackgroundColor">#e2e2e2</color>

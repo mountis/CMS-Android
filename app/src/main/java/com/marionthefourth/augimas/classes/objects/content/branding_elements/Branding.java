@@ -149,12 +149,12 @@ public final class Branding {
         }
 
         public static int getNumberOfTLDs() {
-            return 5;
+            return 18;
         }
     }
 
     public enum Service {
-        FACEBOOK,TWITTER,INSTAGRAM,REDDIT,DEFAULT;
+        FACEBOOK,TWITTER,INSTAGRAM,REDDIT,GAB,LINKEDIN,PINTEREST,SNAPCHAT,TUMBLR,VIBER,WECHAT,WEIBO,YOUTUBE,DEFAULT;
 
         @Override
         public String toString() {
@@ -172,6 +172,17 @@ public final class Branding {
                     case TWITTER:       return Constants.Ints.Services.IDs.TWITTER;
                     case INSTAGRAM:     return Constants.Ints.Services.IDs.INSTAGRAM;
                     case REDDIT:        return Constants.Ints.Services.IDs.REDDIT;
+                    case GAB:           return Constants.Ints.Services.IDs.GAB;
+                    case LINKEDIN:      return Constants.Ints.Services.IDs.LINKEDIN;
+                    case PINTEREST:     return Constants.Ints.Services.IDs.PINTEREST;
+                    case SNAPCHAT:      return Constants.Ints.Services.IDs.SNAPCHAT;
+                    case TUMBLR:        return Constants.Ints.Services.IDs.TUMBLR;
+                    case VIBER:         return Constants.Ints.Services.IDs.VIBER;
+                    case WECHAT:        return Constants.Ints.Services.IDs.WECHAT;
+                    case WEIBO:         return Constants.Ints.Services.IDs.WEIBO;
+                    case YOUTUBE:       return Constants.Ints.Services.IDs.YOUTUBE;
+                    case DEFAULT:
+                        break;
                     default:            return DEFAULT_ID;
                 }
             } else {
@@ -180,9 +191,20 @@ public final class Branding {
                     case TWITTER:       return Constants.Ints.Services.Indices.TWITTER;
                     case INSTAGRAM:     return Constants.Ints.Services.Indices.INSTAGRAM;
                     case REDDIT:        return Constants.Ints.Services.Indices.REDDIT;
+                    case GAB:           return Constants.Ints.Services.Indices.GAB;
+                    case LINKEDIN:      return Constants.Ints.Services.Indices.LINKEDIN;
+                    case PINTEREST:     return Constants.Ints.Services.Indices.PINTEREST;
+                    case SNAPCHAT:      return Constants.Ints.Services.Indices.SNAPCHAT;
+                    case TUMBLR:        return Constants.Ints.Services.Indices.TUMBLR;
+                    case VIBER:         return Constants.Ints.Services.Indices.VIBER;
+                    case WECHAT:        return Constants.Ints.Services.Indices.WECHAT;
+                    case WEIBO:         return Constants.Ints.Services.Indices.WEIBO;
+                    case YOUTUBE:       return Constants.Ints.Services.Indices.YOUTUBE;
                     default:            return DEFAULT_ID;
                 }
             }
+
+            return DEFAULT_ID;
         }
 
         public static Service getService(int service) {
@@ -191,6 +213,15 @@ public final class Branding {
                 case Constants.Ints.Services.Indices.TWITTER: return TWITTER;
                 case Constants.Ints.Services.Indices.INSTAGRAM: return INSTAGRAM;
                 case Constants.Ints.Services.Indices.REDDIT: return REDDIT;
+                case Constants.Ints.Services.Indices.GAB: return GAB;
+                case Constants.Ints.Services.Indices.LINKEDIN: return LINKEDIN;
+                case Constants.Ints.Services.Indices.PINTEREST: return PINTEREST;
+                case Constants.Ints.Services.Indices.SNAPCHAT: return SNAPCHAT;
+                case Constants.Ints.Services.Indices.TUMBLR: return TUMBLR;
+                case Constants.Ints.Services.Indices.VIBER: return VIBER;
+                case Constants.Ints.Services.Indices.WECHAT: return WECHAT;
+                case Constants.Ints.Services.Indices.WEIBO: return WEIBO;
+                case Constants.Ints.Services.Indices.YOUTUBE: return YOUTUBE;
                 default: return DEFAULT;
             }
         }
@@ -215,7 +246,7 @@ public final class Branding {
         }
 
         public static int getNumberOfServices() {
-            return 5;
+            return 13;
         }
 
     }

@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -19,20 +20,22 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.sendNotification;
 
 public final class InviteMemberDialog extends AlertDialog.Builder {
-    public InviteMemberDialog(final View containingView) {
+    public InviteMemberDialog(final Activity activity, final View containingView) {
         super(containingView.getContext());
-        setupDialog(containingView);
+        setupDialog(activity, containingView);
     }
 
-    private void setupDialog(final View containingView) {
+    private void setupDialog(final Activity activity, final View containingView) {
         // Setting Dialog Title
         setTitle(getContext().getString(R.string.title_invite_member));
 
@@ -40,24 +43,23 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         final TextInputLayout usernameLayout = new TextInputLayout(getContext());
         final TextInputEditText usernameOrEmailEditText = new TextInputEditText(getContext());
         final AppCompatSpinner memberRoleSpinner = new AppCompatSpinner(containingView.getContext());
-        setupDialogLayout(containingView,usernameLayout,usernameOrEmailEditText,memberRoleSpinner);
+        setupDialogLayout(activity,containingView,usernameLayout,usernameOrEmailEditText,memberRoleSpinner);
 
         // Set Positive "Email Me" Button
-        setupPositiveButton(usernameOrEmailEditText,memberRoleSpinner);
+        setupPositiveButton(activity, usernameOrEmailEditText,memberRoleSpinner);
 
         // Showing Alert Message
         show();
-
     }
 
-    private void setupPositiveButton(final TextInputEditText usernameOrEmailEditText, final AppCompatSpinner memberRoleSpinner) {
+    private void setupPositiveButton(final Activity activity, final TextInputEditText usernameOrEmailEditText, final AppCompatSpinner memberRoleSpinner) {
         setPositiveButton(R.string.invite, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
                 // Check that text field is filled
                 if (!usernameOrEmailEditText.getText().equals("")) {
                     // Check against firebase
-                    FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
@@ -72,8 +74,8 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
 
                                         if (currentUser.getUsername().equals(usernameOrEmailEditText.getText()) || currentUser.getEmail().equals(usernameOrEmailEditText.getText())) {
                                             // Error, you can't invite yourself
-                                            // TODO: Display Error Stating User Cannot Invite Themselves
                                             dialog.dismiss();
+                                            FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.you_cant_invite_yourself);
                                             return;
                                         }
                                     }
@@ -85,29 +87,32 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                     }
                                 }
                                 if (invitedUser == null) {
-                                    // TODO: Display Error Stating User Doesn't Exist
                                     dialog.dismiss();
                                     return;
                                 }
 
                                 final User currentUserItem = currentUser;
                                 final User invitedUserItem = invitedUser;
-                                FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        if (dataSnapshot.hasChildren()) {
-                                            final Team teamItem = new Team(dataSnapshot);
-                                            addUserToTeam(dialog, teamItem, currentUserItem, invitedUserItem, memberRoleSpinner);
-                                        } else {
+
+                                if (currentUserItem != null && invitedUserItem != null) {
+                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.hasChildren()) {
+                                                final Team teamItem = new Team(dataSnapshot);
+                                                addUserToTeam(activity,dialog, teamItem, currentUserItem, invitedUserItem, memberRoleSpinner);
+                                            } else {
+                                                // Error
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
                                             // Error
                                         }
-                                    }
+                                    });
+                                }
 
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-                                        // Error
-                                    }
-                                });
 
                             } else {
 
@@ -126,7 +131,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         });
     }
 
-    private void addUserToTeam(final DialogInterface dialog, final Team teamItem, final User currentUserItem, final User invitedUserItem, final AppCompatSpinner memberRoleSpinner) {
+    private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User currentUserItem, final User invitedUserItem, final AppCompatSpinner memberRoleSpinner) {
 
         FirebaseEntity.EntityRole role = FirebaseEntity.EntityRole.NONE;
         FirebaseEntity.EntityStatus status = FirebaseEntity.EntityStatus.AWAITING;
@@ -141,16 +146,16 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         invitedUserItem.setType(currentUserItem.getType());
 
         teamItem.addUser(invitedUserItem, role, status);
-        FirebaseHelper.update(getContext(),invitedUserItem);
-        FirebaseHelper.update(getContext(),teamItem);
+        FirebaseHelper.update(activity,invitedUserItem);
+        FirebaseHelper.update(activity,teamItem);
         // Alert User that the team has been alerted of your request
-
-        sendNotification(getContext(),invitedUserItem,verb,teamItem);
+        FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.you_added_to_the_team);
+        sendNotification(activity,invitedUserItem,verb,teamItem);
 
         dialog.dismiss();
     }
 
-    private void setupDialogLayout(final View containingView, final TextInputLayout inputLayout, final TextInputEditText usernameEditText, final AppCompatSpinner memberRoleSpinner) {
+    private void setupDialogLayout(final Activity activity, final View containingView, final TextInputLayout inputLayout, final TextInputEditText usernameEditText, final AppCompatSpinner memberRoleSpinner) {
         // Create LinearLayout to add TextInputLayout with Edit Text
         final LinearLayoutCompat layout = new LinearLayoutCompat(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -166,7 +171,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         inputLayout.addView(usernameEditText,0,layoutParams);
         layout.addView(inputLayout);
 
-        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

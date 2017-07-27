@@ -53,12 +53,12 @@
     <!--XML Preferences Strings -->
     <string name="pref_signout">Sign Out</string>
     <string name="pref_manage_team">Manage Team</string>
-    <string name="pref_change_password">Change Password</string>
+    <string name="pref_update_account_info">Update Account Info</string>
 
     <!-- XML Preference Key Strings -->
     <string name="key_signout">signout</string>
     <string name="key_manage_team">manageTeam</string>
-    <string name="key_change_password">changePassword</string>
+    <string name="key_update_account_info">updateAccountInfo</string>
     <string name="key_build_information">buildInformation</string>
 
     <!-- XML Field Strings -->
@@ -319,4 +319,13 @@
     <string name="view_questionnaires_text">VIEW QUESTIONNAIRES</string>
     <string name="sex_text">sex</string>
     <string name="title_activity_questionnaire">QuestionnaireActivity</string>
+    <string name="questionnaire_screen_text">screen</string>
+    <string name="rating_0">Hated It</string>
+    <string name="rating_2">Neutral</string>
+    <string name="rating_4">Loved It</string>
+    <string name="rating_3">It Was Okay</string>
+    <string name="rating_1">Really Didn\'t Like It</string>
+    <string name="left_team">You left the team!</string>
+    <string name="you_cant_invite_yourself">You cannot invite yourself!</string>
+    <string name="you_added_to_the_team">You added a user to the team!</string>
 </resources>

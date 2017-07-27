@@ -1,12 +1,15 @@
 package com.marionthefourth.augimas.helpers;
 
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.classes.constants.Constants;
 
 import java.util.ArrayList;
 
@@ -19,8 +22,7 @@ public final class FragmentHelper {
     public static ProgressDialog display(final View view, final int VIEW_TYPE, final int STRING_ID) {
         switch (VIEW_TYPE) {
             case SNACKBAR:
-                Snackbar.make(view, STRING_ID, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, STRING_ID, Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 break;
             case TOAST:
                 Toast.makeText(view.getContext(), view.getContext().getString(STRING_ID), Toast.LENGTH_SHORT).show();
@@ -49,7 +51,6 @@ public final class FragmentHelper {
                 break;
         }
     }
-
 
     public static ProgressDialog build(View view, int stringID) {
         final ProgressDialog loadingProgress = new ProgressDialog(view.getContext());
@@ -84,5 +85,19 @@ public final class FragmentHelper {
         }
 
         return true;
+    }
+
+    public final static boolean isValidEmail(CharSequence target) {
+        if (TextUtils.isEmpty(target)) {
+            return false;
+        } else {
+            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+        }
+    }
+
+    public final static void handleNonSupportFragmentRemoval(final FragmentManager rManager) {
+        if (rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS) != null) {
+            rManager.beginTransaction().remove(rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS)).commit();
+        }
     }
 }

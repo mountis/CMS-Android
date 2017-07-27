@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
@@ -18,12 +19,12 @@ import java.util.ArrayList;
 public final class BrandingElementsAdapter extends RecyclerView.Adapter<BrandingElementsAdapter.ViewHolder> {
 
     private Team team;
-    private Context context;
+    private Activity activity;
     private ArrayList<BrandingElement> elements;
     private BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener mListener;
 
-    public BrandingElementsAdapter(Context context, ArrayList<BrandingElement> elements, Team team, BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener mListener) {
-        this.context = context;
+    public BrandingElementsAdapter(Activity activity, ArrayList<BrandingElement> elements, Team team, BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener mListener) {
+        this.activity = activity;
         this.elements = elements;
         this.team = team;
         this.mListener = mListener;
@@ -42,7 +43,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
 
         holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader());
 //        holder.mBrandingElementStatus.setBackground(holder.elementItem.getStatus().toDrawable(context));
-        holder.mBrandingElementStatus.setBackgroundDrawable(holder.elementItem.getStatus().toDrawable(context));
+        holder.mBrandingElementStatus.setBackgroundDrawable(holder.elementItem.getStatus().toDrawable(activity));
 
         // Set view click listener
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -52,7 +53,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.OnBrandingElementsFragmentInteractionListener(context,holder.elementItem,team);
+                    mListener.OnBrandingElementsFragmentInteractionListener(activity,holder.elementItem,team);
                 }
             }
         });
@@ -60,7 +61,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         holder.mBrandingElementStatus.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                new ElementStatusDialog(holder.mView,holder);
+                new ElementStatusDialog(activity,holder.mView,holder);
                 return true;
             }
         });

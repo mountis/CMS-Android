@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -24,7 +25,8 @@ import java.util.ArrayList;
 
 public class TeamsFragment extends Fragment {
 
-    private OnTeamsFragmentInteractionListener mListener;
+    private OnTeamsFragmentInteractionListener teamListener;
+    private ChatListFragment.OnChatListFragmentInteractionListener chatListener;
 
     public TeamsFragment() {}
 
@@ -39,10 +41,11 @@ public class TeamsFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
             // Load User Contacts from Firebase
+            final Activity activity = getActivity();
             if (Constants.Bools.PROTOTYPE_MODE) {
                 loadPrototypeTeams(recyclerView);
             } else {
-                loadTeams(view, recyclerView, FirebaseHelper.getCurrentUser());
+                loadTeams(activity, recyclerView, FirebaseHelper.getCurrentUser());
             }
 
         }
@@ -55,13 +58,13 @@ public class TeamsFragment extends Fragment {
         teams.add(new Team("AOL","aol") );
         teams.add(new Team("Walmart","walmart"));
 
-        recyclerView.setAdapter(new TeamsAdapter(getContext(),teams,mListener));
+//        recyclerView.setAdapter(new TeamsAdapter(activity,teams,teamListener));
     }
 
-    private void loadTeams(final View view, final RecyclerView recyclerView, final User user) {
+    private void loadTeams(final Activity activity, final RecyclerView recyclerView, final User user) {
         if (user != null) {
             FirebaseHelper.getReference(
-                    view.getContext(),
+                    activity,
                     R.string.firebase_teams_directory
             ).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -78,7 +81,7 @@ public class TeamsFragment extends Fragment {
                         if (teamItems.size() == 0) {
                             recyclerView.setAdapter(null);
                         } else {
-                            recyclerView.setAdapter(new TeamsAdapter(getContext(),teamItems,mListener));
+                            recyclerView.setAdapter(new TeamsAdapter(activity,teamItems, teamListener,chatListener));
                         }
                     } else {
                         recyclerView.setAdapter(null);
@@ -98,17 +101,25 @@ public class TeamsFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnTeamsFragmentInteractionListener) {
-            mListener = (OnTeamsFragmentInteractionListener) context;
+            teamListener = (OnTeamsFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
+                    + " must implement OnTeamsFragmentInteractionListener");
         }
+
+        if (context instanceof ChatListFragment.OnChatListFragmentInteractionListener) {
+            chatListener = (ChatListFragment.OnChatListFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnChatListFragmentInteractionListener");
+        }
+
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        teamListener = null;
     }
 
     public interface OnTeamsFragmentInteractionListener {

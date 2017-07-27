@@ -3,11 +3,9 @@
     android:layout_height="75dp"
     android:orientation="horizontal"
     android:layout_marginLeft="15dp"
-    android:layout_marginBottom="-20dp"
+    android:layout_marginRight="5dp"
     android:layout_width="match_parent"
     android:id="@+id/notification_view_id"
-
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <android.support.v7.widget.AppCompatButton
@@ -16,6 +14,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:text="a"
+        android:textColor="#fff"
         android:background="@drawable/circle"
         android:clickable="false"
         android:id="@+id/item_team_icon_letter_moniker"/>
@@ -37,7 +36,5 @@
             android:textSize="20sp"
             android:text="@string/notification_text"
             android:textAppearance="?attr/textAppearanceListItem"/>
-
     </android.support.v7.widget.LinearLayoutCompat>
-
 </android.support.v7.widget.LinearLayoutCompat>

@@ -6,8 +6,8 @@
     android:background="#E0DBE1"
     android:fitsSystemWindows="true"
     android:padding="@dimen/default_padding"
-    tools:context="com.marionthefourth.augimas.activities.QuestionnaireHomeActivity"
-    tools:showIn="@layout/activity_questionnaire_home">
+    tools:context="com.marionthefourth.augimas.fragments.QuestionnaireHomeFragment"
+    tools:showIn="@layout/content_questionnaire_home">
 
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
@@ -61,19 +61,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
         
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/or_text"
-            android:text="@string/or_text"
-            android:gravity="center"
+        <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/questionnaire_additional_section"
+            android:visibility="gone"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent">
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/button_view_questionnaires"
-            style="@style/ButtonTheme"
-            android:text="@string/view_questionnaires_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/or_text"
+                android:text="@string/or_text"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/button_view_questionnaires"
+                style="@style/ButtonTheme"
+                android:text="@string/view_questionnaires_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </android.support.v7.widget.LinearLayoutCompat>
+        
+
 
     </android.support.v7.widget.LinearLayoutCompat>
 

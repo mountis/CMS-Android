@@ -78,6 +78,9 @@ public final class Team extends FirebaseEntity {
     public boolean removeUser(User user) {
         if (user.getTeamUID().equals(this.getUID())) {
             user.setTeamUID("");
+            user.setType(EntityType.DEFAULT);
+            user.setRole(EntityRole.NONE);
+            user.setStatus(EntityStatus.DEFAULT);
             return true;
         }
 

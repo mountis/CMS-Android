@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,16 +44,17 @@ public class ChatListFragment extends Fragment {
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
+            final Activity activity = getActivity();
             if (PROTOTYPE_MODE) {
-                loadPrototypeChats(recyclerView);
+                loadPrototypeChats(activity,recyclerView);
             } else {
-                loadChats(view, recyclerView);
+                loadChats(activity, recyclerView);
             }
         }
         return view;
     }
 
-    private void loadPrototypeChats(RecyclerView recyclerView) {
+    private void loadPrototypeChats(final Activity activity,final RecyclerView recyclerView) {
         final ArrayList<Chat> chats = new ArrayList<>();
 
         final ArrayList<Team> teams = new ArrayList<>();
@@ -60,23 +62,23 @@ public class ChatListFragment extends Fragment {
         teams.add(new Team("AOL","aol") );
         teams.add(new Team("Walmart","walmart"));
 
-        recyclerView.setAdapter(new ChatListAdapter(getContext(),chats,teams,mListener));
+        recyclerView.setAdapter(new ChatListAdapter(activity,chats,teams,mListener));
     }
 
-    private void loadChats(final View view, final RecyclerView recyclerView) {
-        FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+    private void loadChats(final Activity activity,final RecyclerView recyclerView) {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_chats_directory).addValueEventListener(new ValueEventListener() {
+                                        FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -95,7 +97,7 @@ public class ChatListFragment extends Fragment {
                                                         recyclerView.setAdapter(null);
                                                     } else {
                                                         // Get User Information for each Contact
-                                                        getCorrespondingTeamsForChats(view, recyclerView, currentTeam, chats);
+                                                        getCorrespondingTeamsForChats(activity, recyclerView, currentTeam, chats);
                                                     }
 
 //                                                    // Create Augimas Chat with Itself
@@ -130,8 +132,8 @@ public class ChatListFragment extends Fragment {
         });
     }
 
-    private void getCorrespondingTeamsForChats(View view, final RecyclerView recyclerView, final Team currentTeam, final ArrayList<Chat> chats) {
-        FirebaseHelper.getReference(getActivity().getApplicationContext(),R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
+    private void getCorrespondingTeamsForChats(final Activity activity, final RecyclerView recyclerView, final Team currentTeam, final ArrayList<Chat> chats) {
+        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -141,13 +143,10 @@ public class ChatListFragment extends Fragment {
                         if (!teamItem.getUID().equals(currentTeam.getUID())) {
                             // check if Team is In Chat
                             addTeamToList(teams,teamItem,chats);
-
                         }
                     }
 
-                    recyclerView.setAdapter(new ChatListAdapter(getContext(),chats,teams,(HomeActivity)getActivity()));
-
-
+                    recyclerView.setAdapter(new ChatListAdapter(activity,chats,teams,(HomeActivity)activity));
                 }
             }
 
@@ -168,7 +167,6 @@ public class ChatListFragment extends Fragment {
             }
         }
     }
-
 
     @Override
     public void onAttach(Context context) {

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0DBE1"
+    android:background="#f9f9f9f9"
     android:fitsSystemWindows="true"
     android:padding="@dimen/default_padding"
     tools:context="com.marionthefourth.augimas.activities.SignInActivity"
@@ -13,6 +13,13 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_gravity="center"
+            android:src="@drawable/logl"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:paddingBottom="15dp"/>
 
         <android.support.design.widget.TextInputLayout
             android:id="@+id/input_layout_username_or_email"
@@ -24,6 +31,8 @@
                 android:focusableInTouchMode="true"
                 android:id="@+id/input_username_or_email"
                 android:inputType="text"
+                android:backgroundTint="#9d371e"
+                android:textColor="#000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/username_or_email_text"/>
@@ -37,11 +46,12 @@
                 android:drawableLeft="@drawable/ic_lock"
                 android:focusableInTouchMode="true"
                 android:id="@+id/input_password"
+                android:backgroundTint="#9d371e"
+                android:textColor="#000"
                 android:inputType="textPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/password_text" />
-
 
         </android.support.design.widget.TextInputLayout>
 

@@ -1,11 +1,11 @@
 <android.support.design.widget.CoordinatorLayout
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:name="com.marionthefourth.m_rucker_apd2_201704.fragments.ChatFragment"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="com.marionthefourth.augimas.fragments.ChatFragment"
     tools:context="com.marionthefourth.augimas.activities.ChatActivity">
 
     <android.support.v7.widget.LinearLayoutCompat
@@ -20,10 +20,7 @@
             android:layout_weight="1"
             android:background="#fff"
             android:fitsSystemWindows="true"
-            android:padding="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_margin="5dp"
             app:layoutManager="LinearLayoutManager"
             tools:listitem="@layout/list_item_message"/>
 

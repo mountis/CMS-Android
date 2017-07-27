@@ -5,8 +5,8 @@
             android:key="@string/key_manage_team"
             android:title="@string/pref_manage_team"/>
         <Preference
-            android:key="@string/key_change_password"
-            android:title="@string/pref_change_password"/>
+            android:key="@string/key_update_account_info"
+            android:title="@string/pref_update_account_info"/>
         <Preference
             android:key="@string/key_signout"
             android:title="@string/pref_signout"/>

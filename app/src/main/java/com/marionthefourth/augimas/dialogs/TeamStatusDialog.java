@@ -1,5 +1,7 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.app.Activity;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
@@ -22,12 +24,17 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Signi
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public final class TeamStatusDialog extends AlertDialog.Builder {
-    public TeamStatusDialog(final View containingView, TeamsAdapter.ViewHolder holder) {
+    public TeamStatusDialog(final Activity activity, final View containingView, TeamsAdapter.ViewHolder holder) {
         super(containingView.getContext());
-        setupDialog(containingView,holder);
+        setupDialog(activity, containingView,holder);
     }
 
-    private void setupDialog(View view, TeamsAdapter.ViewHolder holder) {
+    public TeamStatusDialog(final Activity activity, final View containingView, final Team teamItem) {
+        super(containingView.getContext());
+        setupDialog(activity, containingView,teamItem);
+    }
+
+    private void setupDialog(final Activity activity, View view, TeamsAdapter.ViewHolder holder) {
         // Setting Dialog Title
         setTitle(getContext().getString(R.string.title_team_status_updater));
 
@@ -38,7 +45,7 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setupButtons(buttons,holder);
+            setupButtons(activity, buttons,holder);
         }
 
         setupLayout(view,buttons);
@@ -48,8 +55,28 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
 
     }
 
+    private void setupDialog(final Activity activity, View view, final Team teamItem) {
+        // Setting Dialog Title
+        setTitle(getContext().getString(R.string.title_team_status_updater));
+
+        // Add Button Fields
+        ArrayList<AppCompatButton> buttons = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            buttons.add(new AppCompatButton(getContext()));
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setupButtons(activity, buttons,teamItem);
+        }
+
+        setupLayout(view,buttons);
+
+        // Showing Alert Message
+        show();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void setupButtons(final ArrayList<AppCompatButton> buttons, final TeamsAdapter.ViewHolder holder) {
+    private void setupButtons(final Activity activity, final ArrayList<AppCompatButton> buttons, final TeamsAdapter.ViewHolder holder) {
         for (int i = 0; i < buttons.size();i++) {
             switch (i) {
                 case 0:
@@ -65,23 +92,59 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onClick(View v) {
-                    FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).child(holder.teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(holder.teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final Team teamItem = new Team(dataSnapshot);
                                 teamItem.setStatus(FirebaseEntity.EntityStatus.getVerbStatus(finalI));
-                                update(getContext(),teamItem);
+                                update(activity,teamItem);
                             }
                         }
 
                         @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
+                        public void onCancelled(DatabaseError databaseError) {}
                     });
                 }
             });
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void setupButtons(final Activity activity, final ArrayList<AppCompatButton> buttons, final Team teamItem) {
+        for (int i = 0; i < buttons.size();i++) {
+            switch (i) {
+                case 0:
+                    buttons.get(i).setText(FirebaseEntity.EntityStatus.APPROVED.toVerb());
+                    break;
+                case 1:
+                    buttons.get(i).setText(FirebaseEntity.EntityStatus.BLOCKED.toVerb());
+                    break;
+            }
+
+            final int finalI = i;
+            buttons.get(i).setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public void onClick(View v) {
+                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                final Team teamItem = new Team(dataSnapshot);
+                                teamItem.setStatus(FirebaseEntity.EntityStatus.getVerbStatus(finalI));
+                                update(activity,teamItem);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+                }
+            });
+
+            buttons.get(i).setTextColor(Color.WHITE);
         }
 
     }

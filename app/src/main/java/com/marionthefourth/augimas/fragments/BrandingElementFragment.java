@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -20,7 +21,6 @@ import com.marionthefourth.augimas.adapters.TLDAdapter;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
-import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
@@ -34,12 +34,16 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     public BrandingElementFragment(){}
 
+    public static BrandingElementFragment newInstance(Bundle args) {
+        BrandingElementFragment fragment = new BrandingElementFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_branding_element, container, false);
-
-        //getArguments().getString(Constants.Strings.BRANDING_ELEMENT_HEADER)
 
         if (getArguments() != null ) {
             BrandingElement element = ((BrandingElement)getArguments().getSerializable(Constants.Strings.BRANDING_ELEMENT));
@@ -52,52 +56,54 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
     }
 
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
-        final Team team = new Team();
+        final Activity activity = getActivity();
         switch (elementType) {
             case DOMAIN_NAME:
-                loadDomainNameView(view,team);
+                loadDomainNameView(activity,view);
                 break;
             case SOCIAL_MEDIA_NAME:
-                loadSocialMediaNameView(view,team);
+                loadSocialMediaNameView(activity,view);
                 break;
             case MISSION_STATEMENT:
-                loadMissionStatementView(view,team);
+                loadMissionStatementView(activity,view);
                 break;
             case TARGET_AUDIENCE:
-                loadTargetAudienceView(view,team);
+                loadTargetAudienceView(activity,view);
                 break;
             case STYLE_GUIDE:
-                loadStyleGuideView(view,team);
+                loadStyleGuideView(activity,view);
                 break;
             case LOGO:
-                loadLogoView(view,team);
+                loadLogoView(activity,view);
                 break;
             case PRODUCTS_SERVICES:
-                loadProductsAndServicesView(view,team);
+                loadProductsAndServicesView(activity,view);
+                break;
+            case DEFAULT:
                 break;
             default:
                 break;
         }
     }
 
-    private void loadProductsAndServicesView(final View view, Team team) {
+    private void loadProductsAndServicesView(final Activity activity, final View view) {
     }
 
-    private void loadLogoView(final View view, Team team) {
+    private void loadLogoView(final Activity activity, final View view) {
     }
 
-    private void loadStyleGuideView(final View view, Team team) {
+    private void loadStyleGuideView(final Activity activity, final View view) {
     }
 
-    private void loadTargetAudienceView(final View view, Team team) {
+    private void loadTargetAudienceView(final Activity activity, final View view) {
     }
 
-    private void loadMissionStatementView(final View view, Team team) {
+    private void loadMissionStatementView(final Activity activity, final View view) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_mission_statement_layout);
         layout.setVisibility(View.VISIBLE);
     }
 
-    private void loadSocialMediaNameView(final View view, Team team) {
+    private void loadSocialMediaNameView(final Activity activity, final View view) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_social_media_name_layout);
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
@@ -105,9 +111,9 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (PROTOTYPE_MODE) {
-                loadPrototypeSocialMediaName(recyclerView);
+                loadPrototypeSocialMediaName(activity, recyclerView);
             } else {
-                loadSocialMediaNameData(view, recyclerView);
+                loadSocialMediaNameData(activity, view, recyclerView);
             }
 
             final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_social_media_update_button);
@@ -116,13 +122,13 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FirebaseHelper.getReference(getContext(),R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.getContents().set(0,socialMediaInput.getText().toString());
-                                update(getContext(),elementItem);
+                                update(activity,elementItem);
                                 // TODO - Send Notification to Both Teams
                             }
                         }
@@ -135,7 +141,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -157,16 +163,18 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    private void loadSocialMediaNameData(final View view, final RecyclerView recyclerView) {
+    private void loadSocialMediaNameData(final Activity activity,final View view, final RecyclerView recyclerView) {
         // Load Available Services
-        FirebaseHelper.getReference(getContext(),R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                     final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
-                    socialMediaInput.setText(elementItem.getContents().get(0));
-                    recyclerView.setAdapter(new SocialMediaPlatformsAdapter(getContext(),elementItem));
+                    if (elementItem.getContents().size() >= 1) {
+                        socialMediaInput.setText(elementItem.getContents().get(0));
+                    }
+                    recyclerView.setAdapter(new SocialMediaPlatformsAdapter(activity,elementItem));
                 }
             }
 
@@ -178,7 +186,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     }
 
-    private void loadDomainNameView(final View view, final Team team) {
+    private void loadDomainNameView(final Activity activity, final View view) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_domain_name_layout);
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
@@ -186,24 +194,24 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (PROTOTYPE_MODE) {
-                loadPrototypeDomainName(recyclerView);
+                loadPrototypeDomainName(activity,recyclerView);
             } else {
-                loadDomainNameData(team,view,recyclerView);
+                loadDomainNameData(activity,view,recyclerView);
             }
 
-            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_domain_update_button);
             final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
+            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_domain_update_button);
 
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FirebaseHelper.getReference(getContext(),R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.getContents().set(0,domainNameInput.getText().toString());
-                                update(getContext(),elementItem);
+                                update(activity,elementItem);
                             }
                         }
 
@@ -215,7 +223,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -239,27 +247,29 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     }
 
-    private void loadDomainNameData(final Team team, final View view, final RecyclerView recyclerView) {
+    private void loadDomainNameData(final Activity activity, final View view, final RecyclerView recyclerView) {
         // Load Domain Name
-        FirebaseHelper.getReference(getContext(),R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+
+                    // Add Items that aren't there yet
                     final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
-                    domainNameInput.setText(elementItem.getContents().get(0));
-                    recyclerView.setAdapter(new TLDAdapter(getContext(),elementItem));
+                    if (elementItem.getContents().size() >= 1) {
+                        domainNameInput.setText(elementItem.getContents().get(0));
+                    }
+                    recyclerView.setAdapter(new TLDAdapter(activity,elementItem));
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 
-    private void loadPrototypeSocialMediaName(final RecyclerView recyclerView) {
+    private void loadPrototypeSocialMediaName(final Activity activity, final RecyclerView recyclerView) {
         ArrayList<String> socialMediaPlatforms = new ArrayList<>();
 
         socialMediaPlatforms.add("Facebook");
@@ -275,11 +285,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         socialMediaPlatforms.add("Pinterest");
         socialMediaPlatforms.add("Blogger");
 
-        recyclerView.setAdapter(new SocialMediaPlatformsAdapter(getContext(),new BrandingElement(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)));
+        recyclerView.setAdapter(new SocialMediaPlatformsAdapter(activity,new BrandingElement(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)));
 
     }
 
-    private void loadPrototypeDomainName(final RecyclerView recyclerView) {
+    private void loadPrototypeDomainName(final Activity activity, final RecyclerView recyclerView) {
         ArrayList<String> domainNameExtensions = new ArrayList<>();
 
         domainNameExtensions.add(".com");
@@ -295,6 +305,6 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         domainNameExtensions.add(".xyz");
         domainNameExtensions.add(".ca");
 
-        recyclerView.setAdapter(new TLDAdapter(getContext(),new BrandingElement(BrandingElement.ElementType.DOMAIN_NAME)));
+        recyclerView.setAdapter(new TLDAdapter(activity,new BrandingElement(BrandingElement.ElementType.DOMAIN_NAME)));
     }
 }

@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -34,12 +35,13 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class AdminRequestDialog extends AlertDialog.Builder {
 
-    public AdminRequestDialog(final View containingView) {
+
+    public AdminRequestDialog(final Activity activity, final View containingView) {
         super(containingView.getContext());
-        setupDialog(containingView);
+        setupDialog(activity,containingView);
     }
 
-    private void setupDialog(final View containingView) {
+    private void setupDialog(final Activity activity, final View containingView) {
         // Setting Dialog Title
         setTitle(getContext().getString(R.string.title_admin_request));
 
@@ -54,12 +56,12 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
 
 
         // Setting Positive "Request" Button
-        setupAdminRequestPositiveButton(containingView,inputs);
+        setupAdminRequestPositiveButton(activity,containingView,inputs);
 
         show();
     }
 
-    private void setupAdminRequestPositiveButton(final View containingView, final ArrayList<TextInputEditText> inputs) {
+    private void setupAdminRequestPositiveButton(final Activity activity, final View containingView, final ArrayList<TextInputEditText> inputs) {
         setPositiveButton(R.string.request, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -67,12 +69,12 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
                     // Connect to Firebase
                     if (inputs.get(0).getText().toString().equals(ADMIN_REQUEST_CODE) ||
                             inputs.get(0).getText().toString().equals(Constants.Strings.ADMIN_ACCESS_CODE)) {
-                        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final User currentUser = new User(dataSnapshot);
-                                    FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.hasChildren()) {
@@ -84,16 +86,16 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
                                                         return;
                                                     }
 
-                                                    addUserToAdminTeamBasedOnAdminCode(inputs,currentUser,teamItem);
+                                                    addUserToAdminTeamBasedOnAdminCode(activity,inputs,currentUser,teamItem);
                                                 }
                                             } else {
 
-                                                createAdminTeamAndChat(currentUser);
+                                                createAdminTeamAndChat(activity,currentUser);
 
 
                                             }
 
-                                            update(getContext(),currentUser);
+                                            update(activity,currentUser);
 
                                             display(containingView,TOAST,R.string.welcome_to_augimas);
                                         }
@@ -123,33 +125,33 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
 
     }
 
-    private void addUserToAdminTeamBasedOnAdminCode(ArrayList<TextInputEditText> inputs, User currentUser, Team teamItem) {
+    private void addUserToAdminTeamBasedOnAdminCode(final Activity activity, final ArrayList<TextInputEditText> inputs, final User currentUser, final Team teamItem) {
         if (inputs.get(0).getText().toString().equals(ADMIN_REQUEST_CODE)) {
             // Requesting Addition to Admin Team
             teamItem.addUser(currentUser, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
-            sendNotification(getContext(),currentUser, Notification.NotificationVerbType.REQUEST,teamItem);
+            sendNotification(activity,currentUser, Notification.NotificationVerbType.REQUEST,teamItem);
         } else {
             // Bypass, Adds to Admin Team as Owner
             teamItem.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
-            sendNotification(getContext(),currentUser, Notification.NotificationVerbType.JOIN,teamItem);
+            sendNotification(activity,currentUser, Notification.NotificationVerbType.JOIN,teamItem);
         }
 
-        update(getContext(),teamItem);
+        update(activity,teamItem);
     }
 
-    private void createAdminTeamAndChat(User currentUser) {
+    private void createAdminTeamAndChat(final Activity activity, final User currentUser) {
         // Create Team
         final Team adminTeam = new Team(Constants.Strings.ADMIN_TEAM_NAME,Constants.Strings.ADMIN_TEAM_USERNAME, FirebaseEntity.EntityType.US);
         adminTeam.setType(FirebaseEntity.EntityType.US);
         adminTeam.setStatus(FirebaseEntity.EntityStatus.APPROVED);
         adminTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
 
-        save(getContext(),adminTeam);
+        save(activity,adminTeam);
 
         // Create Chat
         final Chat adminChat = new Chat(adminTeam, FirebaseCommunication.CommunicationType.A);
 
-        save(getContext(),adminChat);
+        save(activity,adminChat);
         currentUser.setTeamUID(adminTeam.getUID());
     }
 

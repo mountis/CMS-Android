@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.app.Activity;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
@@ -28,12 +29,12 @@ import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public final class ElementStatusDialog extends AlertDialog.Builder {
-    public ElementStatusDialog(final View containingView, final BrandingElementsAdapter.ViewHolder holder) {
+    public ElementStatusDialog(final Activity activity, final View containingView, final BrandingElementsAdapter.ViewHolder holder) {
         super(containingView.getContext());
-        setupDialog(containingView, holder);
+        setupDialog(activity,containingView, holder);
     }
 
-    private void setupDialog(View view, BrandingElementsAdapter.ViewHolder holder) {
+    private void setupDialog(final Activity activity, View view, BrandingElementsAdapter.ViewHolder holder) {
         // Setting Dialog Title
         setTitle(getContext().getString(R.string.title_element_status_updater));
 
@@ -44,7 +45,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setupButtons(buttons,holder);
+            setupButtons(activity,buttons,holder);
         }
 
         setupLayout(view,buttons);
@@ -54,7 +55,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void setupButtons(final ArrayList<AppCompatButton> buttons, final BrandingElementsAdapter.ViewHolder holder) {
+    private void setupButtons(final Activity activity, final ArrayList<AppCompatButton> buttons, final BrandingElementsAdapter.ViewHolder holder) {
         final AlertDialog dialog = this.create();
 
         for (int i = 0; i < buttons.size();i++) {
@@ -65,8 +66,6 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                 buttons.get(i).setVisibility(View.GONE);
             }
 
-
-
             buttons.get(i).setOnClickListener(new View.OnClickListener() {
                 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
@@ -74,17 +73,17 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                     holder.mBrandingElementStatus.setBackgroundDrawable(BrandingElement.ElementStatus.getStatus(finalI).toDrawable(getContext()));
 
                     if (!PROTOTYPE_MODE) {
-                        FirebaseHelper.getReference(getContext(),R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                     if (elementItem != null) {
                                         elementItem.setStatus(BrandingElement.ElementStatus.getStatus(finalI));
-                                        update(getContext(),elementItem);
+                                        update(activity,elementItem);
 
                                         // TODO - Send Notifcation Alerting Teams of Update
-                                        sendNotifications(holder.elementItem);
+                                        sendNotifications(activity,holder.elementItem);
                                         dialog.dismiss();
                                     }
                                 }
@@ -103,8 +102,8 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
 
     }
 
-    private void sendNotifications(final BrandingElement elementItem) {
-        FirebaseHelper.getReference(getContext(),R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void sendNotifications(final Activity activity, final BrandingElement elementItem) {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -144,7 +143,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                         teamUpdatedStatusNotification.setObjectType(Notification.NotificationObjectType.BRANDING_ELEMENT);
 
                         // Send modifying notification to both Teams
-                        FirebaseHelper.getReference(getContext(),R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -168,8 +167,8 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
 
                                     }
 
-                                    save(getContext(),teamUpdatedStatusNotification);
-                                    save(getContext(),userUpdatedStatusNotification);
+                                    save(activity,teamUpdatedStatusNotification);
+                                    save(activity,userUpdatedStatusNotification);
 
                                 }
                             }

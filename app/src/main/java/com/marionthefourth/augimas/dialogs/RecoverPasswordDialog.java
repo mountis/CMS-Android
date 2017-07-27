@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -27,12 +28,12 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class RecoverPasswordDialog extends AlertDialog.Builder {
 
-    public RecoverPasswordDialog(final View containingView) {
+    public RecoverPasswordDialog(final Activity activity, final View containingView) {
         super(containingView.getContext());
-        setupDialog(containingView);
+        setupDialog(activity, containingView);
     }
 
-    private void setupDialog(final View containingView) {
+    private void setupDialog(final Activity activity, final View containingView) {
         // Setting Dialog Title
         setTitle(getContext().getString(R.string.title_recover_password));
 
@@ -45,7 +46,7 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
         setIcon(R.drawable.ic_lock_open);
 
         // Set Positive "Email Me" Button
-        setupPositiveButton(containingView, usernameOrEmail);
+        setupPositiveButton(activity, containingView, usernameOrEmail);
 
         // Showing Alert Message
         show();
@@ -69,7 +70,7 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
         setView(layout);
     }
 
-    private void setupPositiveButton(final View containingView, final TextInputEditText usernameOrEmail) {
+    private void setupPositiveButton(final Activity activity, final View containingView, final TextInputEditText usernameOrEmail) {
         setPositiveButton(getContext().getString(R.string.dialog_email_me_text),
                 new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, int which) {
@@ -77,7 +78,7 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
                             // Ensure Field was filled
                             if (!usernameOrEmail.getText().toString().equals("")) {
                                 // Search For Username Or Email
-                                searchForUser(containingView, usernameOrEmail);
+                                searchForUser(activity, containingView, usernameOrEmail);
                             } else {
                                 // Show Message, User Needs to Fill Field
                                 display(containingView,SNACKBAR,R.string.enter_username_or_email_text);
@@ -90,9 +91,9 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
                 });
     }
 
-    private void searchForUser(final View containingView, final TextInputEditText usernameOrEmail) {
+    private void searchForUser(final Activity activity, final View containingView, final TextInputEditText usernameOrEmail) {
         FirebaseHelper.getReference(
-                getContext(),
+                activity,
                 R.string.firebase_users_directory
         ).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

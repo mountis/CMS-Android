@@ -9,6 +9,7 @@
     android:layout_height="match_parent"
     app:layoutManager="LinearLayoutManager"
     android:fitsSystemWindows="true"
-    android:padding="@dimen/default_padding"
-    tools:context="com.marionthefourth.augimas.fragments.TeamsFragment"
-    tools:listitem="@layout/list_item_team" />
+    android:paddingBottom="@dimen/default_padding"
+    tools:context="com.marionthefourth.augimas.activities.HomeActivity"
+    tools:listitem="@layout/list_item_team"
+    android:layout_marginBottom="20dp"/>

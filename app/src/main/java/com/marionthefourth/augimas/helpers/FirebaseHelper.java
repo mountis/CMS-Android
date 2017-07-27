@@ -1,14 +1,19 @@
 package com.marionthefourth.augimas.helpers;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,9 +45,9 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class FirebaseHelper {
 
-    public static void signin(final View view, final User user) {
+    public static void signin(final Activity activity, final View view, final User user) {
         final Context context = view.getContext();
-        final DatabaseReference usersRef = getReference(context, R.string.firebase_users_directory);
+        final DatabaseReference usersRef = getReference(activity, R.string.firebase_users_directory);
         final ProgressDialog loadingProgress = build(view, R.string.progress_signing_in);
         // To dismiss the dialog
 
@@ -80,18 +85,19 @@ public final class FirebaseHelper {
                                                         // signed in user can be handled in the listener.
                                                         if (!task.isSuccessful()) {
                                                             Log.w(TAG, "signInWithEmail", task.getException());
-                                                            loadingProgress.dismiss();
                                                             display(view, SNACKBAR, R.string.error_incorrect_signin_detail_1);
                                                         } else {
                                                             user.setEmail(newUser.getEmail());
                                                             user.setUID(newUser.getUID());
-                                                            loadingProgress.dismiss();
 
                                                             display(view, TOAST, R.string.success_signin);
 
                                                             final Intent homeIntent = new Intent(context, HomeActivity.class);
                                                             context.startActivity(homeIntent);
                                                         }
+
+                                                        loadingProgress.dismiss();
+
                                                     }
                                                 });
                                     }
@@ -114,49 +120,108 @@ public final class FirebaseHelper {
         }
 
     }
-    public static DatabaseReference getReference(final Context context, final int reference) {
-        final String CURRENT_REFERENCE = context.getResources().getString(reference);
+
+    public static void updateEmail(final Activity activity, final String email) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (FragmentHelper.isValidEmail(email)) {
+            user.updateEmail(email)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                // Pull User Info to update their email info
+                                getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            final User currentUser = new User(dataSnapshot);
+
+                                            currentUser.setEmail(email);
+                                            update(activity,currentUser);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                                Log.d(TAG, "User email address updated.");
+                            }
+                        }
+                    });
+        }
+
+    }
+    public static void updateUsername(final Activity activity, final String username) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (username != null && !username.equals("")) {
+            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User currentUser = new User(dataSnapshot);
+
+                        currentUser.setUsername(username);
+                        FirebaseHelper.update(activity,currentUser);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+
+    }
+
+    public static DatabaseReference getReference(final Activity activity, final int reference) {
+        final String CURRENT_REFERENCE = activity.getResources().getString(reference);
         switch (reference) {
             case R.string.firebase_url_directory:
                 return FirebaseDatabase.getInstance().getReference();
             case R.string.firebase_users_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_branding_element_contents_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_chats_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_branding_elements_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_teams_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_messages_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_notifications_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             case R.string.firebase_channels_directory:
                 return getReference(
-                        context,
+                        activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
             default:
@@ -191,54 +256,54 @@ public final class FirebaseHelper {
         return null;
     }
 
-    public static void send(final Context context, final Notification notification) {
-        save(context,notification);
+    public static void send(final Activity activity, final Notification notification) {
+        save(activity,notification);
     }
 
-    public static void sendNotification(final Context context, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
+    public static void sendNotification(final Activity activity, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
         final Notification notification = new Notification(subject,object,verbType);
 
 
 
-        save(context,notification);
+        save(activity,notification);
 
     }
 
-    public static void save(final Context context, final FirebaseObject firebaseObject) {
+    public static void save(final Activity activity, final FirebaseObject firebaseObject) {
         String key;
         DatabaseReference myRef;
         DatabaseReference itemRef;
 
         if (firebaseObject instanceof User) {
-            myRef = getReference(context,R.string.firebase_users_directory);
+            myRef = getReference(activity,R.string.firebase_users_directory);
             itemRef = myRef.push();
             final User userItem = (User)firebaseObject;
             key = itemRef.getKey();
             userItem.setUID(key);
             itemRef.setValue(userItem.toMap());
         } else if (firebaseObject instanceof Chat) {
-            myRef = getReference(context,R.string.firebase_chats_directory);
+            myRef = getReference(activity,R.string.firebase_chats_directory);
             itemRef = myRef.push();
             final Chat chatItem = (Chat)firebaseObject;
             key = itemRef.getKey();
             chatItem.setUID(key);
             itemRef.setValue(chatItem.toMap());
         } else if (firebaseObject instanceof BrandingElement) {
-            myRef = getReference(context,R.string.firebase_branding_elements_directory);
+            myRef = getReference(activity,R.string.firebase_branding_elements_directory);
             itemRef = myRef.push();
             final BrandingElement brandingElementItem = (BrandingElement)firebaseObject;
             key = itemRef.getKey();
             brandingElementItem.setUID(key);
             itemRef.setValue(brandingElementItem.toMap());
         } else if (firebaseObject instanceof Team) {
-            myRef = getReference(context,R.string.firebase_teams_directory);
+            myRef = getReference(activity,R.string.firebase_teams_directory);
             itemRef = myRef.push();
             final Team teamItem = (Team)firebaseObject;
             key = itemRef.getKey();
             teamItem.setUID(key);
             itemRef.setValue(teamItem.toMap());
         } else if (firebaseObject instanceof Message) {
-            myRef = getReference(context,R.string.firebase_messages_directory);
+            myRef = getReference(activity,R.string.firebase_messages_directory);
             itemRef = myRef.push();
             final Message messageItem = (Message)firebaseObject;
             key = itemRef.getKey();
@@ -247,14 +312,14 @@ public final class FirebaseHelper {
             itemRef.setValue(messageItem.toMap());
             return;
         } else if (firebaseObject instanceof Notification) {
-            myRef = getReference(context,R.string.firebase_notifications_directory);
+            myRef = getReference(activity,R.string.firebase_notifications_directory);
             itemRef = myRef.push();
             final Notification notificationItem = (Notification)firebaseObject;
             key = itemRef.getKey();
             notificationItem.setUID(key);
             itemRef.setValue(notificationItem.toMap());
         } else if (firebaseObject instanceof Channel) {
-            myRef = getReference(context,R.string.firebase_channels_directory);
+            myRef = getReference(activity,R.string.firebase_channels_directory);
             itemRef = myRef.push();
             final Channel channelItem = (Channel)firebaseObject;
             key = itemRef.getKey();
@@ -264,32 +329,32 @@ public final class FirebaseHelper {
 
         Log.i("","Saved item");
     }
-    public static void update(Context context, FirebaseObject firebaseObject){
+    public static void update(final Activity activity, FirebaseObject firebaseObject){
         DatabaseReference myRef = null;
         DatabaseReference itemRef;
         if (firebaseObject instanceof User) {
-            myRef = getReference(context,R.string.firebase_users_directory);
+            myRef = getReference(activity,R.string.firebase_users_directory);
         } else if (firebaseObject instanceof Team) {
-            myRef = getReference(context,R.string.firebase_teams_directory);
+            myRef = getReference(activity,R.string.firebase_teams_directory);
         } else if (firebaseObject instanceof BrandingElement) {
-            myRef = getReference(context,R.string.firebase_branding_element_contents_directory);
+            myRef = getReference(activity,R.string.firebase_branding_element_contents_directory);
         } else if (firebaseObject instanceof Chat) {
-            myRef = getReference(context,R.string.firebase_chats_directory);
+            myRef = getReference(activity,R.string.firebase_chats_directory);
         } else if (firebaseObject instanceof Message) {
-            myRef = getReference(context,R.string.firebase_messages_directory);
+            myRef = getReference(activity,R.string.firebase_messages_directory);
         } else if (firebaseObject instanceof Notification) {
-            myRef = getReference(context,R.string.firebase_notifications_directory);
+            myRef = getReference(activity,R.string.firebase_notifications_directory);
         } else if (firebaseObject instanceof Channel) {
-            myRef = getReference(context,R.string.firebase_channels_directory);
+            myRef = getReference(activity,R.string.firebase_channels_directory);
         }
 
         if (myRef != null) {
             itemRef = myRef.child(firebaseObject.getUID());
-            itemRef.setValue((firebaseObject).toMap());
+            itemRef.setValue(firebaseObject.toMap());
         }
     }
 
-    public static void delete(final Context context, FirebaseObject firebaseObject) {
+    public static void delete(final Activity activity, FirebaseObject firebaseObject) {
 
         int directory = R.string.firebase_database_url;
 
@@ -305,10 +370,12 @@ public final class FirebaseHelper {
             directory = R.string.firebase_teams_directory;
         } else if (firebaseObject instanceof Notification){
             directory = R.string.firebase_notifications_directory;
+        } else if (firebaseObject instanceof Channel) {
+            directory = R.string.firebase_channels_directory;
         }
 
         getReference(
-                context,
+                activity,
                 directory
         ).child(firebaseObject.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

@@ -1,6 +1,6 @@
 package com.marionthefourth.augimas.adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -28,15 +28,17 @@ import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity activity;
     private BrandingElement domainName;
     private ArrayList<String> domainNameExtensions = new ArrayList<>();
 
-    public TLDAdapter(final Context context, BrandingElement domainName) {
-        this.context = context;
+    public TLDAdapter(final Activity activity, BrandingElement domainName) {
+        this.activity = activity;
         this.domainName = domainName;
         this.domainNameExtensions = domainName.getContents();
-        this.domainNameExtensions.remove(0);
+        if (domainNameExtensions.size() >= 1) {
+            this.domainNameExtensions.remove(0);
+        }
     }
 
     @Override
@@ -52,7 +54,7 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
             holder.mDomainNameAvailableCheckBox.setChecked(true);
         }
 
-        FirebaseHelper.getReference(context,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -64,9 +66,7 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
 
         holder.mDomainNameLabel.setText(Branding.TLD.getTLD(position).toString());
@@ -80,14 +80,13 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
                 }
 
                 final String VALUE = value;
-                FirebaseHelper.getReference(context,R.string.firebase_branding_elements_directory).child(domainName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(domainName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                             elementItem.getContents().set(position+1,VALUE);
-
-                            update(context,elementItem);
+                            update(activity,elementItem);
                         }
                     }
 

@@ -13,6 +13,7 @@
         android:theme="@style/AppTheme">
 
         <include layout="@layout/content_sign_up"/>
+
     </android.support.design.widget.AppBarLayout>
 
 </android.support.design.widget.CoordinatorLayout>

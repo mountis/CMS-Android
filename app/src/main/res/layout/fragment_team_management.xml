@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/default_padding"
-    tools:context="com.marionthefourth.augimas.activities.TeamManagementActivity"
-    tools:showIn="@layout/activity_team_management">
+    tools:context="com.marionthefourth.augimas.fragments.TeamManagementFragment"
+    tools:showIn="@layout/content_team_management">
 
     <android.support.v7.widget.LinearLayoutCompat
         android:gravity="center"
@@ -100,6 +100,7 @@
         <android.support.v7.widget.AppCompatButton
             style="@style/ButtonTheme"
             android:text="@string/leave_button_text"
+            android:layout_marginBottom="40dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/button_leave_team"/>
