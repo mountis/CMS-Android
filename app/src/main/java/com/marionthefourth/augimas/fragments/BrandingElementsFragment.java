@@ -2,13 +2,16 @@ package com.marionthefourth.augimas.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -58,7 +61,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             Team team = new Team("Google","google");
             loadPrototypeBrandingElements(activity,recyclerView,team);
         } else {
-            // Setup Action Bar Name
             if (getArguments() != null) {
                 FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -66,18 +68,17 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
                             if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
-//                                setupActionBar(activity,getSupportActionBar());
+                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                             }
+
                         }
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
 
-                // Load Branding Elements
+                // Load Branding Elements && Setup Action Bar Name
                 FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -152,6 +153,19 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             }
         }
 
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                final Activity activity = getActivity();
+                final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                activity.startActivity(homeIntent);
+//                NavUtils.navigateUpFromSameTask(getActivity());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void loadPrototypeBrandingElements(final Activity activity, RecyclerView recyclerView, Team team) {

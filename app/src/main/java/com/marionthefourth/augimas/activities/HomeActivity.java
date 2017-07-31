@@ -25,7 +25,6 @@ import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
 import com.marionthefourth.augimas.fragments.ChatListFragment;
 import com.marionthefourth.augimas.fragments.NotificationsFragment;
-import com.marionthefourth.augimas.fragments.SettingsFragment;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
@@ -49,6 +48,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
         @Override
         public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
+
             determineHomeState(item);
             return true;
         }
@@ -79,24 +79,28 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             if (selectedFragment != DASHBOARD) {
                                 handleDashboardNavigation(currentUser,manager);
                                 selectedFragment = DASHBOARD;
+                                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                             }
                             break;
                         case R.id.navigation_chat:
                             if (selectedFragment != CHAT) {
                                 handleChatNavigation(currentUser,manager);
                                 selectedFragment = CHAT;
+                                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                             }
                             break;
                         case R.id.navigation_notifications:
                             if (selectedFragment != NOTIFICATION) {
                                 handleNotificationNavigation(manager);
                                 selectedFragment = NOTIFICATION;
+                                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                             }
                             break;
                         case R.id.navigation_settings:
                             if (selectedFragment != SETTINGS) {
                                 handleSettingsNavigation(rManager);
                                 selectedFragment = SETTINGS;
+                                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                             }
                             break;
                     }
@@ -223,7 +227,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     }
     private void handleSettingsNavigation(final android.app.FragmentManager rManager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_SETTINGS) {
-            rManager.beginTransaction().setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new SettingsFragment(), Constants.Strings.Fragments.SETTINGS).commit();
         } else {
             display(findViewById(R.id.content),TOAST,R.string.feature_unavailable);
         }

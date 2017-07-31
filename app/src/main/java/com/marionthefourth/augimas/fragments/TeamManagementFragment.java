@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -58,6 +61,21 @@ public class TeamManagementFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             final Activity activity = getActivity();
+
+            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User userItem = new User(dataSnapshot);
+                        if (userItem != null) {
+                            ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
 
             if (PROTOTYPE_MODE) {
                 loadPrototypeTeamMembers(activity,view, recyclerView);
@@ -341,6 +359,16 @@ public class TeamManagementFragment extends Fragment {
 
         recyclerView.setAdapter(new TeamMembersAdapter(activity,google,members, new User()));
 
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(getActivity());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 }

@@ -4,11 +4,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,8 +27,6 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
-
-import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
@@ -57,6 +59,22 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
         final Activity activity = getActivity();
+
+        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User userItem = new User(dataSnapshot);
+                    if (userItem != null) {
+                        ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+
         switch (elementType) {
             case DOMAIN_NAME:
                 loadDomainNameView(activity,view);
@@ -150,15 +168,12 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                             updateButton.setEnabled(false);
                             updateButton.setVisibility(View.GONE);
                             socialMediaInput.setEnabled(false);
-
                         }
                     }
                 }
 
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
+                public void onCancelled(DatabaseError databaseError) {}
             });
         }
     }
@@ -270,41 +285,26 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
     }
 
     private void loadPrototypeSocialMediaName(final Activity activity, final RecyclerView recyclerView) {
-        ArrayList<String> socialMediaPlatforms = new ArrayList<>();
-
-        socialMediaPlatforms.add("Facebook");
-        socialMediaPlatforms.add("Snapchat");
-        socialMediaPlatforms.add("Instagram");
-        socialMediaPlatforms.add("Twitter");
-        socialMediaPlatforms.add("Reddit");
-        socialMediaPlatforms.add("Blogger");
-        socialMediaPlatforms.add("GooglePlus");
-        socialMediaPlatforms.add("Twitch");
-        socialMediaPlatforms.add("Ebay");
-        socialMediaPlatforms.add("Wordpress");
-        socialMediaPlatforms.add("Pinterest");
-        socialMediaPlatforms.add("Blogger");
-
         recyclerView.setAdapter(new SocialMediaPlatformsAdapter(activity,new BrandingElement(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)));
-
     }
 
     private void loadPrototypeDomainName(final Activity activity, final RecyclerView recyclerView) {
-        ArrayList<String> domainNameExtensions = new ArrayList<>();
-
-        domainNameExtensions.add(".com");
-        domainNameExtensions.add(".net");
-        domainNameExtensions.add(".org");
-        domainNameExtensions.add(".co");
-        domainNameExtensions.add(".biz");
-        domainNameExtensions.add(".io");
-        domainNameExtensions.add(".ly");
-        domainNameExtensions.add(".us");
-        domainNameExtensions.add(".me");
-        domainNameExtensions.add(".info");
-        domainNameExtensions.add(".xyz");
-        domainNameExtensions.add(".ca");
-
         recyclerView.setAdapter(new TLDAdapter(activity,new BrandingElement(BrandingElement.ElementType.DOMAIN_NAME)));
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch(item.getItemId()) {
+//            case android.R.id.home:
+//
+////                NavUtils.navigateUpFromSameTask(getActivity());
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+        final FragmentManager manager = activity.getSupportFragmentManager();
+
+        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance("")).commit();
+        return true;
     }
 }
