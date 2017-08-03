@@ -52,7 +52,7 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class SignUpFragment extends Fragment {
 
-    public SignUpFragment() { /* Required empty public constructor */ }
+    public SignUpFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,10 +63,8 @@ public final class SignUpFragment extends Fragment {
     private View setupView(final View view) {
         // All all Buttons to an ArrayList
         final ArrayList<Button> buttons = getAllButtonViews(view);
-
         // Add all Inputs to an ArrayList
         final ArrayList<TextInputEditText> inputs = getAllEditTextViews(view);
-
         // Add all Layouts to an ArrayList
         final ArrayList<TextInputLayout> layouts = getAllTextInputLayoutViews(view);
 
@@ -74,13 +72,10 @@ public final class SignUpFragment extends Fragment {
 
         // Read Data from Intent and fill Appropriate Fields
         populateTextInputsWithDataFromIntent(activity,inputs);
-
         // Set OnFocusChangeListener to all Inputs & Add TextChangedListener to all Inputs
         setupTextInputsWithFocusAndTextChangedListeners(layouts,inputs);
-
         // Sign In Button (Connect to Firebase & Transition to Home)
         setupSignUpButtonsOnClickListener(activity,layouts,inputs,view,buttons.get(SIGN_UP_BUTTON));
-
         // Sign Up Button (Transition to Sign In)
         setupSignInButtonsOnClickListener(activity,buttons.get(SIGN_IN_TEXT_BUTTON));
 

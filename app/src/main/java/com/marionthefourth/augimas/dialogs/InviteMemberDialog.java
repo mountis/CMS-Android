@@ -72,7 +72,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                     if (getCurrentUser().getUID().equals(userItem.getUID())) {
                                         currentUser = userItem;
 
-                                        if (currentUser.getUsername().equals(usernameOrEmailEditText.getText()) || currentUser.getEmail().equals(usernameOrEmailEditText.getText())) {
+                                        if (currentUser.getUsername().equals(usernameOrEmailEditText.getText().toString()) || currentUser.getEmail().equals(usernameOrEmailEditText.getText().toString())) {
                                             // Error, you can't invite yourself
                                             dialog.dismiss();
                                             FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.you_cant_invite_yourself);
@@ -81,13 +81,28 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                     }
 
                                     // If Team Matches Input, Add User to Member's List
-                                    if (userItem.getUsername().equals(usernameOrEmailEditText.getText()) || userItem.getEmail().equals(usernameOrEmailEditText.getText())) {
+                                    if (userItem.getUsername().equals(usernameOrEmailEditText.getText().toString()) || userItem.getEmail().equals(usernameOrEmailEditText.getText().toString())) {
                                         // Add User to Team
-                                        invitedUser = userItem;
+                                        if (!userItem.getTeamUID().equals("")) {
+                                            dialog.dismiss();
+                                            FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.this_user_is_already_in_a_team);
+                                            return;
+                                        } else {
+                                            invitedUser = userItem;
+                                        }
+
                                     }
+
+                                    if (invitedUser != null && currentUser != null) {
+                                        break;
+                                    }
+
                                 }
+
+                                // No User Found
                                 if (invitedUser == null) {
                                     dialog.dismiss();
+                                    FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.no_user_found);
                                     return;
                                 }
 

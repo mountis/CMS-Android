@@ -67,7 +67,6 @@ public final class FragmentHelper {
                 return false;
             }
         }
-
         return true;
     }
 

@@ -1,10 +1,10 @@
 package com.marionthefourth.augimas.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -19,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.TeamMembersAdapter;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
@@ -55,6 +56,8 @@ public class TeamManagementFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_team_management, container, false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.team_member_recycler_view);
         // Set the adapter
         if (recyclerView != null) {
@@ -364,7 +367,7 @@ public class TeamManagementFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(getActivity());
+                startActivity(new Intent(getActivity(), HomeActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

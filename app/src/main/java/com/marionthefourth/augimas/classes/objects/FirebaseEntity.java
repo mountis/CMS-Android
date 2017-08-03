@@ -249,16 +249,21 @@ public abstract class FirebaseEntity extends FirebaseObject {
     public final boolean hasInclusiveAccess(EntityRole accessRole) {
         int accessLevel = 0;
         int userAccessLevel = 0;
-        for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
-            if (accessRole.equals(EntityRole.getRole(i))) {
-                accessLevel = i;
-            }
-            if (getRole().equals(EntityRole.getRole(i))) {
-                userAccessLevel = i;
-            }
-        }
 
-        return userAccessLevel <= accessLevel;
+        if (getRole() != null) {
+            for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
+                if (accessRole.equals(EntityRole.getRole(i))) {
+                    accessLevel = i;
+                }
+                if (getRole().equals(EntityRole.getRole(i))) {
+                    userAccessLevel = i;
+                }
+            }
+
+            return userAccessLevel <= accessLevel;
+        } else {
+            return false;
+        }
     }
 
     public final boolean hasExclusiveAccess(EntityRole accessRole) {
