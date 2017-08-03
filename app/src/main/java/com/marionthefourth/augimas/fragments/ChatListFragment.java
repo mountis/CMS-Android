@@ -85,10 +85,8 @@ public class ChatListFragment extends Fragment {
                                                     final ArrayList<Chat> chats = new ArrayList<>();
                                                     for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
                                                         final Chat chatItem = new Chat(chatReference);
-                                                        for (int i = 0; i < chatItem.getTeamUIDs().size(); i++) {
-                                                            if (chatItem.getTeamUIDs().get(i).equals(currentTeam.getUID())) {
-                                                                chats.add(chatItem);
-                                                            }
+                                                        if (chatItem.hasTeam(currentTeam.getUID())) {
+                                                            chats.add(chatItem);
                                                         }
 
                                                     }
@@ -99,11 +97,6 @@ public class ChatListFragment extends Fragment {
                                                         // Get User Information for each Contact
                                                         getCorrespondingTeamsForChats(activity, recyclerView, currentTeam, chats);
                                                     }
-
-//                                                    // Create Augimas Chat with Itself
-//                                                    Chat adminChat = new Chat();
-//
-//                                                    recyclerView.setAdapter(null);
                                                 }
                                             }
 
@@ -117,18 +110,14 @@ public class ChatListFragment extends Fragment {
                             }
 
                             @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
+                            public void onCancelled(DatabaseError databaseError) {}
                         });
                     }
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 
@@ -151,19 +140,15 @@ public class ChatListFragment extends Fragment {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 
     private void addTeamToList(ArrayList<Team> teams, Team teamItem, ArrayList<Chat> chats) {
         for (int i = 0; i < chats.size(); i++) {
-            for (int j = 0; j < chats.get(i).getTeamUIDs().size(); j++) {
-                if (chats.get(i).getTeamUIDs().get(j).equals(teamItem.getUID())) {
-                    teams.add(teamItem);
-                    return;
-                }
+            if (chats.get(i).hasTeam(teamItem.getUID())) {
+                teams.add(teamItem);
+                return;
             }
         }
     }

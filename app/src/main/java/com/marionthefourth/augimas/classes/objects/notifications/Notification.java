@@ -412,7 +412,7 @@ public final class Notification extends FirebaseContent {
 
         switch (verbType) {
             case ADD:
-                break;
+                verbPart = "added";
             case APPROVE:
                 verbPart = "approved";
                 break;
@@ -435,7 +435,7 @@ public final class Notification extends FirebaseContent {
                 verbPart = verbType.toString();
                 break;
             case RECEIVE:
-                break;
+                verbPart = "received";
             case REQUEST:
                 verbPart = "is requesting";
                 break;
@@ -449,7 +449,7 @@ public final class Notification extends FirebaseContent {
                 verbPart = "updated";
                 break;
             case DEFAULT:
-                break;
+                return "";
         }
 
         switch (objectType) {
@@ -466,6 +466,7 @@ public final class Notification extends FirebaseContent {
             case DEFAULT:
                 break;
         }
+
         return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
     }
 

@@ -105,6 +105,9 @@ public final class ChatActivity extends AppCompatActivity {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
+                                        if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
+
+                                        }
                                         tabLayout.getTabAt(FirebaseEntity.EntityType.US.toInt(false)).setText(currentTeam.getName());
 
                                         // get other Team

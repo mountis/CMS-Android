@@ -479,7 +479,7 @@ public final class Constants {
             public static final boolean SEND_CHAT_MESSAGE = true;
             public static final boolean UPDATE_TEAM_STATUS = true;
             public static final boolean DISPLAY_CHATS = true;
-            public static final boolean DISPLAY_NOTIFICATIONS = true;
+            public static final boolean DISPLAY_NOTIFICATIONS = false;
             public static final boolean DISPLAY_QUESTIONNAIRE = false;
             public static final boolean DISPLAY_SETTINGS = true;
         }

@@ -1,7 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
@@ -85,7 +84,7 @@ public final class TeamAccessDialog extends Builder {
                             break;
                         case 2:
                             // Setup Chat Button
-                            transitionUserToChatFragment(activity,getContext(),teamItem);
+                            transitionUserToChatFragment(activity, teamItem);
                             break;
                         case 3:
                             // Setup Team Management Button
@@ -100,7 +99,7 @@ public final class TeamAccessDialog extends Builder {
         }
     }
 
-    private void transitionUserToChatFragment(final Activity activity, final Context context, final Team teamItem) {
+    private void transitionUserToChatFragment(final Activity activity, final Team teamItem) {
         FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -180,11 +179,11 @@ public final class TeamAccessDialog extends Builder {
         final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
         if (channels.size() == 2) {
             if (channels.get(0).getName().equals("")) {
-                sortedChannels.add(channels.get(0));
                 sortedChannels.add(channels.get(1));
+                sortedChannels.add(channels.get(0));
             } else {
-                sortedChannels.add(channels.get(1));
                 sortedChannels.add(channels.get(0));
+                sortedChannels.add(channels.get(1));
             }
 
             for (int i = 0; i < sortedChannels.size(); i++) {

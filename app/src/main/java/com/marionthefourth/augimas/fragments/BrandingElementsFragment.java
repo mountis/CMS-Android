@@ -7,9 +7,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +45,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
         
         BrandingElementsFragment fragment = new BrandingElementsFragment();
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -68,12 +69,26 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
                             if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
-                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                                getView().setFocusableInTouchMode(true);
+                                getView().requestFocus();
+                                getView().setOnKeyListener(new View.OnKeyListener() {
+                                    @Override
+                                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                                            // handle back button's click listener
+//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
+                                            final Activity activity = getActivity();
+                                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                                            activity.startActivity(homeIntent);
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+                                });
                             }
-
                         }
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) {}
                 });

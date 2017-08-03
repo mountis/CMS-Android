@@ -11,6 +11,7 @@ import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,7 +67,25 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 if (dataSnapshot.exists()) {
                     final User userItem = new User(dataSnapshot);
                     if (userItem != null) {
-                        ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//                        ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                        getView().setFocusableInTouchMode(true);
+                        getView().requestFocus();
+                        getView().setOnKeyListener(new View.OnKeyListener() {
+                            @Override
+                            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                                    // handle back button's click listener
+//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
+                                    final AppCompatActivity activity = (AppCompatActivity) getActivity();
+                                    final FragmentManager manager = activity.getSupportFragmentManager();
+
+                                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
+
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
                     }
                 }
             }
@@ -301,10 +320,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 //            default:
 //                return super.onOptionsItemSelected(item);
 //        }
-        final AppCompatActivity activity = (AppCompatActivity) getActivity();
-        final FragmentManager manager = activity.getSupportFragmentManager();
 
-        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance("")).commit();
         return true;
     }
 }

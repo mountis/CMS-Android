@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +56,8 @@ public class TeamManagementFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_team_management, container, false);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.team_member_recycler_view);
         // Set the adapter
@@ -64,14 +65,34 @@ public class TeamManagementFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             final Activity activity = getActivity();
+            Team teamItem = null;
+            if (getArguments() != null) {
+                teamItem = (Team) getArguments().getSerializable(Constants.Strings.TEAM);
+            }
 
+            final Team finalTeamItem = teamItem;
             FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         final User userItem = new User(dataSnapshot);
                         if (userItem != null) {
-                            ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                            getView().setFocusableInTouchMode(true);
+                            getView().requestFocus();
+                            getView().setOnKeyListener(new View.OnKeyListener() {
+                                @Override
+                                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                                        // handle back button's click listener
+//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
+                                        final Activity activity = getActivity();
+                                        final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                                        activity.startActivity(homeIntent);
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            });
                         }
                     }
                 }
@@ -80,18 +101,14 @@ public class TeamManagementFragment extends Fragment {
                 public void onCancelled(DatabaseError databaseError) {}
             });
 
+            if (teamItem != null) {
+                loadTeam(activity,view, recyclerView, teamItem);
+            } else {
+                loadTeam(activity,view, recyclerView, getCurrentUser());
+            }
+
             if (PROTOTYPE_MODE) {
                 loadPrototypeTeamMembers(activity,view, recyclerView);
-            } else {
-                Team teamItem = null;
-                if (getArguments() != null) {
-                    teamItem = (Team) getArguments().getSerializable(Constants.Strings.TEAM);
-                }
-                if (teamItem != null) {
-                    loadTeam(activity,view, recyclerView, teamItem);
-                } else {
-                    loadTeam(activity,view, recyclerView, getCurrentUser());
-                }
             }
         }
 
