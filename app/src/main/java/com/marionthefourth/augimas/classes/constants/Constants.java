@@ -50,6 +50,7 @@ public final class Constants {
             public static final String TITLE = "title";
             public static final String BRANDING_ELEMENT_HEADER = "header";
             public static final String CONTENTS = "contents";
+            public static final String FRAGMENT = "fragment";
         }
 
         public static final class BrandingTypes {
@@ -129,6 +130,7 @@ public final class Constants {
             public static final String SIGN_IN = "Sign In";
             public static final String SIGN_UP = "Sign Up";
             public static final String HOME = "Home";
+            public static final String DASHBOARD = "Dashboard";
             public static final String CHAT = "Chat";
             public static final String CHAT_LIST = "Chat List";
             public static final String BRANDING_ELEMENT = "Branding Element";
@@ -479,7 +481,7 @@ public final class Constants {
             public static final boolean SEND_CHAT_MESSAGE = true;
             public static final boolean UPDATE_TEAM_STATUS = true;
             public static final boolean DISPLAY_CHATS = true;
-            public static final boolean DISPLAY_NOTIFICATIONS = false;
+            public static final boolean DISPLAY_NOTIFICATIONS = true;
             public static final boolean DISPLAY_QUESTIONNAIRE = false;
             public static final boolean DISPLAY_SETTINGS = true;
         }

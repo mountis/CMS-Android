@@ -401,73 +401,81 @@ public final class Notification extends FirebaseContent {
         String verbPart = "";
         String objectPart = "";
 
-        switch (subjectType) {
-            case MEMBER:
-            case TEAM:
-                subjectPart = ((FirebaseEntity)getSubject()).getName();
-                break;
-            case DEFAULT:
-                break;
+        if (getSubject() != null && getObject() != null) {
+            switch (subjectType) {
+                case MEMBER:
+                case TEAM:
+                    subjectPart = ((FirebaseEntity)getSubject()).getName();
+                    break;
+                case DEFAULT:
+                    return "Unable to grab data!";
+            }
+
+            switch (verbType) {
+                case ADD:
+                    verbPart = "added";
+                case APPROVE:
+                    verbPart = "approved";
+                    break;
+                case AWAIT:
+                    verbPart = "is waiting for access";
+                    break;
+                case CREATE:
+                    verbPart = "created";
+                    break;
+                case DISAPPROVE:
+                    verbPart = "disapproved";
+                    break;
+                case INVITE:
+                    verbPart = "invited";
+                    break;
+                case JOIN:
+                    verbPart = "joined";
+                    break;
+                case LEFT:
+                    verbPart = verbType.toString();
+                    break;
+                case RECEIVE:
+                    verbPart = "received";
+                case REQUEST:
+                    verbPart = "is requesting";
+                    break;
+                case REQUEST_ACCESS:
+                    verbPart = "is requesting access to";
+                    break;
+                case REQUEST_JOIN:
+                    verbPart = "is requesting to join";
+                    break;
+                case UPDATE:
+                    verbPart = "updated";
+                    break;
+                case DEFAULT:
+                    return "Unable to grab data!";
+
+            }
+
+            switch (objectType) {
+                case BRANDING_ELEMENT:
+                    objectPart = ((BrandingElement)getObject()).getType().toString();
+                    break;
+                case CHAT:
+                    objectPart = "Chat";
+                    break;
+                case MEMBER:
+                case TEAM:
+                    objectPart = ((FirebaseEntity)getObject()).getName();
+                    break;
+                case DEFAULT:
+                    return "Unable to grab data!";
+
+            }
+
+            return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
+        } else {
+            return "Unable to grab data!";
+
         }
 
-        switch (verbType) {
-            case ADD:
-                verbPart = "added";
-            case APPROVE:
-                verbPart = "approved";
-                break;
-            case AWAIT:
-                verbPart = "is waiting for access";
-                break;
-            case CREATE:
-                verbPart = "created";
-                break;
-            case DISAPPROVE:
-                verbPart = "disapproved";
-                break;
-            case INVITE:
-                verbPart = "invited";
-                break;
-            case JOIN:
-                verbPart = "joined";
-                break;
-            case LEFT:
-                verbPart = verbType.toString();
-                break;
-            case RECEIVE:
-                verbPart = "received";
-            case REQUEST:
-                verbPart = "is requesting";
-                break;
-            case REQUEST_ACCESS:
-                verbPart = "is requesting access to";
-                break;
-            case REQUEST_JOIN:
-                verbPart = "is requesting to join";
-                break;
-            case UPDATE:
-                verbPart = "updated";
-                break;
-            case DEFAULT:
-                return "";
-        }
-
-        switch (objectType) {
-            case BRANDING_ELEMENT:
-                objectPart = ((BrandingElement)getObject()).getType().toString();
-                break;
-            case CHAT:
-                objectPart = "Chat";
-                break;
-            case MEMBER:
-            case TEAM:
-                objectPart = ((FirebaseEntity)getObject()).getName();
-                break;
-            case DEFAULT:
-                break;
-        }
-
-        return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
     }
 
     public boolean goesToUID(String uid) {

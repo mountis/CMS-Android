@@ -5,7 +5,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 
-import com.google.firebase.database.Exclude;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 
@@ -19,12 +18,7 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREB
 public abstract class FirebaseObject implements Serializable, Parcelable {
 
     private String uid;
-    @Exclude
-    private int fields;
-    @Exclude
-    private int objectType = R.string.firebase_object;
 
-    public final int getFields() { return fields; }
     public abstract String getField(final int index);
 
     public Bundle toBundle(final AppCompatActivity appCompatActivity, final int FIREBASE_CONTENT) {

@@ -20,7 +20,6 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.NotificationsAdapter;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
-import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -83,7 +82,7 @@ public final class NotificationsFragment extends Fragment {
                                     }
 
                                     if (notifications.size() > 0) {
-                                        pullSubjectAndObjectItems(notifications,recyclerView,activity);
+                                        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
                                     } else {
                                         recyclerView.setAdapter(null);
                                     }
@@ -140,183 +139,6 @@ public final class NotificationsFragment extends Fragment {
 
         });
 
-    }
-
-    private void pullSubjectAndObjectItems(final ArrayList<Notification> notifications, final RecyclerView recyclerView, final Activity activity) {
-        for (int i = 0; i < notifications.size(); i++) {
-            switch (notifications.get(i).getSubjectType()) {
-                case MEMBER:
-                    final int finalI = i;
-                    FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(notifications.get(i).getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final User teamMember = new User(dataSnapshot);
-                                if (teamMember != null) {
-                                    notifications.get(finalI).setSubject(teamMember);
-                                    pullObjectItem(finalI,notifications, recyclerView,activity);
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                    break;
-                case TEAM:
-                    final int finalI1 = i;
-                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(notifications.get(i).getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final Team teamItem = new Team(dataSnapshot);
-                                if (teamItem != null) {
-                                    notifications.get(finalI1).setSubject(teamItem);
-                                    pullObjectItem(finalI1, notifications, recyclerView, activity);
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                    break;
-                case DEFAULT:
-                    break;
-            }
-        }
-    }
-    private void pullObjectItem(final int i, final ArrayList<Notification> notifications, final RecyclerView recyclerView, final Activity activity) {
-        switch (notifications.get(i).getObjectType()) {
-            case BRANDING_ELEMENT:
-                FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(notifications.get(i).getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                            notifications.get(i).setObject(elementItem);
-                            if (i == notifications.size()-1) {
-                                boolean haveAllData = false;
-                                while (!haveAllData) {
-                                    haveAllData = true;
-                                    for(final Notification notification:notifications) {
-                                        if (notification.getSubject() == null || notification.getObject() == null) {
-                                            haveAllData = false;
-                                        }
-                                    }
-                                    if (haveAllData) {
-                                        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
-                                        break;
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
-                });
-                break;
-            case CHAT:
-                FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).child(notifications.get(i).getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final Chat chatItem = new Chat(dataSnapshot);
-                            notifications.get(i).setObject(chatItem);
-                            if (i == notifications.size()-1) {
-                                boolean haveAllData = false;
-                                while (!haveAllData) {
-                                    haveAllData = true;
-                                    for(final Notification notification:notifications) {
-                                        if (notification.getSubject() == null || notification.getObject() == null) {
-                                            haveAllData = false;
-                                        }
-                                    }
-                                    if (haveAllData) {
-                                        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
-                                        break;
-                                    }
-                                }
-
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
-                });
-                break;
-            case MEMBER:
-                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(notifications.get(i).getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final User userItem = new User(dataSnapshot);
-                            notifications.get(i).setObject(userItem);
-                            if (i == notifications.size()-1) {
-                                boolean haveAllData = false;
-                                while (!haveAllData) {
-                                    haveAllData = true;
-                                    for(final Notification notification:notifications) {
-                                        if (notification.getSubject() == null || notification.getObject() == null) {
-                                            haveAllData = false;
-                                        }
-                                    }
-                                    if (haveAllData) {
-                                        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
-                                        break;
-                                    }
-                                }
-
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
-                });
-                break;
-            case TEAM:
-                FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(notifications.get(i).getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final Team teamItem = new Team(dataSnapshot);
-                            if (teamItem != null) {
-                                notifications.get(i).setObject(teamItem);
-                                if (i == notifications.size()-1) {
-                                    boolean haveAllData = false;
-                                    while (!haveAllData) {
-                                        haveAllData = true;
-                                        for(final Notification notification:notifications) {
-                                            if (notification.getSubject() == null || notification.getObject() == null) {
-                                                haveAllData = false;
-                                            }
-                                        }
-                                        if (haveAllData) {
-                                            recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
-                                            break;
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
-                });
-                break;
-            case DEFAULT:
-                break;
-        }
     }
 
     private void loadPrototypeNotifications(final Activity activity, RecyclerView recyclerView) {
