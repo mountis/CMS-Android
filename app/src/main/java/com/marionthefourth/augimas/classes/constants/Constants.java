@@ -51,6 +51,7 @@ public final class Constants {
             public static final String BRANDING_ELEMENT_HEADER = "header";
             public static final String CONTENTS = "contents";
             public static final String FRAGMENT = "fragment";
+            public static final String TOKEN = "token";
         }
 
         public static final class BrandingTypes {

@@ -30,6 +30,9 @@ import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
+
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_USER;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.FORGOT_PASSWORD_BUTTON;
@@ -100,7 +103,15 @@ public final class SignInFragment extends Fragment {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     loadingProgress.dismiss();
-                    display(view, Constants.Ints.Views.Widgets.IDs.TOAST,R.string.welcome_back_text,new User(dataSnapshot).getUsername());
+                    final User currentUser = new User(dataSnapshot);
+                    if (!currentUser.getTeamUID().equals("")) {
+                        try {
+                            Pushy.subscribe(currentUser.getTeamUID(), getContext());
+                        } catch (PushyException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    display(view, Constants.Ints.Views.Widgets.IDs.TOAST,R.string.welcome_back_text,currentUser.getUsername());
                     Intent homeIntent = new Intent(view.getContext(), HomeActivity.class);
                     startActivity(homeIntent);
                 }

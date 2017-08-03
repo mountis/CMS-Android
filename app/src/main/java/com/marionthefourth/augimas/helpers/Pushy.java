@@ -1,12 +1,10 @@
-package com.marionthefourth.augimas.activities;
+package com.marionthefourth.augimas.helpers;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -14,34 +12,27 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.SignInActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Device;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
-import me.pushy.sdk.Pushy;
+/**
+ * Created by MGR4 on 8/3/17.
+ */
 
-public final class SignInActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
-//
-        new RegisterForPushNotificationsAsync().execute();
-
-    }
+public final class Pushy {
 
     private class RegisterForPushNotificationsAsync extends AsyncTask<Void, Void, Exception> {
         protected Exception doInBackground(Void... params) {
             try {
                 // Assign a unique token to this device
-                final String deviceToken = Pushy.register(getApplicationContext());
+                final String deviceToken = me.pushy.sdk.Pushy.register(getApplicationContext());
 
                 // Log it for debugging purposes
                 Log.d("MyApp", "Pushy device token: " + deviceToken);
 
                 // Send the token to your backend server via an HTTP GET request
 
-                FirebaseHelper.getReference(SignInActivity.this,R.string.firebase_devices_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseHelper.getReference(SignInActivity.this, R.string.firebase_devices_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -49,7 +40,7 @@ public final class SignInActivity extends AppCompatActivity {
                                 final Device device = new Device(deviceSnapshot);
                                 if (device.getToken().equals(deviceToken)) {
 
-                                    Pushy.listen(SignInActivity.this);
+                                    me.pushy.sdk.Pushy.listen(SignInActivity.this);
 
                                     // Check whether the user has granted us the READ/WRITE_EXTERNAL_STORAGE permissions
                                     if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -63,7 +54,7 @@ public final class SignInActivity extends AppCompatActivity {
 
                             final Device currentDevice = new Device(deviceToken);
                             FirebaseHelper.save(SignInActivity.this,currentDevice);
-                            Pushy.listen(SignInActivity.this);
+                            me.pushy.sdk.Pushy.listen(SignInActivity.this);
 
                             // Check whether the user has granted us the READ/WRITE_EXTERNAL_STORAGE permissions
                             if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -75,7 +66,7 @@ public final class SignInActivity extends AppCompatActivity {
                         } else {
                             final Device currentDevice = new Device(deviceToken);
                             FirebaseHelper.save(SignInActivity.this,currentDevice);
-                            Pushy.listen(SignInActivity.this);
+                            me.pushy.sdk.Pushy.listen(SignInActivity.this);
 
                             // Check whether the user has granted us the READ/WRITE_EXTERNAL_STORAGE permissions
                             if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {

@@ -18,6 +18,9 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
+
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.delete;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
@@ -71,6 +74,12 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                         if (dataSnapshot.exists()) {
                                             final Team teamItem = new Team(dataSnapshot);
                                             teamItem.removeUser(currentUserItem);
+                                            try {
+                                                Pushy.unsubscribe(teamItem.getUID(),getContext());
+                                            } catch (PushyException e) {
+                                                e.printStackTrace();
+                                            }
+
                                             update(activity,currentUserItem);
                                             sendNotification(activity, currentUserItem, Notification.NotificationVerbType.LEFT, teamItem);
                                             FragmentHelper.display(activity.findViewById(R.id.container), TOAST,R.string.left_team);

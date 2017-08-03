@@ -18,6 +18,9 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
+
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 
@@ -104,6 +107,12 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         // Alert User that the team has been alerted of your request
 
         // TODO: Send Notification To Team
+        try {
+            Pushy.subscribe(teamItem.getUID(), getContext());
+        } catch (PushyException e) {
+            e.printStackTrace();
+        }
+
 //      sendNotification(user, Notification.NotificationVerbType.REQUEST, teamItem);
 
         dialog.dismiss();

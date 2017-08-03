@@ -27,6 +27,9 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
+
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
@@ -167,6 +170,12 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         save(activity,teamCreatedNotification);
                                         final Notification joinedTeamNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.JOIN);
                                         save(activity,joinedTeamNotification);
+
+                                        try {
+                                            Pushy.subscribe(teamItem.getUID(), getContext());
+                                        } catch (PushyException e) {
+                                            e.printStackTrace();
+                                        }
 
                                         final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                         activity.startActivity(homeIntent);

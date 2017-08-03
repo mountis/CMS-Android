@@ -398,7 +398,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     } else {
                         if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) || currentUser.getTeamUID().equals("")) {
                             navigationView.setSelectedItemId(R.id.navigation_settings);
-                            selectedFragment = SETTINGS;
                             menu.removeItem(R.id.navigation_chat);
                             menu.removeItem(R.id.navigation_settings);
                             menu.removeItem(R.id.navigation_dashboard);

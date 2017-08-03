@@ -14,15 +14,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.constants.Constants;
-import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
-import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
+
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
@@ -89,14 +90,10 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
                                                     addUserToAdminTeamBasedOnAdminCode(activity,inputs,currentUser,teamItem);
                                                 }
                                             } else {
-
                                                 createAdminTeamAndChat(activity,currentUser);
-
-
                                             }
 
                                             update(activity,currentUser);
-
                                             display(containingView,TOAST,R.string.welcome_to_augimas);
                                         }
 
@@ -136,6 +133,12 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
             sendNotification(activity,currentUser, Notification.NotificationVerbType.JOIN,teamItem);
         }
 
+        try {
+            Pushy.subscribe(teamItem.getUID(), getContext());
+        } catch (PushyException e) {
+            e.printStackTrace();
+        }
+
         update(activity,teamItem);
     }
 
@@ -148,10 +151,6 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
 
         save(activity,adminTeam);
 
-        // Create Chat
-        final Chat adminChat = new Chat(adminTeam, FirebaseCommunication.CommunicationType.A);
-
-        save(activity,adminChat);
         currentUser.setTeamUID(adminTeam.getUID());
     }
 

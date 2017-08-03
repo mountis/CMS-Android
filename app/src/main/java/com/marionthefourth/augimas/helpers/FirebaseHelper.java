@@ -29,12 +29,16 @@ import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.entities.Device;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
 import java.text.DateFormat;
 import java.util.Date;
+
+import me.pushy.sdk.Pushy;
+import me.pushy.sdk.util.exceptions.PushyException;
 
 import static android.content.ContentValues.TAG;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
@@ -91,6 +95,14 @@ public final class FirebaseHelper {
                                                             user.setUID(newUser.getUID());
 
                                                             display(view, TOAST, R.string.success_signin);
+
+                                                            if (!user.getTeamUID().equals("")) {
+                                                                try {
+                                                                    Pushy.subscribe(user.getTeamUID(), activity);
+                                                                } catch (PushyException e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
 
                                                             final Intent homeIntent = new Intent(context, HomeActivity.class);
                                                             context.startActivity(homeIntent);
@@ -184,49 +196,10 @@ public final class FirebaseHelper {
         switch (reference) {
             case R.string.firebase_url_directory:
                 return FirebaseDatabase.getInstance().getReference();
-            case R.string.firebase_users_directory:
-                return getReference(
+            default: return getReference(
                         activity,
                         R.string.firebase_url_directory
                 ).child(CURRENT_REFERENCE);
-            case R.string.firebase_branding_element_contents_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_chats_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_branding_elements_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_teams_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_messages_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_notifications_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            case R.string.firebase_channels_directory:
-                return getReference(
-                        activity,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-            default:
-                return FirebaseDatabase.getInstance().getReference();
-
         }
     }
     public static void logout(final AppCompatActivity appCompatActivity, final boolean shouldCloseActivity) {
@@ -310,7 +283,6 @@ public final class FirebaseHelper {
             messageItem.setUID(key);
             messageItem.setTimestamp(DateFormat.getDateTimeInstance().format(new Date()));
             itemRef.setValue(messageItem.toMap());
-            return;
         } else if (firebaseObject instanceof Notification) {
             myRef = getReference(activity,R.string.firebase_notifications_directory);
             itemRef = myRef.push();
@@ -325,10 +297,17 @@ public final class FirebaseHelper {
             key = itemRef.getKey();
             channelItem.setUID(key);
             itemRef.setValue(channelItem.toMap());
+        } else if (firebaseObject instanceof Device) {
+            myRef = getReference(activity,R.string.firebase_devices_directory);
+            itemRef = myRef.push();
+            final Device deviceItem = (Device) firebaseObject;
+            key = itemRef.getKey();
+            deviceItem.setUID(key);
+            itemRef.setValue(deviceItem.toMap());
         }
 
-        Log.i("","Saved item");
     }
+
     public static void update(final Activity activity, FirebaseObject firebaseObject){
         DatabaseReference myRef = null;
         DatabaseReference itemRef;
