@@ -24,12 +24,12 @@ import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public final class NotificationsFragment extends Fragment {
 
@@ -63,13 +63,13 @@ public final class NotificationsFragment extends Fragment {
 
     private void loadNotificationData(final Activity activity, final RecyclerView recyclerView) {
 
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                        FirebaseHelper.getReference(activity,R.string.firebase_notifications_directory).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(activity,R.string.firebase_notifications_directory).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.hasChildren()) {
@@ -105,7 +105,7 @@ public final class NotificationsFragment extends Fragment {
                         });
                     } else {
                         if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                            FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {

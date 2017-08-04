@@ -19,7 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
@@ -92,7 +92,7 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
     }
 
     private void searchForUser(final Activity activity, final View containingView, final TextInputEditText usernameOrEmail) {
-        FirebaseHelper.getReference(
+        Backend.getReference(
                 activity,
                 R.string.firebase_users_directory
         ).addListenerForSingleValueEvent(new ValueEventListener() {

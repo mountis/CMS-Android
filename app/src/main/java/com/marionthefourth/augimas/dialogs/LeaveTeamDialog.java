@@ -8,24 +8,22 @@ import android.view.View;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
-import me.pushy.sdk.Pushy;
-import me.pushy.sdk.util.exceptions.PushyException;
-
+import static com.marionthefourth.augimas.backend.Backend.delete;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.delete;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.sendNotification;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public final class LeaveTeamDialog extends AlertDialog.Builder {
     public LeaveTeamDialog(final Activity activity, final View containingView) {
@@ -60,7 +58,7 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
                 // Read Data of Team
-                FirebaseHelper.getReference(activity, R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(activity, R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -68,23 +66,20 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                             if (currentUserItem.getTeamUID().equals("")) {
 
                             } else {
-                                FirebaseHelper.getReference(activity, R.string.firebase_teams_directory).child(currentUserItem.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                Backend.getReference(activity, R.string.firebase_teams_directory).child(currentUserItem.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         if (dataSnapshot.exists()) {
                                             final Team teamItem = new Team(dataSnapshot);
                                             teamItem.removeUser(currentUserItem);
-                                            try {
-                                                Pushy.unsubscribe(teamItem.getUID(),getContext());
-                                            } catch (PushyException e) {
-                                                e.printStackTrace();
-                                            }
+
+                                            FirebaseMessaging.getInstance().unsubscribeFromTopic(teamItem.getUID());
 
                                             update(activity,currentUserItem);
                                             sendNotification(activity, currentUserItem, Notification.NotificationVerbType.LEFT, teamItem);
                                             FragmentHelper.display(activity.findViewById(R.id.container), TOAST,R.string.left_team);
 
-                                            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            Backend.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
                                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                                     if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -95,7 +90,6 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                                             if (userItem.isInTeam(teamItem)) {
                                                                 // Don't Delete Team
                                                                 usersInTeam.add(userItem);
-
                                                             }
                                                         }
 

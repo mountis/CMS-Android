@@ -12,17 +12,16 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
-import me.pushy.sdk.Pushy;
-import me.pushy.sdk.util.exceptions.PushyException;
-
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
 
 public final class JoinTeamDialog extends AlertDialog.Builder {
 
@@ -55,7 +54,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
                 // Check that text field is filled
                 if (!usernameEditText.getText().equals("")) {
                     // Check against firebase
-                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
@@ -64,7 +63,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
                                     // If Team Matches Input, Add User to Member's List
                                     if (teamItem.getUsername().equals(usernameEditText.getText().toString())) {
                                         // Add User to Team
-                                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.hasChildren()) {
@@ -102,18 +101,13 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
 
     private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User user, final FirebaseEntity.EntityRole memberRole, final FirebaseEntity.EntityStatus memberStatus) {
         teamItem.addUser(user,memberRole,memberStatus);
-        FirebaseHelper.update(activity,user);
-        FirebaseHelper.update(activity,teamItem);
+        Backend.update(activity,user);
+        Backend.update(activity,teamItem);
         // Alert User that the team has been alerted of your request
 
-        // TODO: Send Notification To Team
-        try {
-            Pushy.subscribe(teamItem.getUID(), getContext());
-        } catch (PushyException e) {
-            e.printStackTrace();
-        }
+        FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
 
-//      sendNotification(user, Notification.NotificationVerbType.REQUEST, teamItem);
+        Backend.sendNotification(activity,user, Notification.NotificationVerbType.REQUEST, teamItem);
 
         dialog.dismiss();
     }

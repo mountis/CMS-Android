@@ -16,7 +16,7 @@ import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.fragments.ChatListFragment;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
@@ -69,7 +69,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ViewHo
     }
 
     private void getLastMessageSent(final Chat chatItem, final ArrayList<Team> teams, final AppCompatTextView mChatLastMessageSent, final AppCompatTextView mChatLastMessageSentTime) {
-        FirebaseHelper.getReference(activity,R.string.firebase_messages_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_messages_directory).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ArrayList<Message> messages = new ArrayList<>();

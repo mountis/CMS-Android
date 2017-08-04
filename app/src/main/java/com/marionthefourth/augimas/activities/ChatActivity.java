@@ -20,11 +20,11 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.ChatFragment;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public final class ChatActivity extends AppCompatActivity {
 
@@ -92,14 +92,14 @@ public final class ChatActivity extends AppCompatActivity {
     private void setTabText(final TabLayout tabLayout) {
         final ArrayList<String> teamUIDs = getTeamUIDsFromIntent();
 
-        FirebaseHelper.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                         // Get Current Team
-                        FirebaseHelper.getReference(ChatActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(ChatActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
@@ -143,7 +143,7 @@ public final class ChatActivity extends AppCompatActivity {
 
     private void setTabTextToOtherTeamName(final TabLayout tabLayout, ArrayList<String> teamUIDs) {
         // Pull the Team from Firebase matching the other Team UID
-        FirebaseHelper.getReference(this,R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(this,R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

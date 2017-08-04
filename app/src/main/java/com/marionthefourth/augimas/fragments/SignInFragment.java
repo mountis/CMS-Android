@@ -25,8 +25,8 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.dialogs.RecoverPasswordDialog;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
@@ -40,7 +40,7 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_TEXT_BUTTON;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.build;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
@@ -96,7 +96,7 @@ public final class SignInFragment extends Fragment {
         if (user != null) {
             final ProgressDialog loadingProgress = build(view,R.string.progress_signing_in);
             // Display Toast to the User, welcoming them back
-            FirebaseHelper.getReference(
+            Backend.getReference(
                     activity,
                     R.string.firebase_users_directory
             ).child(user.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -201,7 +201,7 @@ public final class SignInFragment extends Fragment {
                         display(view,SNACKBAR,R.string.feature_unavailable);
                     }
 
-                    FirebaseHelper.signin(activity,view,user);
+                    Backend.signin(activity,view,user);
                 }
             }
         });

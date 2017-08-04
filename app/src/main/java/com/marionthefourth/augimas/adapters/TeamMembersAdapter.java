@@ -20,12 +20,12 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.update;
 
 public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.ViewHolder> {
 
@@ -77,7 +77,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 //                tv.setText(testarray.get(position));
 
                 final View finalV = v;
-                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -118,7 +118,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         holder.mTeamMemberRoleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, View view, int position, long id) {
-                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_users_directory).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -163,7 +163,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                 } else if (i == FirebaseEntity.EntityRole.ADMIN.toInt(false)) {
                 }
 
-                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {

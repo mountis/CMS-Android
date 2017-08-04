@@ -17,14 +17,14 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.content.branding_elements.Branding;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.NO_VALUE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.YES_VALUE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.update;
 
 /**
  * Created by MGR4 on 5/26/17.
@@ -59,7 +59,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
             holder.mSocialMediaNameAvailableCheckBox.setChecked(true);
         }
 
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -90,7 +90,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
 
                 final String VALUE = value;
 
-                FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {

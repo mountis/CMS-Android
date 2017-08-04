@@ -19,15 +19,15 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 
 public final class InviteMemberDialog extends AlertDialog.Builder {
     public InviteMemberDialog(final Activity activity, final View containingView) {
@@ -59,7 +59,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                 // Check that text field is filled
                 if (!usernameOrEmailEditText.getText().equals("")) {
                     // Check against firebase
-                    FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
@@ -110,7 +110,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                 final User invitedUserItem = invitedUser;
 
                                 if (currentUserItem != null && invitedUserItem != null) {
-                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.hasChildren()) {
@@ -161,8 +161,8 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         invitedUserItem.setType(currentUserItem.getType());
 
         teamItem.addUser(invitedUserItem, role, status);
-        FirebaseHelper.update(activity,invitedUserItem);
-        FirebaseHelper.update(activity,teamItem);
+        Backend.update(activity,invitedUserItem);
+        Backend.update(activity,teamItem);
         // Alert User that the team has been alerted of your request
         FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.you_added_to_the_team);
         sendNotification(activity,invitedUserItem,verb,teamItem);
@@ -186,7 +186,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         inputLayout.addView(usernameEditText,0,layoutParams);
         layout.addView(inputLayout);
 
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

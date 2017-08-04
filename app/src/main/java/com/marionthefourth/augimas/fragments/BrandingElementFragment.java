@@ -27,11 +27,11 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.update;
 
 public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
@@ -61,7 +61,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
         final Activity activity = getActivity();
 
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -159,7 +159,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
@@ -178,7 +178,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -199,7 +199,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void loadSocialMediaNameData(final Activity activity,final View view, final RecyclerView recyclerView) {
         // Load Available Services
-        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -239,7 +239,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
@@ -257,7 +257,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -283,7 +283,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void loadDomainNameData(final Activity activity, final View view, final RecyclerView recyclerView) {
         // Load Domain Name
-        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

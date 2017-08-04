@@ -32,7 +32,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
@@ -47,7 +47,7 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getReference;
+import static com.marionthefourth.augimas.backend.Backend.getReference;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class SignUpFragment extends Fragment {
@@ -199,7 +199,7 @@ public final class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (PROTOTYPE_MODE) {
-                    FirebaseHelper.signin(activity, view,null);
+                    Backend.signin(activity, view,null);
                 } else {
                     if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
@@ -391,7 +391,7 @@ public final class SignUpFragment extends Fragment {
                     loadingProgress.show();
                     display(view,SNACKBAR,R.string.success_signup);
                     // Sign in the new user
-                    FirebaseHelper.signin(activity,view,user);
+                    Backend.signin(activity,view,user);
                 }
             }
 

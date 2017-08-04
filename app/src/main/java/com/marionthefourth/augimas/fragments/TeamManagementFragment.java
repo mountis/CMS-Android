@@ -29,13 +29,13 @@ import com.marionthefourth.augimas.dialogs.CreateTeamDialog;
 import com.marionthefourth.augimas.dialogs.InviteMemberDialog;
 import com.marionthefourth.augimas.dialogs.JoinTeamDialog;
 import com.marionthefourth.augimas.dialogs.LeaveTeamDialog;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.update;
 
 public class TeamManagementFragment extends Fragment {
 
@@ -71,7 +71,7 @@ public class TeamManagementFragment extends Fragment {
             }
 
             final Team finalTeamItem = teamItem;
-            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -124,7 +124,7 @@ public class TeamManagementFragment extends Fragment {
 
     private void loadTeam(final Activity activity, final View view, final RecyclerView recyclerView, final User user) {
         if (user != null) {
-            FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(user.getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(activity,R.string.firebase_users_directory).child(user.getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -135,7 +135,7 @@ public class TeamManagementFragment extends Fragment {
                             LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
                             layout.setVisibility(View.GONE);
                         } else {
-                            FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -213,7 +213,7 @@ public class TeamManagementFragment extends Fragment {
             }
         });
 
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -223,7 +223,7 @@ public class TeamManagementFragment extends Fragment {
                             updateButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists()) {
@@ -257,7 +257,7 @@ public class TeamManagementFragment extends Fragment {
                             updateButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(activity,R.string.firebase_teams_directory).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists()) {
@@ -301,7 +301,7 @@ public class TeamManagementFragment extends Fragment {
 
     private void loadTeamMembers(final Activity activity, final View view, final RecyclerView recyclerView, final Team team, final User user) {
         if (team != null) {
-            FirebaseHelper.getReference(
+            Backend.getReference(
                     activity,
                     R.string.firebase_teams_directory
             ).child(team.getUID()).addValueEventListener(new ValueEventListener() {
@@ -311,7 +311,7 @@ public class TeamManagementFragment extends Fragment {
                         final Team teamItem = new Team(dataSnapshot);
                         // Get all team members
 
-                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.hasChildren()) {
@@ -325,7 +325,7 @@ public class TeamManagementFragment extends Fragment {
                                     if (teamMembers.size() == 0 || teamItem == null) {
                                         recyclerView.setAdapter(null);
                                     } else {
-                                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {

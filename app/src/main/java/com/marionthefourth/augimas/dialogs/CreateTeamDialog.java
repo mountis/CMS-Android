@@ -12,8 +12,10 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
@@ -22,18 +24,15 @@ import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
-import me.pushy.sdk.Pushy;
-import me.pushy.sdk.util.exceptions.PushyException;
-
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.save;
+import static com.marionthefourth.augimas.backend.Backend.send;
+import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public final class CreateTeamDialog extends AlertDialog.Builder {
     public CreateTeamDialog(final Activity activity, final View containingView) {
@@ -99,7 +98,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                 // Check that text field is filled
                 if (FragmentHelper.fieldsAreFilled(editTexts) && FragmentHelper.fieldsPassWhitelist(editTexts)) {
                     // Check against firebase
-                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
@@ -107,7 +106,6 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                     final Team teamItem = new Team(teamReference);
                                     // If Team Matches Input, Add User to Member's List
                                     if (teamItem.getUsername().equals(editTexts.get(1).getText().toString())) {
-                                        // TODO: Display Error - Username Taken
                                         return;
                                     }
                                 }
@@ -131,14 +129,14 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
 
     private void createTeamAndAddUserToTeam(final Activity activity, final ArrayList<TextInputEditText> editTexts) {
         // Get Full User Data
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
 
                     final User currentUser = new User(dataSnapshot);
 
-                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
@@ -167,15 +165,11 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         // Create and Send Notifications
                                         final Notification teamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
                                         teamCreatedNotification.getReceiverUIDs().add(teamItem.getUID());
-                                        save(activity,teamCreatedNotification);
+                                        send(activity,teamCreatedNotification);
                                         final Notification joinedTeamNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.JOIN);
-                                        save(activity,joinedTeamNotification);
+                                        send(activity,joinedTeamNotification);
 
-                                        try {
-                                            Pushy.subscribe(teamItem.getUID(), getContext());
-                                        } catch (PushyException e) {
-                                            e.printStackTrace();
-                                        }
+                                        FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
 
                                         final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                         activity.startActivity(homeIntent);

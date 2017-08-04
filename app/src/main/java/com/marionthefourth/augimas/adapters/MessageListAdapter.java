@@ -17,7 +17,7 @@ import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
@@ -87,7 +87,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         if (PROTOTYPE_MODE) {
 
         } else {
-            if (holder.senderItem.getEmail().equals(FirebaseHelper.getCurrentUser().getEmail())) {
+            if (holder.senderItem.getEmail().equals(Backend.getCurrentUser().getEmail())) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
                 }
@@ -204,7 +204,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 holder.mChatLetterMoniker.setText(holder.mUsernameLabel.getText().toString().substring(0,1));
             }
         } else {
-            if (holder.senderItem.getEmail().equals(FirebaseHelper.getCurrentUser().getEmail())) {
+            if (holder.senderItem.getEmail().equals(Backend.getCurrentUser().getEmail())) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
                 }

@@ -19,7 +19,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
@@ -45,7 +45,7 @@ public class TeamsFragment extends Fragment {
             if (Constants.Bools.PROTOTYPE_MODE) {
                 loadPrototypeTeams(recyclerView);
             } else {
-                loadTeams(activity, recyclerView, FirebaseHelper.getCurrentUser());
+                loadTeams(activity, recyclerView, Backend.getCurrentUser());
             }
 
         }
@@ -63,7 +63,7 @@ public class TeamsFragment extends Fragment {
 
     private void loadTeams(final Activity activity, final RecyclerView recyclerView, final User user) {
         if (user != null) {
-            FirebaseHelper.getReference(
+            Backend.getReference(
                     activity,
                     R.string.firebase_teams_directory
             ).addValueEventListener(new ValueEventListener() {

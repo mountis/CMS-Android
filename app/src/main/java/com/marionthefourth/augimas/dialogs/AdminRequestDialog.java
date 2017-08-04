@@ -12,26 +12,24 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
-import me.pushy.sdk.Pushy;
-import me.pushy.sdk.util.exceptions.PushyException;
-
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.save;
+import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.ADMIN_REQUEST_CODE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.sendNotification;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class AdminRequestDialog extends AlertDialog.Builder {
@@ -70,12 +68,12 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
                     // Connect to Firebase
                     if (inputs.get(0).getText().toString().equals(ADMIN_REQUEST_CODE) ||
                             inputs.get(0).getText().toString().equals(Constants.Strings.ADMIN_ACCESS_CODE)) {
-                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final User currentUser = new User(dataSnapshot);
-                                    FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.hasChildren()) {
@@ -133,11 +131,7 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
             sendNotification(activity,currentUser, Notification.NotificationVerbType.JOIN,teamItem);
         }
 
-        try {
-            Pushy.subscribe(teamItem.getUID(), getContext());
-        } catch (PushyException e) {
-            e.printStackTrace();
-        }
+        FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
 
         update(activity,teamItem);
     }
@@ -150,6 +144,10 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
         adminTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
 
         save(activity,adminTeam);
+
+
+        FirebaseMessaging.getInstance().subscribeToTopic(adminTeam.getUID());
+
 
         currentUser.setTeamUID(adminTeam.getUID());
     }

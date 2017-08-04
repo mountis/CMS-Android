@@ -13,20 +13,20 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.BrandingElementsAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.send;
+import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.update;
 
 public final class ElementStatusDialog extends AlertDialog.Builder {
     public ElementStatusDialog(final Activity activity, final View containingView, final BrandingElementsAdapter.ViewHolder holder) {
@@ -73,7 +73,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                     holder.mBrandingElementStatus.setBackgroundDrawable(BrandingElement.ElementStatus.getStatus(finalI).toDrawable(getContext()));
 
                     if (!PROTOTYPE_MODE) {
-                        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
@@ -103,7 +103,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
     }
 
     private void sendNotifications(final Activity activity, final BrandingElement elementItem) {
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -143,7 +143,7 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                         teamUpdatedStatusNotification.setObjectType(Notification.NotificationObjectType.BRANDING_ELEMENT);
 
                         // Send modifying notification to both Teams
-                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -167,8 +167,10 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
 
                                     }
 
-                                    save(activity,teamUpdatedStatusNotification);
-                                    save(activity,userUpdatedStatusNotification);
+                                    send(activity,teamUpdatedStatusNotification);
+                                    send(activity,userUpdatedStatusNotification);
+
+
 
                                 }
                             }
@@ -199,6 +201,4 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
         }
         setView(layout);
     }
-
-
 }

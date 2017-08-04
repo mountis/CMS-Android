@@ -26,13 +26,13 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.save;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.save;
 
 public final class BrandingElementsFragment extends Fragment implements BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener {
 
@@ -63,7 +63,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             loadPrototypeBrandingElements(activity,recyclerView,team);
         } else {
             if (getArguments() != null) {
-                FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -94,7 +94,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 });
 
                 // Load Branding Elements && Setup Action Bar Name
-                FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(activity,R.string.firebase_teams_directory).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -119,7 +119,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
     }
 
     private void loadBrandingElements(final Activity activity, final RecyclerView recyclerView, final Team team) {
-        FirebaseHelper.getReference(activity,R.string.firebase_branding_elements_directory).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_branding_elements_directory).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChildren()) {

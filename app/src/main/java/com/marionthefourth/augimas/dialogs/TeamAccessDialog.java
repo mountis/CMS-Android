@@ -23,11 +23,11 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 /**
  * Created on 7/24/17.
@@ -100,14 +100,14 @@ public final class TeamAccessDialog extends Builder {
     }
 
     private void transitionUserToChatFragment(final Activity activity, final Team teamItem) {
-        FirebaseHelper.getReference(activity,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
                     for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
                         final Chat chatItem = new Chat(chatReference);
                         if (chatItem != null && chatItem.hasTeam(teamItem.getUID())) {
-                            FirebaseHelper.getReference(activity,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                            Backend.getReference(activity,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -121,13 +121,13 @@ public final class TeamAccessDialog extends Builder {
                                             }
                                         }
 
-                                        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
                                                     final User currentUser = new User(dataSnapshot);
                                                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                                                        FirebaseHelper.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                             @Override
                                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {

@@ -52,6 +52,8 @@ public final class Constants {
             public static final String CONTENTS = "contents";
             public static final String FRAGMENT = "fragment";
             public static final String TOKEN = "token";
+            public static final String MESSAGE = "message";
+            public static final String ACTION = "action";
         }
 
         public static final class BrandingTypes {
@@ -250,7 +252,7 @@ public final class Constants {
                     public static final int REQUEST_APPROVAL    = 0x404FFF84;
                     public static final int REQUEST_JOIN        = 0x194BEF93;
                     public static final int UPDATE              = 0x214ABF51;
-
+                    public static final int BLOCK               = 0x40437374;
                 }
                 public static final class Indices {
                     public static final int ADD                 =  0;
@@ -267,6 +269,7 @@ public final class Constants {
                     public static final int REQUEST_APPROVAL    = 11;
                     public static final int REQUEST_JOIN        = 12;
                     public static final int UPDATE              = 13;
+                    public static final int BLOCK               = 14;
                 }
             }
             public static final class Subjects {
@@ -294,6 +297,14 @@ public final class Constants {
                 }
             }
 
+
+        }
+
+        public final class Fragments {
+            public static final int DASHBOARD     = 0x19151AB;
+            public static final int CHAT          = 0x8816231;
+            public static final int NOTIFICATION  = 0x4718591;
+            public static final int SETTINGS      = 0x9102612;
         }
 
         public static final int DEFAULT_ID          = 0x4E3C8;
@@ -355,15 +366,6 @@ public final class Constants {
             public static final int CONTACTS_ACTIVITY         = 0x2000210;
             public static final int CHATS_ACTIVITY            = 0x2000310;
             public static final int CHAT_ACTIVITY             = 0x3000311;
-        }
-
-        public static final class Fragments {
-            public static final int SIGN_IN_FRAGMENT          = 0x1000011;
-            public static final int SIGN_UP_FRAGMENT          = 0x1000021;
-            public static final int HOME_FRAGMENT             = 0x2000120;
-            public static final int CONTACTS_FRAGMENT         = 0x2000220;
-            public static final int CHATS_FRAGMENT            = 0x2000320;
-            public static final int CHAT_FRAGMENT             = 0x3000321;
         }
 
         // Other Views

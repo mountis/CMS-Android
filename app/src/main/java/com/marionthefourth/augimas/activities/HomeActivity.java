@@ -1,9 +1,12 @@
 package com.marionthefourth.augimas.activities;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
@@ -28,23 +31,23 @@ import com.marionthefourth.augimas.fragments.NotificationsFragment;
 import com.marionthefourth.augimas.fragments.SettingsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
-import com.marionthefourth.augimas.helpers.FirebaseHelper;
+import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.backend.notification.BackendNotificationService;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
-import static com.marionthefourth.augimas.helpers.FirebaseHelper.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener, TeamsFragment.OnTeamsFragmentInteractionListener {
 
-    private final int DASHBOARD     = 0x19151AB;
-    private final int CHAT          = 0x8816231;
-    private final int NOTIFICATION  = 0x4718591;
-    private final int SETTINGS      = 0x9102612;
-    private int selectedFragment = DASHBOARD;
+    boolean mBound = false;
+    BackendNotificationService mService;
+    private int selectedFragment = Constants.Ints.Fragments.DASHBOARD;
 
+//    Activity Method
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +59,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         checkNavigationItem(this);
         // get current User
 
-        FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(HomeActivity.this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -85,7 +88,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                     break;
                             }
                         } else {
-                            FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            Backend.getReference(HomeActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
@@ -115,16 +118,35 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
-
     }
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
-        @Override
-        public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
-            determineHomeState(item);
-            return true;
-        }
 
-    };
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, BackendNotificationService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+
+//    Navigation Methods
+    private void removeNavigationItem() {
+        BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+
+        Menu menu = navigationView.getMenu();
+
+//        MenuItem target = menu.findItem(R.id.navigation_chat);
+        menu.removeItem(R.id.navigation_chat);
+//        target.setVisible(false);
+    }
     private void determineHomeState(final MenuItem item) {
         // Get Current User
         setupItemNavigation(item);
@@ -132,13 +154,13 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     private void setupItemNavigation(final MenuItem item) {
         final FragmentManager manager = getSupportFragmentManager();
         final android.app.FragmentManager rManager = getFragmentManager();
-        FirebaseHelper.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
 
-                    if (selectedFragment == SETTINGS && item.getItemId() != R.id.navigation_settings) {
+                    if (selectedFragment == Constants.Ints.Fragments.SETTINGS && item.getItemId() != R.id.navigation_settings) {
                         if (item.getItemId() == R.id.navigation_notifications && Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
                             handleNonSupportFragmentRemoval(rManager);
                         } else if (item.getItemId() == R.id.navigation_chat && Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
@@ -169,20 +191,102 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
+    private void checkNavigationItem(final Activity activity) {
+        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+
+                final Menu menu = navigationView.getMenu();
+
+                if (dataSnapshot.exists()) {
+                    final User currentUser = new User(dataSnapshot);
+                    if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
+                        menu.removeItem(R.id.navigation_chat);
+                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                            menu.removeItem(R.id.navigation_dashboard);
+                            menu.removeItem(R.id.navigation_notifications);
+                        } else {
+
+                        }
+                    } else {
+                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) || currentUser.getTeamUID().equals("")) {
+                            navigationView.setSelectedItemId(R.id.navigation_settings);
+                            menu.removeItem(R.id.navigation_chat);
+                            menu.removeItem(R.id.navigation_settings);
+                            menu.removeItem(R.id.navigation_dashboard);
+                            menu.removeItem(R.id.navigation_notifications);
+
+                            final android.app.FragmentManager manager = getFragmentManager();
+                            handleSettingsNavigation(manager);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+    }
     private void handleNotificationNavigation(final FragmentManager manager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
-            if (selectedFragment != NOTIFICATION) {
-                selectedFragment = NOTIFICATION;
+            if (selectedFragment != Constants.Ints.Fragments.NOTIFICATION) {
+                selectedFragment = Constants.Ints.Fragments.NOTIFICATION;
                 manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new NotificationsFragment()).commitAllowingStateLoss();
             }
         } else {
             display(findViewById(R.id.content),TOAST,R.string.feature_unavailable);
         }
     }
+    private void handleSettingsNavigation(final android.app.FragmentManager rManager) {
+        if (Constants.Bools.FeaturesAvailable.DISPLAY_SETTINGS) {
+            final Bundle intent = getIntent().getExtras();
+            if (intent != null) {
+                final String nav = intent.getString(Constants.Strings.Fields.FRAGMENT);
+                final String teamUID = intent.getString(Constants.Strings.UIDs.TEAM_UID);
+                if (nav != null && teamUID != null) {
+                    switch (nav) {
+                        case Constants.Strings.Fragments.TEAM_MANAGEMENT:
+                            Backend.getReference(this,R.string.firebase_teams_directory).child(teamUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(new Team(dataSnapshot))).commit();
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                            break;
+                    }
+                } else {
+                    rManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
+                            R.id.container,
+                            new SettingsFragment(),
+                            Constants.Strings.Fragments.SETTINGS).commit();
+                }
+
+            } else {
+                if (selectedFragment != Constants.Ints.Fragments.SETTINGS) {
+                    rManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
+                            R.id.container,
+                            new SettingsFragment(),
+                            Constants.Strings.Fragments.SETTINGS).commit();
+                }
+            }
+            selectedFragment = Constants.Ints.Fragments.SETTINGS;
+
+        } else {
+            display(findViewById(R.id.content),TOAST,R.string.feature_unavailable);
+        }
+    }
     private void handleChatNavigation(final User currentUser, final FragmentManager manager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
-            if (selectedFragment != CHAT) {
-                selectedFragment = CHAT;
+            if (selectedFragment != Constants.Ints.Fragments.CHAT) {
+                selectedFragment = Constants.Ints.Fragments.CHAT;
                 if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                     if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
                         manager.beginTransaction().replace(R.id.container, new ChatListFragment()).commit();
@@ -193,7 +297,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
                         teamUIDs.add(currentUser.getTeamUID());
 
-                        FirebaseHelper.getReference(this,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(this,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -202,7 +306,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                         if (chatItem != null) {
                                             if (currentUser.isInChat(chatItem)) {
                                                 // Get Other Team Admin Team UID
-                                                FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                Backend.getReference(HomeActivity.this,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                                         if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -211,7 +315,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                                                 if (teamItem != null && !currentUser.isInTeam(teamItem) && chatItem.hasTeam(teamItem.getUID())) {
                                                                     teamUIDs.add(teamItem.getUID());
                                                                     // Get Channel UIDs
-                                                                    FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    Backend.getReference(HomeActivity.this,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
                                                                         @Override
                                                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                                                             if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -303,7 +407,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         }
                     }
                 } else {
-                    if (selectedFragment != DASHBOARD) {
+                    if (selectedFragment != Constants.Ints.Fragments.DASHBOARD) {
                         if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
                             manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new TeamsFragment()).commit();
                         } else {
@@ -314,7 +418,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     }
 
                 }
-                selectedFragment = DASHBOARD;
+                selectedFragment = Constants.Ints.Fragments.DASHBOARD;
 
             }
 
@@ -323,103 +427,49 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
         }
     }
-    private void handleSettingsNavigation(final android.app.FragmentManager rManager) {
-        if (Constants.Bools.FeaturesAvailable.DISPLAY_SETTINGS) {
-            final Bundle intent = getIntent().getExtras();
-            if (intent != null) {
-                final String nav = intent.getString(Constants.Strings.Fields.FRAGMENT);
-                final String teamUID = intent.getString(Constants.Strings.UIDs.TEAM_UID);
-                if (nav != null && teamUID != null) {
-                    switch (nav) {
-                        case Constants.Strings.Fragments.TEAM_MANAGEMENT:
-                            FirebaseHelper.getReference(this,R.string.firebase_teams_directory).child(teamUID).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(new Team(dataSnapshot))).commit();
-                                }
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
+            determineHomeState(item);
+            return true;
+        }
 
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
+    };
 
-                                }
-                            });
-                            break;
-                    }
-                } else {
-                    rManager.beginTransaction().setTransition(
-                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                            R.id.container,
-                            new SettingsFragment(),
-                            Constants.Strings.Fragments.SETTINGS).commit();
-                }
-
+//    Other Methods
+    private ArrayList<String> sortChannels(final ArrayList<Channel> channels) {
+        final ArrayList<Channel> sortedChannels = new ArrayList<>(channels.size());
+        final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
+        if (channels.size() == 2) {
+            if (channels.get(0).getName().equals("")) {
+                sortedChannels.add(channels.get(1));
+                sortedChannels.add(channels.get(0));
             } else {
-                if (selectedFragment != SETTINGS) {
-                    rManager.beginTransaction().setTransition(
-                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                            R.id.container,
-                            new SettingsFragment(),
-                            Constants.Strings.Fragments.SETTINGS).commit();
-                }
+                sortedChannels.add(channels.get(0));
+                sortedChannels.add(channels.get(1));
             }
-            selectedFragment = SETTINGS;
 
-        } else {
-            display(findViewById(R.id.content),TOAST,R.string.feature_unavailable);
+            for (int i = 0; i < sortedChannels.size(); i++) {
+                channelUIDs.add(sortedChannels.get(i).getUID());
+            }
         }
+
+        return channelUIDs;
     }
-    private void removeNavigationItem() {
-        BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
 
-        Menu menu = navigationView.getMenu();
-
-//        MenuItem target = menu.findItem(R.id.navigation_chat);
-        menu.removeItem(R.id.navigation_chat);
-//        target.setVisible(false);
-    }
-    private void checkNavigationItem(final Activity activity) {
-        FirebaseHelper.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
-
-                final Menu menu = navigationView.getMenu();
-
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
-                        menu.removeItem(R.id.navigation_chat);
-                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                            menu.removeItem(R.id.navigation_dashboard);
-                            menu.removeItem(R.id.navigation_notifications);
-                        } else {
-
-                        }
-                    } else {
-                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) || currentUser.getTeamUID().equals("")) {
-                            navigationView.setSelectedItemId(R.id.navigation_settings);
-                            menu.removeItem(R.id.navigation_chat);
-                            menu.removeItem(R.id.navigation_settings);
-                            menu.removeItem(R.id.navigation_dashboard);
-                            menu.removeItem(R.id.navigation_notifications);
-
-                            final android.app.FragmentManager manager = getFragmentManager();
-                            handleSettingsNavigation(manager);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+//    Listener Methods
+    @Override
+    public void onTeamsFragmentInteraction(final Context context, final Team teamItem) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(
+                R.id.container,
+                BrandingElementsFragment.newInstance(teamItem.getUID())
+        ).addToBackStack("tag").commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
     }
     @Override
     public void onChatListFragmentInteraction(final Context context, final Chat chatItem, final Team teamItem) {
-        transitionUserToChatFragment(context,chatItem,teamItem);
-    }
-    private void transitionUserToChatFragment(final Context context, final Chat chatItem, final Team teamItem) {
-        FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(HomeActivity.this,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -433,13 +483,13 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         }
                     }
 
-                    FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(HomeActivity.this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final User currentUser = new User(dataSnapshot);
                                 if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                                    FirebaseHelper.getReference(HomeActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(HomeActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -476,33 +526,22 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         });
 
     }
-    private ArrayList<String> sortChannels(final ArrayList<Channel> channels) {
-        final ArrayList<Channel> sortedChannels = new ArrayList<>(channels.size());
-        final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
-        if (channels.size() == 2) {
-            if (channels.get(0).getName().equals("")) {
-                sortedChannels.add(channels.get(1));
-                sortedChannels.add(channels.get(0));
-            } else {
-                sortedChannels.add(channels.get(0));
-                sortedChannels.add(channels.get(1));
-            }
 
-            for (int i = 0; i < sortedChannels.size(); i++) {
-                channelUIDs.add(sortedChannels.get(i).getUID());
-            }
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            BackendNotificationService.LocalBinder binder = (BackendNotificationService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
         }
 
-        return channelUIDs;
-    }
-    @Override
-    public void onTeamsFragmentInteraction(final Context context, final Team teamItem) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                R.id.container,
-                BrandingElementsFragment.newInstance(teamItem.getUID())
-        ).addToBackStack("tag").commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
-    }
-
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 }

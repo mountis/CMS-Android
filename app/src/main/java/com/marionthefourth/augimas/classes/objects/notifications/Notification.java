@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.classes.objects.notifications;
 
+import android.os.Bundle;
 import android.os.Parcel;
 
 import com.google.firebase.database.DataSnapshot;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
+import static com.marionthefourth.augimas.classes.objects.notifications.Notification.NotificationObjectType.BRANDING_ELEMENT;
 
 public final class Notification extends FirebaseContent {
 
@@ -101,7 +103,7 @@ public final class Notification extends FirebaseContent {
     }
     public enum NotificationVerbType {
         ADD, APPROVE, AWAIT, CREATE ,DISAPPROVE, INVITE, JOIN, LEFT, RECEIVE,
-        REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, DEFAULT;
+        REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, DEFAULT, BLOCK;
 
         @Override
         public String toString() {
@@ -115,8 +117,10 @@ public final class Notification extends FirebaseContent {
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
                 switch(this) {
+
                     case ADD:               return Constants.Ints.NotificationTypes.Verbs.IDs.ADD;
                     case APPROVE:           return Constants.Ints.NotificationTypes.Verbs.IDs.APPROVE;
+                    case BLOCK:           return Constants.Ints.NotificationTypes.Verbs.IDs.BLOCK;
                     case AWAIT:             return Constants.Ints.NotificationTypes.Verbs.IDs.AWAIT;
                     case CREATE:            return Constants.Ints.NotificationTypes.Verbs.IDs.CREATE;
                     case DISAPPROVE:        return Constants.Ints.NotificationTypes.Verbs.IDs.DISAPPROVE;
@@ -129,12 +133,14 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE;
+                    case DEFAULT:
                     default:                return DEFAULT_ID;
                 }
             } else {
                 switch(this) {
                     case ADD:               return Constants.Ints.NotificationTypes.Verbs.Indices.ADD;
                     case APPROVE:           return Constants.Ints.NotificationTypes.Verbs.Indices.APPROVE;
+                    case BLOCK:           return Constants.Ints.NotificationTypes.Verbs.Indices.BLOCK;
                     case AWAIT:             return Constants.Ints.NotificationTypes.Verbs.Indices.AWAIT;
                     case CREATE:            return Constants.Ints.NotificationTypes.Verbs.Indices.CREATE;
                     case DISAPPROVE:        return Constants.Ints.NotificationTypes.Verbs.Indices.DISAPPROVE;
@@ -147,6 +153,7 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE;
+                    case DEFAULT:
                     default:                return DEFAULT_ID;
                 }
             }
@@ -163,6 +170,9 @@ public final class Notification extends FirebaseContent {
                 case Constants.Ints.NotificationTypes.Verbs.IDs.AWAIT:
                 case Constants.Ints.NotificationTypes.Verbs.Indices.AWAIT:
                     return AWAIT;
+                case Constants.Ints.NotificationTypes.Verbs.IDs.BLOCK:
+                case Constants.Ints.NotificationTypes.Verbs.Indices.BLOCK:
+                    return BLOCK;
                 case Constants.Ints.NotificationTypes.Verbs.IDs.CREATE:
                 case Constants.Ints.NotificationTypes.Verbs.Indices.CREATE:
                     return CREATE;
@@ -443,6 +453,8 @@ public final class Notification extends FirebaseContent {
                 case REQUEST_ACCESS:
                     verbPart = "is requesting access to";
                     break;
+                case REQUEST_APPROVAL:
+                    break;
                 case REQUEST_JOIN:
                     verbPart = "is requesting to join";
                     break;
@@ -451,7 +463,9 @@ public final class Notification extends FirebaseContent {
                     break;
                 case DEFAULT:
                     return "Unable to grab data!";
-
+                case BLOCK:
+                    verbPart = "blocked";
+                    break;
             }
 
             switch (objectType) {
@@ -511,7 +525,7 @@ public final class Notification extends FirebaseContent {
         if (object instanceof Chat) {
             setObjectType(NotificationObjectType.CHAT);
         } else if (object instanceof BrandingElement) {
-            setObjectType(NotificationObjectType.BRANDING_ELEMENT);
+            setObjectType(BRANDING_ELEMENT);
         } else if (object instanceof User) {
             setObjectType(NotificationObjectType.MEMBER);
         } else if (object instanceof Team) {
@@ -576,6 +590,41 @@ public final class Notification extends FirebaseContent {
             }
         }
         return result;
+    }
+
+    public Bundle toBundle() {
+        final Bundle bundle = new Bundle();
+        String entityTeamUID;
+        String navigationDirection;
+        switch(getSubjectType()) {
+            case MEMBER:
+                entityTeamUID = ((User) getSubject()).getTeamUID();
+                break;
+            case TEAM:
+            default:
+                entityTeamUID = getSubject().getUID();
+                break;
+        }
+        switch (getObjectType()) {
+            case BRANDING_ELEMENT:
+                navigationDirection = Constants.Strings.Fragments.BRANDING_ELEMENTS;
+                break;
+            case CHAT:
+                navigationDirection = Constants.Strings.Fragments.CHAT;
+                break;
+            case MEMBER:
+            case TEAM:
+            default:
+                navigationDirection = Constants.Strings.Fragments.TEAM_MANAGEMENT;
+                break;
+
+        }
+
+        bundle.putString(Constants.Strings.Fields.MESSAGE,getMessage());
+        bundle.putString(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
+        bundle.putString(Constants.Strings.Fields.FRAGMENT,navigationDirection);
+
+        return bundle;
     }
 
     @Override
