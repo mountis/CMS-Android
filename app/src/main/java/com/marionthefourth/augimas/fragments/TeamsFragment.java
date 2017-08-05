@@ -24,10 +24,6 @@ import com.marionthefourth.augimas.backend.Backend;
 import java.util.ArrayList;
 
 public class TeamsFragment extends Fragment {
-
-    private OnTeamsFragmentInteractionListener teamListener;
-    private ChatListFragment.OnChatListFragmentInteractionListener chatListener;
-
     public TeamsFragment() {}
 
     @Override
@@ -96,34 +92,4 @@ public class TeamsFragment extends Fragment {
             });
         }
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnTeamsFragmentInteractionListener) {
-            teamListener = (OnTeamsFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnTeamsFragmentInteractionListener");
-        }
-
-        if (context instanceof ChatListFragment.OnChatListFragmentInteractionListener) {
-            chatListener = (ChatListFragment.OnChatListFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnChatListFragmentInteractionListener");
-        }
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        teamListener = null;
-    }
-
-    public interface OnTeamsFragmentInteractionListener {
-        void onTeamsFragmentInteraction(Context context, Team teamItem);
-    }
-
 }

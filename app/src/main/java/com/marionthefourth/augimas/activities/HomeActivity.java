@@ -38,7 +38,7 @@ import static com.marionthefourth.augimas.classes.objects.communication.Channel.
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
-public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener, TeamsFragment.OnTeamsFragmentInteractionListener {
+public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener {
     private int selectedFragment = Constants.Ints.Fragments.DASHBOARD;
 //    Activity Methods
     @Override
@@ -403,15 +403,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         }
     }
 //    Listener Methods
-    @Override
-    public void onTeamsFragmentInteraction(final Context context, final Team teamItem) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                R.id.container,
-                BrandingElementsFragment.newInstance(teamItem.getUID())
-        ).addToBackStack("tag").commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
-    }
     @Override
     public void onChatListFragmentInteraction(final Context context, final Chat chatItem, final Team teamItem) {
         Backend.getReference(HomeActivity.this,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
