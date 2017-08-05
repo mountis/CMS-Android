@@ -2,8 +2,6 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.view.View;
@@ -16,97 +14,94 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
+import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
 public final class TeamStatusDialog extends AlertDialog.Builder {
-
-    public TeamStatusDialog(final Activity activity, final View containingView, final Team teamItem) {
+//    Dialog Constructor
+    public TeamStatusDialog(final Team teamItem, final View containingView, final Activity activity) {
         super(containingView.getContext());
-        setupDialog(activity, containingView,teamItem);
+        setupDialog(teamItem, containingView, activity);
     }
-
-    private void setupDialog(final Activity activity, View view, final Team teamItem) {
-        // Setting Dialog Title
+//    Dialog Setup Methods
+    private void setupDialog(final Team teamItem, View view, final Activity activity) {
         setTitle(getContext().getString(R.string.title_team_status_updater));
 
-        // Add Button Fields
         ArrayList<AppCompatButton> buttons = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             buttons.add(new AppCompatButton(getContext()));
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setupButtons(activity, buttons,teamItem);
-        }
+        setupButtons(buttons, teamItem, activity);
+        setupLayout(buttons, view);
 
-        setupLayout(view,buttons);
-
-        // Showing Alert Message
         show();
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void setupButtons(final Activity activity, final ArrayList<AppCompatButton> buttons, final Team teamItem) {
-        for (int i = 0; i < buttons.size();i++) {
-            switch (i) {
-                case 0:
-                    buttons.get(i).setText(FirebaseEntity.EntityStatus.APPROVED.toVerb());
-                    break;
-                case 1:
-                    buttons.get(i).setText(FirebaseEntity.EntityStatus.BLOCKED.toVerb());
-                    break;
-            }
-
-            final int finalI = i;
-            buttons.get(i).setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public void onClick(View v) {
-                    Backend.getReference(activity,R.string.firebase_teams_directory).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final Team teamItem = new Team(dataSnapshot);
-                                teamItem.setStatus(FirebaseEntity.EntityStatus.getVerbStatus(finalI));
-                                update(activity,teamItem);
-
-                                switch (finalI) {
-                                    case 0:
-                                        upstreamNotification(activity,getCurrentUser(), Notification.NotificationVerbType.APPROVE,teamItem);
-                                        break;
-                                    case 1:
-                                        upstreamNotification(activity,getCurrentUser(), Notification.NotificationVerbType.BLOCK,teamItem);
-                                        break;
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                }
-            });
-
-            buttons.get(i).setTextColor(Color.WHITE);
-        }
-    }
-
-    private void setupLayout(final View view, final ArrayList<AppCompatButton> buttons) {
-
+    private void setupLayout(final ArrayList<AppCompatButton> buttons, final View view) {
         final LinearLayout layout = new LinearLayout(view.getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
 
-        for (int i = 0; i < buttons.size();i++) {
-            layout.addView(buttons.get(i));
+        for(AppCompatButton button:buttons) {
+            layout.addView(button);
         }
+
         setView(layout);
+    }
+    private void setupButtons(final ArrayList<AppCompatButton> buttons, final Team teamItem, final Activity activity) {
+        for (int i = 0; i < buttons.size();i++) {
+            switch (i) {
+                case 0: buttons.get(i).setText(FirebaseEntity.EntityStatus.APPROVED.toVerb()); break;
+                case 1: buttons.get(i).setText(FirebaseEntity.EntityStatus.BLOCKED.toVerb()); break;
+            }
+
+            buttons.get(i).setTextColor(Color.WHITE);
+            setupButtonsOnClickListeners(buttons.get(i),i,teamItem,activity);
+        }
+    }
+    private void setupButtonsOnClickListeners(final AppCompatButton button, final int buttonIndex, final Team teamItem, final Activity activity) {
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final Team backendTeamItem = new Team(dataSnapshot);
+                            backendTeamItem.setStatus(FirebaseEntity.EntityStatus.getVerbStatus(buttonIndex));
+                            update(backendTeamItem, activity);
+
+                            final Notification.NotificationVerbType verbType;
+                            switch (buttonIndex) {
+                                case 0: verbType = Notification.NotificationVerbType.APPROVE; break;
+                                default: verbType = Notification.NotificationVerbType.BLOCK; break;
+                            }
+
+                            Backend.getReference(R.string.firebase_users_directory, getContext()).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final User currentUser = new User(dataSnapshot);
+                                    Backend.sendUpstreamNotification(sendNotification(backendTeamItem, currentUser, verbType, activity), backendTeamItem.getUID());
+                                    Backend.sendUpstreamNotification(sendNotification(backendTeamItem, currentUser, verbType, activity), currentUser.getTeamUID());
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                });
+            }
+        });
     }
 }

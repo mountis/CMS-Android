@@ -61,7 +61,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
         final Activity activity = getActivity();
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -159,13 +159,13 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.getContents().set(0,socialMediaInput.getText().toString());
-                                update(activity,elementItem);
+                                update(elementItem, activity);
                                 // TODO - Send Notification to Both Teams
                             }
                         }
@@ -178,7 +178,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -199,7 +199,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void loadSocialMediaNameData(final Activity activity,final View view, final RecyclerView recyclerView) {
         // Load Available Services
-        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -239,13 +239,13 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             updateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.getContents().set(0,domainNameInput.getText().toString());
-                                update(activity,elementItem);
+                                update(elementItem, activity);
                             }
                         }
 
@@ -257,7 +257,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -283,7 +283,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void loadDomainNameData(final Activity activity, final View view, final RecyclerView recyclerView) {
         // Load Domain Name
-        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

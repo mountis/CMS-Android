@@ -282,12 +282,17 @@ public class BrandingElement extends FirebaseContent {
 
         initContents(type);
         fillContents(brandingElementSnapshot);
-
-
     }
     public BrandingElement(final ElementType type, final ElementStatus status) {
         this(type);
         setStatus(status);
+    }
+    public static ArrayList<BrandingElement> toArrayList(DataSnapshot brandingElementReferences) {
+        final ArrayList<BrandingElement> brandingElements = new ArrayList<>();
+        for(DataSnapshot brandingElementReference:brandingElementReferences.getChildren()) {
+            brandingElements.add(new BrandingElement(brandingElementReference));
+        }
+        return brandingElements;
     }
 //    Init Methods
     private void initContents(ElementType type) {

@@ -37,7 +37,7 @@ public class TeamsAdapter extends RecyclerView.Adapter<TeamsAdapter.ViewHolder> 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new TeamAccessDialog(activity,holder.teamItem);
+                new TeamAccessDialog(holder.teamItem, activity);
             }
         });
     }

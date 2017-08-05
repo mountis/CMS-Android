@@ -66,19 +66,19 @@ public class ChatListFragment extends Fragment {
     }
 
     private void loadChats(final Activity activity,final RecyclerView recyclerView) {
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        Backend.getReference(activity,R.string.firebase_chats_directory).addValueEventListener(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_chats_directory, activity).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -122,7 +122,7 @@ public class ChatListFragment extends Fragment {
     }
 
     private void getCorrespondingTeamsForChats(final Activity activity, final RecyclerView recyclerView, final Team currentTeam, final ArrayList<Chat> chats) {
-        Backend.getReference(activity,R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_teams_directory, activity).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {

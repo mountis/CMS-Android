@@ -51,7 +51,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         holder.mBrandingElementStatus.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                new ElementStatusDialog(activity,holder.mView,holder);
+                new ElementStatusDialog(holder, holder.mView, activity);
                 return true;
             }
         });

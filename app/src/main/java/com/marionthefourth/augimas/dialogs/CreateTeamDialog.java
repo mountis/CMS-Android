@@ -34,13 +34,13 @@ import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
 public final class CreateTeamDialog extends AlertDialog.Builder {
-    public CreateTeamDialog(final Activity activity, final View containingView) {
+//    Dialog Constructor
+    public CreateTeamDialog(final View containingView, final Activity activity) {
         super(containingView.getContext());
-        setupDialog(activity,containingView);
+        setupDialog(containingView, activity);
     }
-
-    private void setupDialog(final Activity activity, final View containingView) {
-        // Setting Dialog Title
+//    Dialog Setup Methods
+    private void setupDialog(final View containingView, final Activity activity) {
         setTitle(containingView.getContext().getString(R.string.title_create_team));
 
         final ArrayList<TextInputLayout> layouts = new ArrayList<>();
@@ -52,16 +52,37 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
         }
 
         setupDialogLayout(layouts,editTexts);
+        setupPositiveButton(editTexts, activity);
 
-        // Set Positive "Email Me" Button
-        setupPositiveButton(activity,editTexts);
-
-        // Showing Alert Message
         show();
     }
+    private void setupPositiveButton(final ArrayList<TextInputEditText> editTexts, final Activity activity) {
+        setPositiveButton(R.string.request, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialog, int which) {
+                if (FragmentHelper.fieldsAreFilled(editTexts) && FragmentHelper.fieldsPassWhitelist(editTexts)) {
+                    Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.hasChildren()) {
+                                for(final Team teamItem:Team.toArrayList(dataSnapshot)) {
+                                    if (teamItem.getUsername().equals(editTexts.get(1).getText().toString())) {
+                                        return;
+                                    }
+                                }
+                            }
 
+                            createTeamAndAddUserToTeam(editTexts, activity);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+                }
+            }
+        });
+    }
     private void setupDialogLayout(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> editTexts) {
-        // Create LinearLayout to add TextInputLayout with Edit Text
         final LinearLayout layout = new LinearLayout(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
@@ -89,79 +110,62 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
 
         setView(layout);
     }
-
-    private void setupPositiveButton(final Activity activity, final ArrayList<TextInputEditText> editTexts) {
-        setPositiveButton(R.string.request, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(final DialogInterface dialog, int which) {
-                // Check that text field is filled
-                if (FragmentHelper.fieldsAreFilled(editTexts) && FragmentHelper.fieldsPassWhitelist(editTexts)) {
-                    // Check against firebase
-                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.hasChildren()) {
-                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                    final Team teamItem = new Team(teamReference);
-                                    // If Team Matches Input, Add User to Member's List
-                                    if (teamItem.getUsername().equals(editTexts.get(1).getText().toString())) {
-                                        return;
-                                    }
-                                }
-
-                                // Create Team
-                                createTeamAndAddUserToTeam(activity,editTexts);
-                            } else {
-                                createTeamAndAddUserToTeam(activity,editTexts);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                } else {
-                    // Display Error
-                }
-            }
-        });
+//    Functional Methods
+    private void createElements(final Team newClientTeam, final Activity activity) {
+//        TODO - Extend to Add More Element Types
+        for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
+            final BrandingElement elementItem = new BrandingElement(BrandingElement.ElementType.getType(i));
+            elementItem.setTeamUID(newClientTeam.getUID());
+            Backend.create(activity,elementItem);
+        }
     }
-
-    private void createTeamAndAddUserToTeam(final Activity activity, final ArrayList<TextInputEditText> editTexts) {
+    private void createChannels(Chat connectedChat, Team newClientTeam, Team hostTeam, final Activity activity) {
+        for (int i = 0; i < 3; i++) {
+            final Channel channel = new Channel(connectedChat);
+            switch(i) {
+                case 0:
+                    channel.setName(hostTeam.getName());
+                    break;
+                case 2:
+                    channel.setName(newClientTeam.getName());
+                    break;
+                default:
+                    break;
+            }
+            Backend.create(activity,channel);
+        }
+    }
+    private void createTeamAndAddUserToTeam(final ArrayList<TextInputEditText> editTexts, final Activity activity) {
         // Get Full User Data
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-
                     final User currentUser = new User(dataSnapshot);
-
-                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
                                 Team adminTeam;
-                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                    final Team teamItem = new Team(teamReference);
-                                    if (teamItem.getType().equals(FirebaseEntity.EntityType.US)) {
+                                for(final Team teamItem:Team.toArrayList(dataSnapshot)) {
+                                    if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
                                         adminTeam = teamItem;
                                         final Team newTeam = new Team(editTexts.get(0).getText().toString(),editTexts.get(1).getText().toString(),currentUser, FirebaseEntity.EntityRole.OWNER,FirebaseEntity.EntityStatus.AWAITING);
                                         newTeam.setStatus(FirebaseEntity.EntityStatus.AWAITING);
-                                        newTeam.setType(FirebaseEntity.EntityType.THEM);
+                                        newTeam.setType(FirebaseEntity.EntityType.CLIENT);
 
                                         Backend.create(activity,newTeam);
-                                        createElements(activity,newTeam);
-
-                                        // Create Chat between the two chats
-                                        final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
-
-                                        Backend.create(activity,connectedChat);
-                                        // Create Channels
-                                        createChannels(activity,teamItem, newTeam, connectedChat);
-
                                         currentUser.setTeamUID(newTeam.getUID());
-                                        update(activity,currentUser);
+                                        update(currentUser, activity);
 
-                                        // Create and Send Notifications
+//                                        Create Team Branding Elements
+                                        createElements(newTeam, activity);
+//                                        Create Chat between the two chats
+                                        final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
+                                        Backend.create(activity,connectedChat);
+//                                        Create Channels
+                                        createChannels(connectedChat, newTeam, teamItem, activity);
+//                                        Create and Send Notifications
                                         final Notification teamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
                                         teamCreatedNotification.getReceiverUIDs().add(teamItem.getUID());
                                         send(activity,teamCreatedNotification);
@@ -169,6 +173,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         send(activity,joinedTeamNotification);
 
                                         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+                                        Backend.sendUpstreamNotification(teamCreatedNotification, teamItem.getUID());
 
                                         final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                         activity.startActivity(homeIntent);
@@ -192,30 +197,4 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
             }
         });
     }
-
-    private void createElements(final Activity activity, final Team teamItem) {
-        for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
-            final BrandingElement elementItem = new BrandingElement(BrandingElement.ElementType.getType(i));
-            elementItem.setTeamUID(teamItem.getUID());
-            Backend.create(activity,elementItem);
-        }
-    }
-
-    private void createChannels(final Activity activity,Team teamItem, Team newTeam, Chat connectedChat) {
-        for (int i = 0; i < 3; i++) {
-            final Channel channel = new Channel(connectedChat);
-            switch(i) {
-                case 0:
-                    channel.setName(teamItem.getName());
-                    break;
-                case 2:
-                    channel.setName(newTeam.getName());
-                    break;
-                default:
-                    break;
-            }
-            Backend.create(activity,channel);
-        }
-    }
-
 }

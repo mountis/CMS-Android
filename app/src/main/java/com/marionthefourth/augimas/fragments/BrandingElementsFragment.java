@@ -63,12 +63,12 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             loadPrototypeBrandingElements(activity,recyclerView,team);
         } else {
             if (getArguments() != null) {
-                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
-                            if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
+                            if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
 //                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                                 getView().setFocusableInTouchMode(true);
                                 getView().requestFocus();
@@ -94,7 +94,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 });
 
                 // Load Branding Elements && Setup Action Bar Name
-                Backend.getReference(activity,R.string.firebase_teams_directory).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -119,7 +119,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
     }
 
     private void loadBrandingElements(final Activity activity, final RecyclerView recyclerView, final Team team) {
-        Backend.getReference(activity,R.string.firebase_branding_elements_directory).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_branding_elements_directory, activity).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChildren()) {

@@ -2,7 +2,6 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
@@ -11,59 +10,46 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChangePasswordDialog extends AlertDialog.Builder {
-
+//    Dialog Constructor
     public ChangePasswordDialog(final View containingView) {
         super(containingView.getContext());
         setupDialog(containingView);
 
     }
-
+//    Dialog Setup Methods
     private void setupDialog(final View containingView) {
-        // Get FirebaseUser
-
         final User user = getCurrentUser();
 
         if (user != null || PROTOTYPE_MODE) {
-            // Setting Dialog Title
             setTitle(getContext().getString(R.string.title_change_password));
 
-            // Setting Icon to Dialog
             setIcon(R.drawable.ic_lock_open);
 
-            // Create LinearLayout to add TextInputLayouts with EditTexts
             final ArrayList<TextInputEditText> inputs = new ArrayList<>();
-            final ArrayList<TextInputLayout> layouts = new ArrayList<>();
 
-            setupDialogLayouts(layouts,inputs);
-
-            // Setting Positive "Update" Button
-            setupPositiveButton(containingView,inputs, user);
+            setupDialogLayouts(inputs, new ArrayList<TextInputLayout>());
+            setupPositiveButton(user, inputs, containingView);
 
             show();
         }
 
     }
-
-    private void setupDialogLayouts(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
+    private void setupDialogLayouts(final ArrayList<TextInputEditText> inputs, final ArrayList<TextInputLayout> layouts) {
         final LinearLayoutCompat layout = new LinearLayoutCompat(getContext());
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -102,91 +88,40 @@ public final class ChangePasswordDialog extends AlertDialog.Builder {
 
         setView(layout);
     }
-
-    private void setupPositiveButton(final View containingView, final ArrayList<TextInputEditText> inputs, final User user) {
+    private void setupPositiveButton(final User user, final ArrayList<TextInputEditText> inputs, final View containingView) {
         setPositiveButton(getContext().getString(R.string.update_text), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
                 if (Constants.Bools.FeaturesAvailable.CHANGE_PASSWORD) {
-                    // Ensure Fields are filled
                     if (!FragmentHelper.fieldsAreFilled(inputs)) {
-                        display(containingView,SNACKBAR,R.string.error_field_required);
+                        display(SNACKBAR, R.string.error_field_required, containingView);
                         dialog.dismiss();
                         return;
                     }
-                    // Ensure Passwords are the Same
-                    if (passwordsDontMatch(inputs)) {
-                        display(containingView,SNACKBAR,R.string.error_password_mismatch);
+                    if (passwordsDoNotMatch(inputs)) {
+                        display(SNACKBAR, R.string.error_password_mismatch, containingView);
                         dialog.dismiss();
                         return;
                     }
-                    // Ensure Password Length is Greater than 5
                     if (passwordIsNotCorrectLength(inputs)) {
-                        display(containingView,SNACKBAR,R.string.error_invalid_password_length);
+                        display(SNACKBAR, R.string.error_invalid_password_length, containingView);
                         dialog.dismiss();
                         return;
                     }
 
-                    if (Constants.Bools.FeaturesAvailable.CHANGE_PASSWORD) {
-                        final ProgressDialog loadingProgress = new ProgressDialog(getContext());
-                        setupProgressDialog(containingView,loadingProgress);
-                        reauthenticateUser(containingView, dialog,inputs,user, loadingProgress);
-                    } else {
-                        display(containingView,SNACKBAR,R.string.feature_unavailable);
-                    }
-                }
-            }
-        });
-    }
-
-    private void reauthenticateUser(final View containingView, final DialogInterface dialog, final ArrayList<TextInputEditText> inputs, User user, final ProgressDialog loadingProgress) {
-        AuthCredential credential = EmailAuthProvider
-                .getCredential(user.getEmail(), inputs.get(0).getText().toString());
-
-        // Reauthenticate User
-        FirebaseAuth.getInstance().getCurrentUser().reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    // Update Password
-                    FirebaseAuth.getInstance().getCurrentUser().updatePassword(inputs.get(1).getText().toString())
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    loadingProgress.dismiss();
-
-                                    if (task.isSuccessful()) {
-                                        display(containingView,SNACKBAR,R.string.success_password_updated);
-                                        dialog.dismiss();
-                                    } else {
-                                        display(containingView,SNACKBAR,R.string.error_password_updated,task.getResult().toString());
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
+                    final ProgressDialog loadingProgress = FragmentHelper.buildProgressDialog(R.string.updating_password_text,containingView);
+                    Backend.reAuthenticate(user,inputs.get(0).getText().toString(),inputs.get(1).getText().toString(),loadingProgress,dialog,containingView);
                 } else {
-                    loadingProgress.dismiss();
-                    display(containingView,SNACKBAR,R.string.error_incorrect_password);
-                    dialog.dismiss();
+                    display(SNACKBAR, R.string.feature_unavailable, containingView);
                 }
             }
         });
     }
-
-    private void setupProgressDialog(final View view, final ProgressDialog loadingProgress) {
-        loadingProgress.setMessage(view.getContext().getString(R.string.updating_password_text));
-        loadingProgress.setProgressStyle(R.style.AppTheme_ProgressDialog);
-        loadingProgress.setCancelable(false);
-        // disable dismiss by tapping outside of the dialog
-        loadingProgress.show();
+//    Input Verification Methods
+    private boolean passwordsDoNotMatch(final ArrayList<TextInputEditText> inputs) {
+        return !inputs.get(1).getText().toString().equals(inputs.get(2).getText().toString());
     }
-
     private boolean passwordIsNotCorrectLength(final ArrayList<TextInputEditText> inputs) {
         return inputs.get(1).getText().toString().length() < 6;
     }
-
-    private boolean passwordsDontMatch(final ArrayList<TextInputEditText> inputs) {
-        return !inputs.get(1).getText().toString().equals(inputs.get(2).getText().toString());
-    }
-
 }

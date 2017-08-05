@@ -15,8 +15,7 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
     private String uid;
     public abstract String getField(final int index);
 //    Other Methods
-    public final static FirebaseObject getFirebaseObjectFromFields(final ArrayList<String> fields, final int OBJECT_TYPE) {
-
+    public final static FirebaseObject getFromFields(final ArrayList<String> fields, final int OBJECT_TYPE) {
         switch (OBJECT_TYPE) {
             case FIREBASE_USER:
                 if (fields.size() == 2) {

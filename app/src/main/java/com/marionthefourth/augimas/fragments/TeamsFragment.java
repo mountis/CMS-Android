@@ -24,11 +24,11 @@ import com.marionthefourth.augimas.backend.Backend;
 import java.util.ArrayList;
 
 public class TeamsFragment extends Fragment {
+//    Fragment Constructor
     public TeamsFragment() {}
-
+//    Fragment Methods
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_teams, container, false);
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -41,13 +41,13 @@ public class TeamsFragment extends Fragment {
             if (Constants.Bools.PROTOTYPE_MODE) {
                 loadPrototypeTeams(recyclerView);
             } else {
-                loadTeams(activity, recyclerView, Backend.getCurrentUser());
+                loadTeams(Backend.getCurrentUser(), recyclerView, activity);
             }
 
         }
         return view;
     }
-
+//    Population Methods
     private void loadPrototypeTeams(final RecyclerView recyclerView) {
         final ArrayList<Team> teams = new ArrayList<>();
         teams.add(new Team("Google","google"));
@@ -56,23 +56,13 @@ public class TeamsFragment extends Fragment {
 
 //        recyclerView.setAdapter(new TeamsAdapter(activity,teams,teamListener));
     }
-
-    private void loadTeams(final Activity activity, final RecyclerView recyclerView, final User user) {
+    private void loadTeams(final User user, final RecyclerView recyclerView, final Activity activity) {
         if (user != null) {
-            Backend.getReference(
-                    activity,
-                    R.string.firebase_teams_directory
-            ).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(R.string.firebase_teams_directory, activity).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.hasChildren()) {
-                        final ArrayList<Team> teamItems = new ArrayList<>();
-                        // Get All Teams
-                        for (DataSnapshot teamReference : dataSnapshot.getChildren()) {
-                            if ((new Team(teamReference).getType().equals(FirebaseEntity.EntityType.THEM))) {
-                                teamItems.add(new Team(teamReference));
-                            }
-                        }
+                        final ArrayList<Team> teamItems = Team.toFilteredArrayList(dataSnapshot,Constants.Strings.Fields.ENTITY_TYPE,FirebaseEntity.EntityType.CLIENT.toString());
 
                         if (teamItems.size() == 0) {
                             recyclerView.setAdapter(null);

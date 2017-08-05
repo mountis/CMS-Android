@@ -29,19 +29,26 @@ public final class Channel extends FirebaseCommunication {
         setName(channel.getName());
         setChatUID(channel.getChatUID());
     }
-    public Channel(final DataSnapshot chatReference) {
-        if (chatReference.hasChild(Constants.Strings.UIDs.CHAT_UID)) {
-            setChatUID(chatReference.child(Constants.Strings.UIDs.CHAT_UID).getValue().toString());
+    public Channel(final DataSnapshot channelReference) {
+        if (channelReference.hasChild(Constants.Strings.UIDs.CHAT_UID)) {
+            setChatUID(channelReference.child(Constants.Strings.UIDs.CHAT_UID).getValue().toString());
         }
 
-        if (chatReference.hasChild(Constants.Strings.UIDs.UID)) {
-            setUID(chatReference.child(Constants.Strings.UIDs.UID).getValue().toString());
+        if (channelReference.hasChild(Constants.Strings.UIDs.UID)) {
+            setUID(channelReference.child(Constants.Strings.UIDs.UID).getValue().toString());
         }
 
-        if (chatReference.hasChild(Constants.Strings.Fields.FULL_NAME)) {
-            setName(chatReference.child(Constants.Strings.Fields.FULL_NAME).getValue().toString());
+        if (channelReference.hasChild(Constants.Strings.Fields.FULL_NAME)) {
+            setName(channelReference.child(Constants.Strings.Fields.FULL_NAME).getValue().toString());
         }
 
+    }
+    public static ArrayList<Channel> toArrayList(DataSnapshot channelReferences) {
+        final ArrayList<Channel> channels = new ArrayList<>();
+        for(DataSnapshot channelReference:channelReferences.getChildren()) {
+            channels.add(new Channel(channelReference));
+        }
+        return channels;
     }
 //    Other Methods
     @Override

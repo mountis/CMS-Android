@@ -52,7 +52,7 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
             holder.mDomainNameAvailableCheckBox.setChecked(true);
         }
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -78,13 +78,13 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
                 }
 
                 final String VALUE = value;
-                Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(domainName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(domainName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                             elementItem.getContents().set(position+1,VALUE);
-                            update(activity,elementItem);
+                            update(elementItem, activity);
                         }
                     }
 

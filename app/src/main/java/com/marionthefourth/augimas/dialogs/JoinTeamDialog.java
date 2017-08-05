@@ -24,66 +24,47 @@ import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
 public final class JoinTeamDialog extends AlertDialog.Builder {
-
-    public JoinTeamDialog(final Activity activity, final View containingView) {
+//    Dialog Constructor
+    public JoinTeamDialog(final View containingView, final Activity activity) {
         super(containingView.getContext());
-        setupDialog(activity,containingView);
+        setupDialog(containingView, activity);
     }
-
-    private void setupDialog(final Activity activity, final View containingView) {
-        // Setting Dialog Title
+//    Dialog Setup Methods
+    private void setupDialog(final View containingView, final Activity activity) {
         setTitle(getContext().getString(R.string.title_join_team));
 
-        // Add Username or Email Field
-        final TextInputLayout usernameLayout = new TextInputLayout(getContext());
         final TextInputEditText usernameEditText = new TextInputEditText(getContext());
-        setupDialogLayout(containingView,usernameLayout,usernameEditText);
+        setupDialogLayout(usernameEditText, new TextInputLayout(getContext()), containingView);
 
-        // Set Positive "Email Me" Button
-        setupPositiveButton(activity,usernameEditText);
+        setupPositiveButton(usernameEditText, activity);
 
-        // Showing Alert Message
         show();
-
     }
-
-    private void setupPositiveButton(final Activity activity, final TextInputEditText usernameEditText) {
+    private void setupPositiveButton(final TextInputEditText usernameEditText, final Activity activity) {
         setPositiveButton(R.string.request, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                // Check that text field is filled
                 if (!usernameEditText.getText().equals("")) {
-                    // Check against firebase
-                    Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.hasChildren()) {
-                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                    final Team teamItem = new Team(teamReference);
-                                    // If Team Matches Input, Add User to Member's List
+                                for(final Team teamItem:Team.toArrayList(dataSnapshot)) {
                                     if (teamItem.getUsername().equals(usernameEditText.getText().toString())) {
                                         // Add User to Team
-                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.hasChildren()) {
-                                                    User user = new User(dataSnapshot);
-                                                    addUserToTeam(activity,dialog, teamItem, user, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
-                                                } else {
-                                                    // Error
+                                                    addUserToTeam(new User(dataSnapshot), teamItem, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING, dialog, activity);
                                                 }
                                             }
 
                                             @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-                                                // Error
-                                            }
+                                            public void onCancelled(DatabaseError databaseError) {}
                                         });
-                                        teamItem.addUser(getCurrentUser(), FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
                                     }
                                 }
-                            } else {
-
                             }
                         }
 
@@ -92,24 +73,11 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
 
                         }
                     });
-                } else {
-                    // Display Error
                 }
             }
         });
     }
-
-    private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User user, final FirebaseEntity.EntityRole memberRole, final FirebaseEntity.EntityStatus memberStatus) {
-        teamItem.addUser(user,memberRole,memberStatus);
-        Backend.update(activity,user);
-        Backend.update(activity,teamItem);
-        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
-        Backend.upstreamNotification(activity,user, Notification.NotificationVerbType.REQUEST, teamItem);
-        dialog.dismiss();
-    }
-
-    private void setupDialogLayout(final View containingView, final TextInputLayout inputLayout, final TextInputEditText usernameEditText) {
-        // Create LinearLayout to add TextInputLayout with Edit Text
+    private void setupDialogLayout(final TextInputEditText usernameEditText, final TextInputLayout inputLayout, final View containingView) {
         final LinearLayoutCompat layout = new LinearLayoutCompat(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
@@ -124,5 +92,15 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         layout.addView(inputLayout);
 
         setView(layout);
+    }
+    //    Functional Methods
+    private void addUserToTeam(final User user, final Team teamItem, final FirebaseEntity.EntityRole memberRole, final FirebaseEntity.EntityStatus memberStatus, final DialogInterface dialog, final Activity activity) {
+        teamItem.addUser(user,memberRole,memberStatus);
+        Backend.update(user, activity);
+        Backend.update(teamItem, activity);
+        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+        Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, Notification.NotificationVerbType.REQUEST, activity), teamItem.getUID());
+
+        dialog.dismiss();
     }
 }

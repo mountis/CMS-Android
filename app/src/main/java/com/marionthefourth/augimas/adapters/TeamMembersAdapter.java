@@ -71,7 +71,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                 tv.setText(FirebaseEntity.EntityRole.getRole(position).toString());
 
                 final View finalV = v;
-                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -112,7 +112,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         holder.mTeamMemberRoleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, View view, int position, long id) {
-                Backend.getReference(activity,R.string.firebase_users_directory).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -136,7 +136,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                     break;
                             }
 
-                            update(activity,modifyingUserItem);
+                            update(modifyingUserItem, activity);
                         }
                     }
 
@@ -157,12 +157,12 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                 } else if (i == FirebaseEntity.EntityRole.ADMIN.toInt(false)) {
                 }
 
-                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User currentUserItem = new User(dataSnapshot);
-                            if (currentUserItem.getType().equals(FirebaseEntity.EntityType.US)) {
+                            if (currentUserItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
                                 if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                                     holder.mTeamMemberRoleSpinner.setEnabled(false);
                                 }

@@ -21,6 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.TeamMembersAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
@@ -29,35 +30,38 @@ import com.marionthefourth.augimas.dialogs.CreateTeamDialog;
 import com.marionthefourth.augimas.dialogs.InviteMemberDialog;
 import com.marionthefourth.augimas.dialogs.JoinTeamDialog;
 import com.marionthefourth.augimas.dialogs.LeaveTeamDialog;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class TeamManagementFragment extends Fragment {
-
+//    Fragment Constructor
     public TeamManagementFragment() { }
-
+    //    Fragment Methods
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                startActivity(new Intent(getActivity(), HomeActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
     public static TeamManagementFragment newInstance(Team teamItem) {
         final Bundle args = new Bundle();
 
-        if (teamItem != null) {
-            args.putSerializable(Constants.Strings.TEAM,teamItem);
-        }
+        if (teamItem != null) args.putSerializable(Constants.Strings.TEAM,teamItem);
 
         TeamManagementFragment fragment = new TeamManagementFragment();
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_team_management, container, false);
-//        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
 
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.team_member_recycler_view);
         // Set the adapter
@@ -65,66 +69,51 @@ public class TeamManagementFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             final Activity activity = getActivity();
+
+            getView().setFocusableInTouchMode(true);
+            getView().requestFocus();
+            getView().setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        final Activity activity = getActivity();
+                        final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                        activity.startActivity(homeIntent);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
             Team teamItem = null;
+
             if (getArguments() != null) {
                 teamItem = (Team) getArguments().getSerializable(Constants.Strings.TEAM);
             }
 
-            final Team finalTeamItem = teamItem;
-            Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        final User userItem = new User(dataSnapshot);
-                        if (userItem != null) {
-                            getView().setFocusableInTouchMode(true);
-                            getView().requestFocus();
-                            getView().setOnKeyListener(new View.OnKeyListener() {
-                                @Override
-                                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                                        // handle back button's click listener
-//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
-                                        final Activity activity = getActivity();
-                                        final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                                        activity.startActivity(homeIntent);
-                                        return true;
-                                    }
-                                    return false;
-                                }
-                            });
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
-            });
-
-            if (teamItem != null) {
-                loadTeam(activity,view, recyclerView, teamItem);
-            } else {
-                loadTeam(activity,view, recyclerView, getCurrentUser());
-            }
-
             if (PROTOTYPE_MODE) {
                 loadPrototypeTeamMembers(activity,view, recyclerView);
+            } else {
+                if (teamItem != null) {
+                    loadTeam(teamItem, recyclerView, view, activity);
+                } else {
+                    loadTeam(getCurrentUser(), recyclerView, view, activity);
+                }
             }
         }
 
         return view;
     }
 
-
-    private void loadTeam(Activity activity, final View view, final RecyclerView recyclerView, final Team teamItem) {
+//    Functional Methods
+    private void loadTeam(final Team teamItem, final RecyclerView recyclerView, final View view, Activity activity) {
         populateInTeamLayout(activity,view,recyclerView,teamItem);
         LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
         layout.setVisibility(View.GONE);
     }
-
-    private void loadTeam(final Activity activity, final View view, final RecyclerView recyclerView, final User user) {
+    private void loadTeam(final User user, final RecyclerView recyclerView, final View view, final Activity activity) {
         if (user != null) {
-            Backend.getReference(activity,R.string.firebase_users_directory).child(user.getUID()).addValueEventListener(new ValueEventListener() {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(user.getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -135,7 +124,7 @@ public class TeamManagementFragment extends Fragment {
                             LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
                             layout.setVisibility(View.GONE);
                         } else {
-                            Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -163,7 +152,6 @@ public class TeamManagementFragment extends Fragment {
 
         }
     }
-
     private void populateNoTeamLayout(final Activity activity, final View view) {
         LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
         layout.setVisibility(View.VISIBLE);
@@ -172,18 +160,17 @@ public class TeamManagementFragment extends Fragment {
         createTeamButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new CreateTeamDialog(activity,view);
+                new CreateTeamDialog(view, activity);
             }
         });
         AppCompatButton joinTeamButton = (AppCompatButton) view.findViewById(R.id.button_join_team);
         joinTeamButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new JoinTeamDialog(activity,view);
+                new JoinTeamDialog(view, activity);
             }
         });
     }
-
     private void populateInTeamLayout(final Activity activity, final View view, final RecyclerView recyclerView, final Team team) {
         final LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
         layout.setVisibility(View.VISIBLE);
@@ -202,18 +189,18 @@ public class TeamManagementFragment extends Fragment {
         inviteMembers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new InviteMemberDialog(activity,view);
+                new InviteMemberDialog(view, activity);
             }
         });
 
         leaveTeam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new LeaveTeamDialog(activity,view);
+                new LeaveTeamDialog(view, activity);
             }
         });
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -223,14 +210,14 @@ public class TeamManagementFragment extends Fragment {
                             updateButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists()) {
                                                 final Team currentTeam = new Team(dataSnapshot);
                                                 currentTeam.setUsername(usernameEditText.getText().toString());
                                                 currentTeam.setName(nameEditText.getText().toString());
-                                                update(activity,currentTeam);
+                                                update(currentTeam, activity);
                                             }
                                         }
 
@@ -251,20 +238,20 @@ public class TeamManagementFragment extends Fragment {
                             inviteMembers.setVisibility(View.GONE);
                         }
 
-                        loadTeamMembers(activity,view,recyclerView,team,currentUser);
+                        loadTeamMembers(activity, recyclerView,team,currentUser);
                     } else {
                         if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                             updateButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Backend.getReference(activity,R.string.firebase_teams_directory).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists()) {
                                                 final Team currentTeam = new Team(dataSnapshot);
                                                 currentTeam.setUsername(usernameEditText.getText().toString());
                                                 currentTeam.setName(nameEditText.getText().toString());
-                                                update(activity,currentTeam);
+                                                update(currentTeam, activity);
                                             }
                                         }
 
@@ -289,7 +276,7 @@ public class TeamManagementFragment extends Fragment {
 
                         inviteMembers.setLayoutParams(lp);
 
-                        loadTeamMembers(activity,view,recyclerView,team,currentUser);
+                        loadTeamMembers(activity, recyclerView,team,currentUser);
                     }
                 }
             }
@@ -298,12 +285,10 @@ public class TeamManagementFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
-
-    private void loadTeamMembers(final Activity activity, final View view, final RecyclerView recyclerView, final Team team, final User user) {
+    private void loadTeamMembers(final Activity activity, final RecyclerView recyclerView, final Team team, final User user) {
         if (team != null) {
             Backend.getReference(
-                    activity,
-                    R.string.firebase_teams_directory
+                    R.string.firebase_teams_directory, activity
             ).child(team.getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -311,21 +296,16 @@ public class TeamManagementFragment extends Fragment {
                         final Team teamItem = new Team(dataSnapshot);
                         // Get all team members
 
-                        Backend.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_users_directory, activity).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.hasChildren()) {
-                                    final ArrayList<User> teamMembers = new ArrayList<>();
-                                    for (DataSnapshot userReference:dataSnapshot.getChildren()) {
-                                        final User userItem = new User(userReference);
-                                        if (userItem.isInTeam(teamItem)) {
-                                            teamMembers.add(userItem);
-                                        }
-                                    }
+                                    final ArrayList<User> teamMembers = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+
                                     if (teamMembers.size() == 0 || teamItem == null) {
                                         recyclerView.setAdapter(null);
                                     } else {
-                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
@@ -352,14 +332,10 @@ public class TeamManagementFragment extends Fragment {
                 }
 
                 @Override
-                public void onCancelled(DatabaseError error) {
-                    // Failed to read value
-                    recyclerView.setAdapter(null);
-                }
+                public void onCancelled(DatabaseError error) { recyclerView.setAdapter(null);}
             });
         }
     }
-
     private void loadPrototypeTeamMembers(final Activity activity, final View view, final RecyclerView recyclerView) {
         final ArrayList<User> members = new ArrayList<>();
         members.add(new User("Joel", "Bael", FirebaseEntity.EntityRole.OWNER));
@@ -380,15 +356,4 @@ public class TeamManagementFragment extends Fragment {
         recyclerView.setAdapter(new TeamMembersAdapter(activity, members, new User()));
 
     }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                startActivity(new Intent(getActivity(), HomeActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
 }

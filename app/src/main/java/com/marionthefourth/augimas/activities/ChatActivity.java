@@ -70,23 +70,23 @@ public final class ChatActivity extends AppCompatActivity {
     private void setupTabItemTitles(final TabLayout tabLayout) {
         final ArrayList<String> teamUIDs = getTeamUIDsFromIntent();
 
-        Backend.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, this).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                         // Get Current Team
-                        Backend.getReference(ChatActivity.this,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_teams_directory, ChatActivity.this).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        if (currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
+                                        if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
 
                                         }
-                                        tabLayout.getTabAt(FirebaseEntity.EntityType.US.toInt(false)).setText(currentTeam.getName());
+                                        tabLayout.getTabAt(FirebaseEntity.EntityType.HOST.toInt(false)).setText(currentTeam.getName());
 
                                         // get other Team
                                         setTabTextToOtherTeamName(tabLayout,teamUIDs);
@@ -112,14 +112,14 @@ public final class ChatActivity extends AppCompatActivity {
         });    }
     private void setTabTextToOtherTeamName(final TabLayout tabLayout, ArrayList<String> teamUIDs) {
         // Pull the Team from Firebase matching the other Team UID
-        Backend.getReference(this,R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_teams_directory, this).child(teamUIDs.get(FirebaseEntity.EntityType.CLIENT.toInt(false))).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final Team teamItem = new Team(dataSnapshot);
                     if (teamItem != null) {
                         // Set the First Tab Name To the Other Team's Name
-                        tabLayout.getTabAt(FirebaseEntity.EntityType.THEM.toInt(false)).setText(teamItem.getName());
+                        tabLayout.getTabAt(FirebaseEntity.EntityType.CLIENT.toInt(false)).setText(teamItem.getName());
                     }
                 } else {
                     // TODO - Display Error, Couldn't Get Team Name
@@ -135,14 +135,14 @@ public final class ChatActivity extends AppCompatActivity {
 //    Intent Methods
     private ArrayList<String> getTeamUIDsFromIntent() {
         final ArrayList<String> teamUIDs = new ArrayList<>();
-        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.US.toInt(false)));
-        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.THEM.toInt(false)));
+        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false)));
+        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false)));
         return teamUIDs;
     }
     private ArrayList<String> getChannelUIDsFromIntent() {
         final ArrayList<String> channelUIDs = new ArrayList<>();
-        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.US.toInt(false)));
-        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.THEM.toInt(false)));
+        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false)));
+        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false)));
         return channelUIDs;
     }
 //    Section Pager Adapter

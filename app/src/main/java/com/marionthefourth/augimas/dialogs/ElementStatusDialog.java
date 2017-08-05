@@ -29,33 +29,37 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROT
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
 public final class ElementStatusDialog extends AlertDialog.Builder {
-    public ElementStatusDialog(final Activity activity, final View containingView, final BrandingElementsAdapter.ViewHolder holder) {
+//    Dialog Constructor
+    public ElementStatusDialog(final BrandingElementsAdapter.ViewHolder holder, final View containingView, final Activity activity) {
         super(containingView.getContext());
-        setupDialog(activity,containingView, holder);
+        setupDialog(holder, containingView, activity);
     }
-
-    private void setupDialog(final Activity activity, View view, BrandingElementsAdapter.ViewHolder holder) {
-        // Setting Dialog Title
+//    Dialog Setup Methods
+    private void setupDialog(final BrandingElementsAdapter.ViewHolder holder, final View view, final Activity activity) {
         setTitle(getContext().getString(R.string.title_element_status_updater));
 
-        // Add Button Fields
         ArrayList<AppCompatButton> buttons = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             buttons.add(new AppCompatButton(getContext()));
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setupButtons(activity,buttons,holder);
-        }
-
+        setupButtons(buttons, holder, activity);
         setupLayout(view,buttons);
 
-        // Showing Alert Message
         show();
     }
+    private void setupLayout(final View view, final ArrayList<AppCompatButton> buttons) {
+        final LinearLayout layout = new LinearLayout(view.getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void setupButtons(final Activity activity, final ArrayList<AppCompatButton> buttons, final BrandingElementsAdapter.ViewHolder holder) {
+        for(AppCompatButton button:buttons) {
+            layout.addView(button);
+        }
+
+        setView(layout);
+    }
+    private void setupButtons(final ArrayList<AppCompatButton> buttons, final BrandingElementsAdapter.ViewHolder holder, final Activity activity) {
         final AlertDialog dialog = this.create();
 
         for (int i = 0; i < buttons.size();i++) {
@@ -73,13 +77,13 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                     holder.mBrandingElementStatus.setBackgroundDrawable(BrandingElement.ElementStatus.getStatus(finalI).toDrawable(getContext()));
 
                     if (!PROTOTYPE_MODE) {
-                        Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.setStatus(BrandingElement.ElementStatus.getStatus(finalI));
-                                update(activity,elementItem);
-                                sendNotifications(activity,holder.elementItem);
+                                update(elementItem, activity);
+                                sendNotifications(holder.elementItem, activity);
                                 dialog.dismiss();
                             }
 
@@ -91,40 +95,22 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                 }
             });
         }
-
     }
-
-    private void sendNotifications(final Activity activity, final BrandingElement elementItem) {
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+//    Functional Methods
+    private void sendNotifications(final BrandingElement elementItem, final Activity activity) {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
+                    if (!currentUser.getTeamUID().equals("")) {
                         final Notification userUpdatedStatusNotification = new Notification();
                         final Notification teamUpdatedStatusNotification = new Notification();
 
                         userUpdatedStatusNotification.setSubject(currentUser);
                         userUpdatedStatusNotification.setSubjectType(Notification.NotificationSubjectType.MEMBER);
 
-                        Notification.NotificationVerbType verb;
-                        switch (elementItem.getStatus()) {
-                            case APPROVED:
-                                verb = Notification.NotificationVerbType.APPROVE;
-                                break;
-                            case AWAITING:
-                                verb = Notification.NotificationVerbType.AWAIT;
-                                break;
-                            case INCOMPLETE:
-                                verb = Notification.NotificationVerbType.DISAPPROVE;
-                                break;
-                            case NONE:
-                                verb = Notification.NotificationVerbType.UPDATE;
-                                break;
-                            default:
-                                verb = Notification.NotificationVerbType.DEFAULT;
-                                break;
-                        }
+                        Notification.NotificationVerbType verb = Notification.NotificationVerbType.toVerbType(elementItem.getStatus());
 
                         userUpdatedStatusNotification.setVerbType(verb);
                         teamUpdatedStatusNotification.setVerbType(verb);
@@ -135,62 +121,37 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                         teamUpdatedStatusNotification.setObjectType(Notification.NotificationObjectType.BRANDING_ELEMENT);
 
                         // Send modifying notification to both Teams
-                        Backend.getReference(activity,R.string.firebase_teams_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                    for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                        final Team teamItem = new Team(teamReference);
-                                        // Get the Client's Team
-                                        if (teamItem.getUID().equals(elementItem.getTeamUID())) {
-                                            if (elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
-                                                // The Client Team Modified It
-                                                userUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            }
-                                        // Get the Admin's Team
-                                        } else if (teamItem.getType().equals(FirebaseEntity.EntityType.US)) {
-                                            if (elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
-                                                // The Admin Team Modified It
-                                                teamUpdatedStatusNotification.setSubject(currentUser);
-                                                teamUpdatedStatusNotification.setSubjectType(Notification.NotificationSubjectType.MEMBER);
-                                                teamUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            }
+                                    for (final Team teamItem:Team.toArrayList(dataSnapshot)) {
+                                        // Get the Client's Team & Host's Team
+                                        if (teamItem.getUID().equals(elementItem.getTeamUID()) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
+                                            // The Client Team Modified It
+                                            userUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
+                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID());
+                                        } else if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
+                                            // The Admin Team Modified It
+                                            teamUpdatedStatusNotification.setSubject(currentUser);
+                                            teamUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
+                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID());
                                         }
-
                                     }
-
                                     send(activity,teamUpdatedStatusNotification);
                                     send(activity,userUpdatedStatusNotification);
-
-
-
                                 }
                             }
 
                             @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
+                            public void onCancelled(DatabaseError databaseError) {}
                         });
                     }
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
-    }
-
-    private void setupLayout(final View view, final ArrayList<AppCompatButton> buttons) {
-        final LinearLayout layout = new LinearLayout(view.getContext());
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
-
-        for (int i = 0; i < buttons.size();i++) {
-            layout.addView(buttons.get(i));
-        }
-        setView(layout);
     }
 }

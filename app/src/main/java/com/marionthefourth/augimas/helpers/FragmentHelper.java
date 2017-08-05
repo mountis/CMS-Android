@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
@@ -18,8 +19,16 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 public final class FragmentHelper {
-
-    public static ProgressDialog display(final View view, final int VIEW_TYPE, final int STRING_ID) {
+//    Widget Building Methods
+    public static ProgressDialog buildProgressDialog(int stringID, View view) {
+        final ProgressDialog loadingProgress = new ProgressDialog(view.getContext());
+        loadingProgress.setMessage(view.getContext().getString(stringID));
+        loadingProgress.setProgressStyle(R.style.AppTheme_ProgressDialog);
+        loadingProgress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+        loadingProgress.show();
+        return loadingProgress;
+    }
+    public static ProgressDialog display(final int VIEW_TYPE, final int STRING_ID, final View view) {
         switch (VIEW_TYPE) {
             case SNACKBAR:
                 Snackbar.make(view, STRING_ID, Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -39,8 +48,7 @@ public final class FragmentHelper {
         }
         return null;
     }
-
-    public static void display(final View view, final int VIEW_TYPE, final int STRING_ID, final String additionalText) {
+    public static void display(final int VIEW_TYPE, final int STRING_ID, final String additionalText, final View view) {
         switch (VIEW_TYPE) {
             case SNACKBAR:
                 Snackbar.make(view, STRING_ID + " " + additionalText + ".", Snackbar.LENGTH_LONG)
@@ -51,49 +59,33 @@ public final class FragmentHelper {
                 break;
         }
     }
-
-    public static ProgressDialog build(View view, int stringID) {
-        final ProgressDialog loadingProgress = new ProgressDialog(view.getContext());
-        loadingProgress.setMessage(view.getContext().getString(stringID));
-        loadingProgress.setProgressStyle(R.style.AppTheme_ProgressDialog);
-        loadingProgress.setCancelable(false); // disable dismiss by tapping outside of the dialog
-        loadingProgress.show();
-        return loadingProgress;
-    }
-
+//    Input Verification Methods
+    public final static boolean isValidEmail(String email) {
+    return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+}
+    public final static boolean isValidEmail(CharSequence target) {
+    return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+}
     public static boolean fieldsAreFilled(ArrayList<TextInputEditText> editTexts) {
-        for (int i = 0; i < editTexts.size(); i++) {
-            if (editTexts.get(i).getText().equals("")) {
-                return false;
-            }
+        for (TextInputEditText input:editTexts) {
+            if (input.getText().equals("")) return false;
         }
         return true;
     }
-
-    public static boolean fieldsPassWhitelist(ArrayList<TextInputEditText> editTexts) {
-        String[] whitelist = new String[] {
+    public static boolean fieldsPassWhitelist(ArrayList<TextInputEditText> inputs) {
+        String[] whitelist = {
             "augimas","augimus","augeemas","augeemus"
         };
-        for (int i = 0; i < editTexts.size(); i++) {
-            for (int j = 0; j < whitelist.length; j++) {
-                if (editTexts.get(i).getText().toString().toLowerCase().equals(whitelist[j])) {
-                    return false;
-                }
-            }
 
+        for (TextInputEditText input:inputs) {
+            for (String filter:whitelist) {
+                if (input.getText().toString().toLowerCase().equals(filter)) return false;
+            }
         }
 
         return true;
     }
-
-    public final static boolean isValidEmail(CharSequence target) {
-        if (TextUtils.isEmpty(target)) {
-            return false;
-        } else {
-            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
-        }
-    }
-
+//    Fragment Transition Methods
     public final static void handleNonSupportFragmentRemoval(final FragmentManager rManager) {
         if (rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS) != null) {
             rManager.beginTransaction().remove(rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS)).commit();

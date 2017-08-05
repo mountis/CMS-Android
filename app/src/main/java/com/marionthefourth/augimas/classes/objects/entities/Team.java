@@ -76,6 +76,35 @@ public final class Team extends FirebaseEntity {
         setUsername(username);
         addUser(user, memberRole, memberStatus);
     }
+    public static ArrayList<Team> toArrayList(DataSnapshot teamReferences) {
+        final ArrayList<Team> teams = new ArrayList<>();
+        for(DataSnapshot teamReference:teamReferences.getChildren()) {
+            teams.add(new Team(teamReference));
+        }
+        return teams;
+    }
+    public static ArrayList<Team> toFilteredArrayList(DataSnapshot userReferences,String field,String content) {
+        return Team.toFilteredArrayList(Team.toArrayList(userReferences),field,content);
+    }
+
+    public static ArrayList<Team> toFilteredArrayList(ArrayList<Team> teams,String field, String content) {
+        for (final Team teamItem:teams) {
+            switch (field) {
+                case Constants.Strings.UIDs.TEAM_UID:
+                    if (!teamItem.getUID().equals(content)) teams.remove(teamItem);
+                    break;
+                case Constants.Strings.Fields.ENTITY_ROLE:
+                    if (!teamItem.getRole().toString().equals(content)) teams.remove(teamItem);
+                    break;
+                case Constants.Strings.Fields.ENTITY_TYPE:
+                    if (!teamItem.getType().toString().equals(content)) teams.remove(teamItem);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return teams;
+    }
 //    Functional Methods
     public boolean removeUser(User user) {
         if (user.getTeamUID().equals(this.getUID())) {

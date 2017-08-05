@@ -2,6 +2,7 @@ package com.marionthefourth.augimas.classes.objects.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.util.ArrayMap;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.Exclude;
@@ -86,6 +87,77 @@ public final class User extends FirebaseEntity {
         setEmail(email);
         setUsername(username);
     }
+    public static ArrayList<User> toArrayList(DataSnapshot userReferences) {
+        final ArrayList<User> users = new ArrayList<>();
+        for(DataSnapshot userReference:userReferences.getChildren()) {
+            users.add(new User(userReference));
+        }
+        return users;
+    }
+    public static ArrayList<User> toFilteredArrayList(DataSnapshot userReferences,String field,String content) {
+        return User.toFilteredArrayList(User.toArrayList(userReferences),field,content);
+    }
+
+    public static ArrayList<User> toFilteredArrayList(ArrayList<User> users,String field, String content) {
+        for (final User userItem:users) {
+            switch (field) {
+                case Constants.Strings.UIDs.TEAM_UID:
+                    if (!userItem.getTeamUID().equals(content)) users.remove(userItem);
+                    break;
+                case Constants.Strings.Fields.ENTITY_ROLE:
+                    if (!userItem.getRole().toString().equals(content)) users.remove(userItem);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return users;
+    }
+
+    public static ArrayMap<EntityRole,ArrayList<User>> toRoleFilteredArrayMap(final ArrayList<User> users) {
+        final ArrayList<User> clonedUsers = users;
+        final ArrayMap<EntityRole,ArrayList<User>> userArrayMap = new ArrayMap<>();
+        for(final EntityRole role:EntityRole.getAllRoles()) {
+            userArrayMap.put(role,new ArrayList<User>());
+            for(final User user:users) {
+                if (user.getRole().equals(role)) {
+                    userArrayMap.get(role).add(user);
+                    clonedUsers.remove(user);
+                }
+            }
+        }
+        return userArrayMap;
+    }
+
+    public static ArrayMap<EntityType,ArrayList<User>> toTypeFilteredArrayMap(final ArrayList<User> users) {
+        final ArrayList<User> clonedUsers = users;
+        final ArrayMap<EntityType,ArrayList<User>> userArrayMap = new ArrayMap<>();
+        for(final EntityType type:EntityType.getAllTypes()) {
+            userArrayMap.put(type,new ArrayList<User>());
+            for(final User user:users) {
+                if (user.getType().equals(type)) {
+                    userArrayMap.get(type).add(user);
+                    clonedUsers.remove(user);
+                }
+            }
+        }
+        return userArrayMap;
+    }
+
+    public static ArrayMap<EntityStatus,ArrayList<User>> toStatusFilteredArrayMap(final ArrayList<User> users) {
+        final ArrayList<User> clonedUsers = users;
+        final ArrayMap<EntityStatus,ArrayList<User>> userArrayMap = new ArrayMap<>();
+        for(final EntityStatus type:EntityStatus.getAllStatii()) {
+            userArrayMap.put(type,new ArrayList<User>());
+            for(final User user:users) {
+                if (user.getStatus().equals(type)) {
+                    userArrayMap.get(type).add(user);
+                    clonedUsers.remove(user);
+                }
+            }
+        }
+        return userArrayMap;
+    }
 //    Functional Methods
     @Override
     public Map<String, String> toMap() {
@@ -123,6 +195,9 @@ public final class User extends FirebaseEntity {
 }
     public boolean isInTeam(Team team) {
         return getTeamUID().equals(team.getUID());
+    }
+    public boolean usernameOrEmailMatches(final String usernameOrEmail) {
+        return (getUsername().equals(usernameOrEmail) || getEmail().equals(usernameOrEmail));
     }
     public static User getMessageSender(ArrayList<User> users, Message message) {
         for (int i = 0; i < users.size(); i++) {

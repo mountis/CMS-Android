@@ -92,7 +92,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ViewHo
 
 //    Unused Method
     private void getLastMessageSent(final Chat chatItem, final ArrayList<Team> teams, final AppCompatTextView mChatLastMessageSent, final AppCompatTextView mChatLastMessageSentTime) {
-        Backend.getReference(activity,R.string.firebase_messages_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_messages_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ArrayList<Message> messages = new ArrayList<>();

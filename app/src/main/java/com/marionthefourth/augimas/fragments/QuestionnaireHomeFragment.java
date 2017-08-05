@@ -59,13 +59,13 @@ public class QuestionnaireHomeFragment extends Fragment {
             }
         });
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN) && currentUser.getType().equals(FirebaseEntity.EntityType.US)) {
+                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN) && currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
 
                             final LinearLayoutCompat additionalSection = (LinearLayoutCompat)view.findViewById(R.id.questionnaire_additional_section);
                             additionalSection.setVisibility(View.VISIBLE);

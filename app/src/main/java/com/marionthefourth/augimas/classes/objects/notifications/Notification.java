@@ -14,6 +14,10 @@ import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,6 +115,21 @@ public final class Notification extends FirebaseContent {
             return String.valueOf(this.toInt(true));
         }
 
+        public static NotificationVerbType toVerbType(BrandingElement.ElementStatus status) {
+            switch (status) {
+                case APPROVED:
+                    return Notification.NotificationVerbType.APPROVE;
+                case AWAITING:
+                    return Notification.NotificationVerbType.AWAIT;
+                case INCOMPLETE:
+                    return Notification.NotificationVerbType.DISAPPROVE;
+                case NONE:
+                    return Notification.NotificationVerbType.UPDATE;
+                default:
+                    return Notification.NotificationVerbType.DEFAULT;
+            }
+
+        }
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
                 switch(this) {
@@ -332,6 +351,13 @@ public final class Notification extends FirebaseContent {
             index++;
         }
     }
+    public static ArrayList<Notification> toArrayList(DataSnapshot notificationReferences) {
+        final ArrayList<Notification> notifications = new ArrayList<>();
+        for(DataSnapshot notificationReference:notificationReferences.getChildren()) {
+            notifications.add(new Notification(notificationReference));
+        }
+        return notifications;
+    }
     public Notification(final FirebaseObject subject, final NotificationVerbType vType) {
         setVerbType(vType);
         setSubject(subject);
@@ -384,6 +410,47 @@ public final class Notification extends FirebaseContent {
 
     return bundle;
 }
+    public JSONObject toUpstreamJSON(final String toTeamUID) {
+        JSONObject upstreamJSON = new JSONObject();
+        try {
+            upstreamJSON.put(Constants.Strings.Server.Fields.APP_ID,Constants.Strings.Server.OneSignal.APP_ID);
+//            Add Filters
+            JSONArray filters = new JSONArray();
+            JSONObject filter = new JSONObject();
+            filter.put(Constants.Strings.Server.Fields.FIELD,Constants.Strings.Server.Fields.TAG);
+            filter.put("key",Constants.Strings.UIDs.TEAM_UID);
+            filter.put(Constants.Strings.Server.Fields.RELATION,Constants.Strings.Server.Fields.EQUALS);
+            filter.put(Constants.Strings.Server.Fields.VALUE,toTeamUID);
+            filters.put(filter);
+            upstreamJSON.put(Constants.Strings.Server.Fields.FILTERS,filters);
+//            Add Data
+            JSONObject data = new JSONObject();
+            data.put(Constants.Strings.Server.Fields.MESSAGE,getMessage());
+            data.put(Constants.Strings.Fields.FRAGMENT,getObjectTypeString());
+            data.put(Constants.Strings.UIDs.SENDER_UID,getSubject().getUID());
+            upstreamJSON.put(Constants.Strings.Server.Fields.DATA,data);
+//            Add Language
+            JSONObject englishMessage = new JSONObject();
+            englishMessage.put(Constants.Strings.Server.Fields.ENGLISH,Constants.Strings.Server.Fields.ENGLISH_MESSAGE);
+            upstreamJSON.put(Constants.Strings.Server.Fields.CONTENTS,englishMessage);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return upstreamJSON;
+
+        /* This is the previous user's JSON Format */
+        /*
+        String strJsonBody = "{"
+        + "\"app_id\": \"7432468f-5504-4ffb-813b-88f9a45dc575\","
+
+        + "\"filters\": [{\"field\": \"tag\", \"key\": \"teamUID\", \"relation\": \"=\", \"value\": \"" + teamUID + "\"}],"
+
+        + "\"data\": {\"foo\": \"bar\"},"
+        + "\"contents\": {\"en\": \"English Message\"}"
+        + "}";
+        */
+    }
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -444,6 +511,20 @@ public final class Notification extends FirebaseContent {
         return null;
     }
     //    Class Getters & Setters
+    public String getObjectTypeString() {
+        switch (getObjectType()) {
+            case BRANDING_ELEMENT:
+                return Constants.Strings.Fragments.BRANDING_ELEMENTS;
+            case CHAT:
+                return Constants.Strings.Fragments.CHAT;
+            case MEMBER:
+                return Constants.Strings.Fragments.TEAM_MANAGEMENT;
+            case TEAM:
+                return Constants.Strings.Fragments.HOME;
+            default:
+                return null;
+        }
+    }
     public String getMessage() {
         String subjectPart = "";
         String verbPart = "";

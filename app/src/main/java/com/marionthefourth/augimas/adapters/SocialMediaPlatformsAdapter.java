@@ -52,7 +52,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
             holder.mSocialMediaNameAvailableCheckBox.setChecked(true);
         }
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -83,7 +83,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
 
                 final String VALUE = value;
 
-                Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(socialMediaElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -91,7 +91,7 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
 
                             elementItem.getContents().set(position+1,VALUE);
 
-                            update(activity,elementItem);
+                            update(elementItem, activity);
                         }
                     }
 

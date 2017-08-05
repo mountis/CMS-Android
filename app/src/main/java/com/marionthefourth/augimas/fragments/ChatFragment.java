@@ -77,7 +77,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     private void determineToDisplayChatInputSection(final Activity activity, final View view) {
         final LinearLayoutCompat chatInputSection = (LinearLayoutCompat)view.findViewById(R.id.chat_input_section);
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -137,7 +137,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -157,7 +157,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     // Clear input text
                                     inputField.setText("");
                                 } else {
-                                    display(getView(),SNACKBAR,R.string.required_field);
+                                    display(SNACKBAR, R.string.required_field, getView());
                                 }
                             }
 
@@ -176,7 +176,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     private void loadMessages(final Activity activity, final RecyclerView recyclerView) {
         // Load Messages from Firebase
-        Backend.getReference(activity,R.string.firebase_messages_directory).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_messages_directory, activity).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final ArrayList<Message> messages = new ArrayList<>();
@@ -189,7 +189,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                         }
                     }
 
-                    Backend.getReference(activity,R.string.firebase_channels_directory).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addValueEventListener(new ValueEventListener() {
+                    Backend.getReference(R.string.firebase_channels_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
@@ -225,19 +225,19 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
     }
 
     public void getOneTeamUID(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team currentTeam = new Team(dataSnapshot);
                                     if (currentTeam != null) {
-                                        Backend.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_users_directory, activity).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -290,7 +290,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
     }
 
     private void getBothTeamUIDs(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
-        Backend.getReference(activity,R.string.firebase_chats_directory).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_chats_directory, activity).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -300,7 +300,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                         teamUsers.add(new ArrayList<User>());
                         teamUsers.add(new ArrayList<User>());
                         final ArrayList<Team> teams = new ArrayList<>();
-                        Backend.getReference(activity,R.string.firebase_users_directory).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_users_directory, activity).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -314,7 +314,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
                                     }
 
-                                    Backend.getReference(activity,R.string.firebase_teams_directory).addValueEventListener(new ValueEventListener() {
+                                    Backend.getReference(R.string.firebase_teams_directory, activity).addValueEventListener(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
@@ -331,7 +331,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     final ArrayList<Team> sortedTeams = new ArrayList<>();
                                                     final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
 
-                                                    if (teams.get(0).getType().equals(FirebaseEntity.EntityType.US)) {
+                                                    if (teams.get(0).getType().equals(FirebaseEntity.EntityType.HOST)) {
                                                         for (int i = 0; i < teams.size(); i++) {
                                                             sortedTeams.add(teams.get(i));
                                                             if (teamUsers.size() > i) {

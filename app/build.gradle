@@ -42,6 +42,8 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:11.0.4'
     //    Other Libraries
     compile 'com.onesignal:OneSignal:3.+@aar'
+    //    Google Player Services Libraries
+    compile 'com.google.android.gms:play-services:11.0.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

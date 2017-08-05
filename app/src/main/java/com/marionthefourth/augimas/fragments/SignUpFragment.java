@@ -2,41 +2,32 @@ package com.marionthefourth.augimas.fragments;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.util.ArrayMap;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
-import com.marionthefourth.augimas.backend.Backend;
-import com.onesignal.OneSignal;
+import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getReference;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.CONFIRM_PASSWORD;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Fields.EMAIL;
@@ -48,58 +39,55 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
-import static com.marionthefourth.augimas.backend.Backend.getReference;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class SignUpFragment extends Fragment {
-
+//    Fragment Constructor
     public SignUpFragment() {}
-
+    //    Fragment Methods
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return setupView(inflater.inflate(R.layout.fragment_sign_up, container, false));
     }
-
+//    View Setup Methods
     private View setupView(final View view) {
-        // All all Buttons to an ArrayList
         final ArrayList<Button> buttons = getAllButtonViews(view);
-        // Add all Inputs to an ArrayList
         final ArrayList<TextInputEditText> inputs = getAllEditTextViews(view);
-        // Add all Layouts to an ArrayList
         final ArrayList<TextInputLayout> layouts = getAllTextInputLayoutViews(view);
 
         final Activity activity = getActivity();
 
         // Read Data from Intent and fill Appropriate Fields
-        populateTextInputsWithDataFromIntent(activity,inputs);
-        // Set OnFocusChangeListener to all Inputs & Add TextChangedListener to all Inputs
+        populateTextInputsWithDataFromIntent(activity.getIntent().getExtras(),inputs);
+        // Setup Input & Layout Listeners to get User's attention for improper inputs.
         setupTextInputsWithFocusAndTextChangedListeners(layouts,inputs);
         // Sign In Button (Connect to Firebase & Transition to Home)
         setupSignUpButtonsOnClickListener(activity,layouts,inputs,view,buttons.get(SIGN_UP_BUTTON));
-        // Sign Up Button (Transition to Sign In)
+        // Sign Up Button (Transition back to Sign In)
         setupSignInButtonsOnClickListener(activity,buttons.get(SIGN_IN_TEXT_BUTTON));
 
         return view;
     }
-
-    private ArrayList<Button> getAllButtonViews(View view) {
-        // Button IDs
+    private ArrayMap<String,ArrayList<View>> getAllVisualElementViews(final View view) {
+//        TODO - Try to combine all three Visual Element Arrays Into 1
+        final ArrayMap<String,ArrayList<View>> visualElements = new ArrayMap<>();
+//        visualElements.put(Constants.Strings.Elements.BUTTONS,(ArrayList<View>)getAllButtonViews(view));
+        return visualElements;
+    }
+    private ArrayList<Button> getAllButtonViews(final View view) {
         final int BUTTON_VIEW_IDS[] = {
                 R.id.button_sign_up,
                 R.id.text_button_sign_in
         };
 
         final ArrayList<Button> buttons = new ArrayList<>();
-        for (int i = 0; i < BUTTON_VIEW_IDS.length; i++) {
-            buttons.add((Button)view.findViewById(BUTTON_VIEW_IDS[i]));
+        for(int ID:BUTTON_VIEW_IDS) {
+            buttons.add((Button)view.findViewById(ID));
         }
 
         return buttons;
     }
-
     private ArrayList<TextInputEditText> getAllEditTextViews(final View view) {
-        // TextInputEditText View IDs
         final int INPUT_VIEW_IDS[] = {
                 R.id.input_username,
                 R.id.input_password,
@@ -109,14 +97,13 @@ public final class SignUpFragment extends Fragment {
         };
 
         final ArrayList<TextInputEditText> inputs = new ArrayList<>();
-        for (int i = 0; i < INPUT_VIEW_IDS.length; i++) {
-            inputs.add((TextInputEditText)view.findViewById(INPUT_VIEW_IDS[i]));
+        for(int ID:INPUT_VIEW_IDS) {
+            inputs.add((TextInputEditText)view.findViewById(ID));
         }
+
         return inputs;
     }
-
     private ArrayList<TextInputLayout> getAllTextInputLayoutViews(final View view) {
-        // Text Input Layout IDs
         final int TEXT_INPUT_LAYOUT_IDS[] = {
                 R.id.input_layout_username,
                 R.id.input_layout_password,
@@ -126,40 +113,35 @@ public final class SignUpFragment extends Fragment {
         };
 
         final ArrayList<TextInputLayout> layouts = new ArrayList<>();
-        for (int i = 0; i < TEXT_INPUT_LAYOUT_IDS.length; i++) {
-            layouts.add((TextInputLayout)view.findViewById(TEXT_INPUT_LAYOUT_IDS[i]));
+        for(int ID:TEXT_INPUT_LAYOUT_IDS) {
+            layouts.add((TextInputLayout)view.findViewById(ID));
+
         }
 
         return layouts;
     }
+    private void populateTextInputsWithDataFromIntent(final Bundle bundle, final ArrayList<TextInputEditText> inputs) {
+        if (bundle != null) {
+            final String passwordText = bundle.getString(Constants.Strings.Fields.PASSWORD);
+            final String usernameOrEmailText = bundle.getString(Constants.Strings.Fields.USERNAME_OR_EMAIL);
 
-    private void populateTextInputsWithDataFromIntent(final Activity activity, final ArrayList<TextInputEditText> inputs) {
-        if (activity.getIntent() != null) {
-            final String passwordText = activity.getIntent().getStringExtra(Constants.Strings.Fields.PASSWORD);
-            final String usernameOrEmailText = activity.getIntent().getStringExtra(Constants.Strings.Fields.USERNAME_OR_EMAIL);
-            // Check if text from intent is Username or Email and set it to the appropriate field
-            if (isValidEmail(usernameOrEmailText)) {
+            // User is able to input either their username/password, this statement sees which it is
+            if (FragmentHelper.isValidEmail(usernameOrEmailText)) {
                 inputs.get(EMAIL).setText(usernameOrEmailText);
             } else {
                 inputs.get(USERNAME).setText(usernameOrEmailText);
             }
 
-            // Fill the Password Field
             inputs.get(PASSWORD).setText(passwordText);
         }
     }
-
     private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
         for (int i = 0; i < layouts.size();i++) {
             final int finalI = i;
             inputs.get(i).setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        if (layouts.get(finalI).getError() != null) {
-                            layouts.get(finalI).setError(null);
-                        }
-                    }
+                    if (!hasFocus) layouts.get(finalI).setError(null);
                 }
             });
 
@@ -169,23 +151,17 @@ public final class SignUpFragment extends Fragment {
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
                 }
-
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                 }
-
                 @Override
                 public void afterTextChanged(Editable s) {
-                    // Clear error on Layout if there is one
-                    if (layouts.get(finalI).getError() != null) {
-                        layouts.get(finalI).setError(null);
-                    }
+                    layouts.get(finalI).setError(null);
                 }
             });
         }
     }
-
     private void setupSignInButtonsOnClickListener(final Activity activity, final Button signInButton) {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -194,7 +170,6 @@ public final class SignUpFragment extends Fragment {
             }
         });
     }
-
     private void setupSignUpButtonsOnClickListener(final Activity activity, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final View view, Button signUpButton) {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,26 +180,24 @@ public final class SignUpFragment extends Fragment {
                     if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
                             if (passwordsMatch(view,layouts,inputs)) {
-                                if (passwordLengthIsAppropriate(view,layouts,inputs)) {
-                                    if (isAValidEmail(view,layouts,inputs)) {
-                                        // Connect to Firebase & Attempt to Sign up
+                                if (passwordIsAppropriateLength(view,layouts,inputs)) {
+                                    if (emailIsValid(view,layouts,inputs)) {
                                         dismissKeyboard(view);
-                                        createUser(activity,view, (User) getFirebaseContentFromFields(Constants.Ints.FIREBASE_USER));
+                                        attemptToCreateNewUser(activity,view, (User) createObjectFromFields(Constants.Ints.FIREBASE_USER));
                                     }
                                 }
                             }
                         }
                     } else {
-                        display(view,SNACKBAR,R.string.feature_unavailable);
+                        display(SNACKBAR, R.string.feature_unavailable, view);
                     }
-
                 }
             }
         });
     }
-
-    private boolean isAValidEmail(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
-        if (!isValidEmail(inputs.get(EMAIL).getText().toString())) {
+//    Input Verification Methods
+    private boolean emailIsValid(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
+        if (!FragmentHelper.isValidEmail(inputs.get(EMAIL).getText().toString())) {
             // Vibrate Phone
             DeviceHelper.vibrateDevice(view.getContext());
 
@@ -237,78 +210,52 @@ public final class SignUpFragment extends Fragment {
 
         return true;
     }
-
     private boolean passwordsMatch(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
-        // Check that passwords match
         if (!inputs.get(PASSWORD).getText().toString().equals(inputs.get(CONFIRM_PASSWORD).getText().toString())) {
-            // Vibrate Phone
             DeviceHelper.vibrateDevice(view.getContext());
 
-            layouts.get(CONFIRM_PASSWORD).setError(view.getContext().getString(R.string.error_password_mismatch));
-
-            // Set Focus to Incorrect Field
             inputs.get(CONFIRM_PASSWORD).requestFocus();
+            layouts.get(CONFIRM_PASSWORD).setError(view.getContext().getString(R.string.error_password_mismatch));
 
             // Clear errors for all other fields
             for (int i = 0; i < layouts.size();i++) {
-                if (i != CONFIRM_PASSWORD)
-                    if (layouts.get(i).getError() != null) {
-                        layouts.get(i).setError(null);
-                    }
+                if (i != CONFIRM_PASSWORD) layouts.get(i).setError(null);
             }
 
             return false;
         } else {
             // Clear error for field if filled
-            if (layouts.get(CONFIRM_PASSWORD).getError() != null) {
-                layouts.get(CONFIRM_PASSWORD).setError(null);
-            }
+            layouts.get(CONFIRM_PASSWORD).setError(null);
         }
 
         return true;
     }
-
-    private boolean passwordLengthIsAppropriate(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
-        // Check that password is the correct length
+    private boolean passwordIsAppropriateLength(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
         if (inputs.get(PASSWORD).getText().toString().length() < MINIMUM_PASSWORD_COUNT) {
-
-            // Vibrate Phone
             DeviceHelper.vibrateDevice(view.getContext());
 
-            // Set Error To Password Layout
-            layouts.get(PASSWORD).setError(view.getContext().getString(R.string.error_invalid_password_length));
-
-            // Set Focus to Password Field
             inputs.get(PASSWORD).requestFocus();
+            layouts.get(PASSWORD).setError(view.getContext().getString(R.string.error_invalid_password_length));
 
             // Clear errors for all other fields
             for (int i = 0; i < layouts.size();i++) {
-                if (i != PASSWORD)
-                    layouts.get(i).setError(null);
+                if (i != PASSWORD) layouts.get(i).setError(null);
             }
 
             return false;
-
         } else {
-            // Clear error for field if filled
             layouts.get(PASSWORD).setError(null);
         }
 
         return true;
     }
-
     private boolean allTextFieldsAreFilled(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
-        // Check That Fields Are Filled
         for (int i = 0; i < inputs.size();i++) {
             if (inputs.get(i).getText().toString().equals("")) {
-
-                // Vibrate Phone
                 DeviceHelper.vibrateDevice(view.getContext());
 
-                // Set Error To Layout w/o Text
-                layouts.get(i).setError(view.getContext().getString(R.string.error_field_required));
-                // Set Focus to Unfilled Field
                 inputs.get(i).requestFocus();
+                layouts.get(i).setError(view.getContext().getString(R.string.error_field_required));
 
                 // Clear errors for all other fields
                 for (int j = i+1; j < layouts.size();j++) {
@@ -317,94 +264,43 @@ public final class SignUpFragment extends Fragment {
 
                 return false;
             } else {
-                // Clear error for field if filled
                 layouts.get(i).setError(null);
             }
         }
 
         return true;
     }
-
-    private void createUser(final Activity activity, final View view, final User user) {
-        final Context context = view.getContext();
-        final ProgressDialog loadingProgress = display(view,PROGRESS_DIALOG,R.string.progress_signing_up);
+//    Other Functional Methods
+    private void attemptToCreateNewUser(final Activity activity, final View view, final User user) {
+        final ProgressDialog loadingProgress = display(PROGRESS_DIALOG, R.string.progress_signing_up, view);
         // Ensure that the User is not null
         if (user != null) {
-            // Get a reference to the users location of the database
-            final DatabaseReference usersRef = getReference(activity,R.string.firebase_users_directory);
-            usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.hasChildren()) {
                         for (DataSnapshot userReference : dataSnapshot.getChildren()) {
-                            // Get the User instance from the user reference
                             final User newUser = new User(userReference);
-                            // Check to see if the User instance's Session ID matches the current Session ID
-                            if (newUser != null) {
-                                // Make sure usernames aren't the same
-                                if (newUser.getUsername().equals(user.getUsername())) {
-                                    // Display Snackbar to user letting them know that they need
-                                    // to select another username
-                                    loadingProgress.show();
-                                    display(view,SNACKBAR,R.string.error_username_duplicate);
-                                    return;
-                                }
+                            if (Backend.getCurrentUser() != null && Backend.getCurrentUser().getUID().equals(newUser.getUID())) {
+//                                TODO - Log Handle whether you should Sign User Out
+                            }
+                            if (newUser.getUsername().equals(user.getUsername())) {
+                                loadingProgress.dismiss();
+                                display(SNACKBAR, R.string.error_username_duplicate, view);
+                                return;
                             }
                         }
-
-                        firebaseCreateUser(activity,view,loadingProgress,user,usersRef);
-                    } else {
-                        firebaseCreateUser(activity,view,loadingProgress,user,usersRef);
                     }
-
+                    Backend.signUp(user, view, loadingProgress, activity);
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    loadingProgress.show();
-
+                    loadingProgress.dismiss();
                 }
-
             });
         }
     }
-
-    private void firebaseCreateUser(final Activity activity, final View view, final ProgressDialog loadingProgress,final User user, final DatabaseReference usersRef) {
-        final Context context = view.getContext();
-        final FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword()).addOnCompleteListener((AppCompatActivity) context, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (!task.isSuccessful()) {
-                    // Display Snackbar letting the user know they failed to signed up
-                    loadingProgress.show();
-                    display(view,SNACKBAR,R.string.error_incorrect_signup_general);
-                } else {
-                    // Get UID from Firebase's result
-                    final String resultUID = task.getResult().getUser().getUid();
-                    // Make new child reference from users reference with given resultUID
-                    final DatabaseReference newUserReference = usersRef.child(resultUID);
-                    // Set the given firebase user's UID property to the resultUID value
-                    user.setUID(resultUID);
-                    // Set the new user reference's value to the firebase user's value
-                    newUserReference.setValue(user.toMap());
-                    OneSignal.syncHashedEmail(user.getEmail());
-
-                    Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
-
-                    // Display Snackbar letting the user know they sucessfully signed up
-                    loadingProgress.show();
-                    display(view,SNACKBAR,R.string.success_signup);
-                    // Sign in the new user
-                    Backend.signIn(activity,view,user);
-                }
-            }
-
-
-        });
-    }
-
-    private FirebaseObject getFirebaseContentFromFields(int FIREBASE_CONTENT) {
+    private FirebaseObject createObjectFromFields(int OBJECT_TYPE) {
         // Edit Text View IDs
         final int INPUT_VIEW_IDS[] = {
                 R.id.input_username,
@@ -415,14 +311,10 @@ public final class SignUpFragment extends Fragment {
         };
 
         final ArrayList<String> fields = new ArrayList<>();
-        for (int i = 0; i < INPUT_VIEW_IDS.length; i++) {
-            fields.add(((EditText)getView().findViewById(INPUT_VIEW_IDS[i])).getText().toString());
+        for(int ID:INPUT_VIEW_IDS) {
+            fields.add(((TextInputEditText)getView().findViewById(ID)).getText().toString());
         }
 
-        return FirebaseObject.getFirebaseObjectFromFields(fields,FIREBASE_CONTENT);
-    }
-
-    private boolean isValidEmail(String email) {
-        return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+        return FirebaseObject.getFromFields(fields,OBJECT_TYPE);
     }
 }

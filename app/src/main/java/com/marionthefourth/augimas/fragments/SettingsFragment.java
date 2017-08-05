@@ -41,13 +41,13 @@ public final class SettingsFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.settings_preferences);
 
         final Activity activity = getActivity();
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
@@ -122,7 +122,7 @@ public final class SettingsFragment extends PreferenceFragment {
                 buildButtonTapped++;
 
                 if (buildButtonTapped == 5) {
-                    new HostRequestDialog(activity,containingView);
+                    new HostRequestDialog(containingView, activity);
                     buildButtonTapped = 0;
                 }
 
@@ -139,7 +139,7 @@ public final class SettingsFragment extends PreferenceFragment {
 //                        startActivity(questionnaireHomeIntent);
                         return true;
                     } else {
-                        display(containingView,TOAST,R.string.feature_unavailable);
+                        display(TOAST, R.string.feature_unavailable, containingView);
                         return false;
                     }
                 }

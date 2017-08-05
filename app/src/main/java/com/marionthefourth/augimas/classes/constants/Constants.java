@@ -52,12 +52,12 @@ public final class Constants {
         }
         public static final class EntityTypes {
             public static final class Indices {
-                public static final int US = 0;
-                public static final int THEM = 1;
+                public static final int HOST = 0;
+                public static final int CLIENT = 1;
             }
             public static final class IDs {
-                public static final int US = 0x3A2B7;
-                public static final int THEM = 0x2F1A6;
+                public static final int HOST = 0x3A2B7;
+                public static final int CLIENT = 0x2F1A6;
             }
         }
         public static final class EntityRoles {
@@ -351,6 +351,7 @@ public final class Constants {
             public static final String BRANDING_ELEMENT_UID = "brandingElementUID";
             public static final String DEVICE_UID = "deviceUID";
         }
+
         public static final class Fields {
             public static final String EMAIL = "email";
             public static final String USERNAME = "username";
@@ -376,14 +377,36 @@ public final class Constants {
             public static final String CONTENTS = "contents";
             public static final String FRAGMENT = "fragment";
             public static final String TOKEN = "token";
+
             public static final String MESSAGE = "message";
-            public static final String ACTION = "action";
         }
+
         public static final class Server {
-            public static final String BACKEND_SENDER_ID = "431269160141";
+            public static final class OneSignal {
+                public static final String APP_ID = "7432468f-5504-4ffb-813b-88f9a45dc575";
+                public static final String NOTIFICATION_URL = "https://onesignal.com/api/v1/notifications";
+            }
+
             public static final String BACKEND_SERVER_CONNECTION = "@gcm.googleapis.com";
-            public static final String BACKEND_ACTION_MESSAGE = "MESSAGE";
-            public static final String BACKEND_ACTION_ECHO = "com.augimas.ECHO";
+            public static final class Fields {
+                public static final String MESSAGE = "message";
+                public static final String ACTION = "action";
+                public static final String APP_ID = "app_id";
+                public static final String TAG = "tag";
+                public static final String FIELD = "field";
+                public static final String FIELDS = "fields";
+                public static final String RELATION = "relation";
+                public static final String EQUALS = "=";
+                public static final String FILTERS = "filters";
+                public static final String VALUE = "value";
+                public static final String DATA = "data";
+                public static final String CONTENTS = "contents";
+                public static final String ENGLISH = "en";
+                public static final String ENGLISH_MESSAGE = "English Message";
+
+
+
+            }
         }
         public static final class Firebase {
             public static final class General {
@@ -396,6 +419,11 @@ public final class Constants {
                 public static final String DETAIL_MODE_LINK_ACCOUNT = "link";
             }
 
+        }
+        public static final class Elements {
+            public static final String BUTTONS = "buttons";
+            public static final String TEXT_INPUT_EDIT_TEXTS = "textInputEditTexts";
+            public static final String TEXT_INPUT_LAYOUTS = "textInputLayout";
         }
         public static final class Fragments {
             public static final String SETTINGS = "Settings";
@@ -479,6 +507,7 @@ public final class Constants {
 
         public static final String NO_VALUE = "0x81BAC";
         public static final String YES_VALUE = "0xA4BEF";
+
 
     }
 }

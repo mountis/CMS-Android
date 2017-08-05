@@ -7,6 +7,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +60,13 @@ public final class Message extends FirebaseCommunication {
         setText(text);
         setChannelUID(channelUID);
         setSenderUID(senderUID);
+    }
+    public static ArrayList<Message> toArrayList(DataSnapshot messageReferences) {
+        final ArrayList<Message> messages = new ArrayList<>();
+        for(DataSnapshot messageReference:messageReferences.getChildren()) {
+            messages.add(new Message(messageReference));
+        }
+        return messages;
     }
 //    Other Methods
     @Override

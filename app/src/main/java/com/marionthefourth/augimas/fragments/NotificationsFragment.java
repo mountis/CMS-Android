@@ -63,13 +63,13 @@ public final class NotificationsFragment extends Fragment {
 
     private void loadNotificationData(final Activity activity, final RecyclerView recyclerView) {
 
-        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                        Backend.getReference(activity,R.string.firebase_notifications_directory).addValueEventListener(new ValueEventListener() {
+                        Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.hasChildren()) {
@@ -105,7 +105,7 @@ public final class NotificationsFragment extends Fragment {
                         });
                     } else {
                         if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                            Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {

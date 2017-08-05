@@ -39,7 +39,7 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_TEXT_BUTTON;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
-import static com.marionthefourth.augimas.helpers.FragmentHelper.build;
+import static com.marionthefourth.augimas.helpers.FragmentHelper.buildProgressDialog;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class SignInFragment extends Fragment {
@@ -90,11 +90,10 @@ public final class SignInFragment extends Fragment {
     private void checkIfUserIsLoggedIn(final Activity activity, final View view, final User user) {
         // Attempt to get the current user if null, they aren't logged in
         if (user != null) {
-            final ProgressDialog loadingProgress = build(view,R.string.progress_signing_in);
+            final ProgressDialog loadingProgress = buildProgressDialog(R.string.progress_signing_in, view);
             // Display Toast to the User, welcoming them back
             Backend.getReference(
-                    activity,
-                    R.string.firebase_users_directory
+                    R.string.firebase_users_directory, activity
             ).child(user.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -107,7 +106,7 @@ public final class SignInFragment extends Fragment {
                     OneSignal.syncHashedEmail(user.getEmail());
                     OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
 
-                    display(view, Constants.Ints.Views.Widgets.IDs.TOAST,R.string.welcome_back_text,currentUser.getUsername());
+                    display(Constants.Ints.Views.Widgets.IDs.TOAST, R.string.welcome_back_text, currentUser.getUsername(), view);
                     Intent homeIntent = new Intent(view.getContext(), HomeActivity.class);
                     startActivity(homeIntent);
                 }
@@ -194,7 +193,7 @@ public final class SignInFragment extends Fragment {
                         user.setRole(newUser.getRole());
                         user.setTeamUID(newUser.getTeamUID());
                     } else  {
-                        display(view,SNACKBAR,R.string.feature_unavailable);
+                        display(SNACKBAR, R.string.feature_unavailable, view);
                     }
 
                     Backend.signIn(activity,view,user);
@@ -265,7 +264,7 @@ public final class SignInFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new RecoverPasswordDialog(activity,view);
+                new RecoverPasswordDialog(view, activity);
             }
         });
     }
@@ -281,7 +280,7 @@ public final class SignInFragment extends Fragment {
             fields.add(((EditText)getView().findViewById(INPUT_VIEW_IDS[i])).getText().toString());
         }
 
-        return FirebaseObject.getFirebaseObjectFromFields(fields,FIREBASE_CONTENT);
+        return FirebaseObject.getFromFields(fields,FIREBASE_CONTENT);
     }
 
 }

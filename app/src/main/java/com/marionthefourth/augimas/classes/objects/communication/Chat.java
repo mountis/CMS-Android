@@ -56,6 +56,13 @@ public final class Chat extends FirebaseCommunication {
         this(teamOne,type);
         getTeamUIDs().add(teamTwo.getUID());
     }
+    public static ArrayList<Chat> toArrayList(DataSnapshot chatReferences) {
+        final ArrayList<Chat> chats = new ArrayList<>();
+        for(DataSnapshot chatReference:chatReferences.getChildren()) {
+            chats.add(new Chat(chatReference));
+        }
+        return chats;
+    }
 //    Other Methods
     @Override
     public String getField(final int index) {

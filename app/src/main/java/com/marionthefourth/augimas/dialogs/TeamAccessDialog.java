@@ -35,12 +35,13 @@ import static com.marionthefourth.augimas.classes.objects.communication.Channel.
  */
 
 public final class TeamAccessDialog extends Builder {
-    public TeamAccessDialog(final Activity activity, final Team teamItem) {
+//    Dialog Constructor
+    public TeamAccessDialog(final Team teamItem, final Activity activity) {
         super(activity);
-        setupDialog(activity,teamItem);
+        setupDialog(teamItem, activity);
     }
-
-    private void setupDialog(final Activity activity, final Team teamItem) {
+//    Dialog Setup Methods
+    private void setupDialog(final Team teamItem, final Activity activity) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         // ...Irrelevant code for customizing the buttons and title
         LayoutInflater inflater = activity.getLayoutInflater();
@@ -49,13 +50,11 @@ public final class TeamAccessDialog extends Builder {
 
         AlertDialog alertDialog = dialogBuilder.create();
 
-        setupLayout(activity,alertDialog,dialogView,teamItem);
+        setupLayout(teamItem, alertDialog, dialogView, (AppCompatActivity) activity);
 
         alertDialog.show();
     }
-
-    private void setupLayout(final Activity activity, final AlertDialog dialogBuilder, final View dialogView, final Team teamItem) {
-
+    private void setupLayout(final Team teamItem, final AlertDialog dialogBuilder, final View dialogView, final AppCompatActivity activity) {
         final int[] BUTTON_IDS = new int[] {
                 R.id.button_status,
                 R.id.button_dashboard,
@@ -63,87 +62,80 @@ public final class TeamAccessDialog extends Builder {
                 R.id.button_team
         };
 
-        ArrayList<AppCompatImageButton> buttons = new ArrayList<>();
-
         AppCompatTextView teamName = (AppCompatTextView) dialogView.findViewById(R.id.item_label_team_display_name);
         teamName.setText(teamItem.getName());
 
+        ArrayList<AppCompatImageButton> buttons = new ArrayList<>();
         for (int i = 0; i < BUTTON_IDS.length; i++) {
             buttons.add((AppCompatImageButton)dialogView.findViewById(BUTTON_IDS[i]));
-            final int finalI = i;
+            final int buttonIndex = i;
             buttons.get(i).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    switch (finalI) {
+                    switch (buttonIndex) {
                         case 0:
-                            // Setup Status Dialog
-                            new TeamStatusDialog(activity,activity.findViewById(R.id.container),teamItem);
+                            new TeamStatusDialog(teamItem, activity.findViewById(R.id.container), activity);
                             break;
                         case 1:
                             // Setup Dashboard Button
-                            ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
+                            activity.getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
                             break;
                         case 2:
                             // Setup Chat Button
-                            transitionUserToChatFragment(activity, teamItem);
+                            transitionUserToChatFragment(teamItem, activity);
                             break;
                         case 3:
                             // Setup Team Management Button
-                            ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(teamItem)).commit();
+                            activity.getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(teamItem)).commit();
                             break;
                     }
 
                     dialogBuilder.dismiss();
-
                 }
             });
         }
     }
-
-    private void transitionUserToChatFragment(final Activity activity, final Team teamItem) {
-        Backend.getReference(activity,R.string.firebase_chats_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+//    Transitional Method
+    private void transitionUserToChatFragment(final Team teamItem, final Activity activity) {
+        Backend.getReference(R.string.firebase_chats_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                    for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
-                        final Chat chatItem = new Chat(chatReference);
-                        if (chatItem != null && chatItem.hasTeam(teamItem.getUID())) {
-                            Backend.getReference(activity,R.string.firebase_channels_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                if (dataSnapshot.hasChildren()) {
+                    for (final Chat chatItem:Chat.toArrayList(dataSnapshot)) {
+                        if (chatItem.hasTeam(teamItem.getUID())) {
+                            Backend.getReference(R.string.firebase_channels_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                        final ArrayList<Channel> channels = new ArrayList<>();
-                                        for (DataSnapshot channelReference:dataSnapshot.getChildren()) {
-                                            final Channel channelItem = new Channel(channelReference);
+                                    if (dataSnapshot.hasChildren()) {
+                                        final ArrayList<Channel> channels = Channel.toArrayList(dataSnapshot);
+                                        for (final Channel channelItem:channels) {
                                             if (channelItem.getChatUID().equals(chatItem.getUID())) {
                                                 if (!channelItem.getName().equals(teamItem.getName())) {
-                                                    channels.add(channelItem);
+                                                    channels.remove(channelItem);
                                                 }
                                             }
                                         }
 
-                                        Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
                                                     final User currentUser = new User(dataSnapshot);
                                                     if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                                                        Backend.getReference(activity,R.string.firebase_teams_directory).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                             @Override
                                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
                                                                     final Team currentTeam = new Team(dataSnapshot);
-                                                                    if (currentTeam != null) {
-                                                                        ArrayList<String> channelUIDs = sortChannels(channels);
+                                                                    ArrayList<String> channelUIDs = sortChannels(channels);
 
-                                                                        final Intent chatIntent = new Intent(activity, ChatActivity.class);
+                                                                    final Intent chatIntent = new Intent(activity, ChatActivity.class);
 
-                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.US.toInt(false),currentTeam.getUID());
-                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.THEM.toInt(false),teamItem.getUID());
-                                                                        chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.US.toInt(false),channelUIDs.get(0));
-                                                                        chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.THEM.toInt(false),channelUIDs.get(1));
-                                                                        activity.startActivity(chatIntent);
-                                                                    }
+                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false),currentTeam.getUID());
+                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false),teamItem.getUID());
+                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false),channelUIDs.get(0));
+                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false),channelUIDs.get(1));
+                                                                    activity.startActivity(chatIntent);
                                                                 }
                                                             }
 
@@ -174,5 +166,4 @@ public final class TeamAccessDialog extends Builder {
             }
         });
     }
-
 }

@@ -4,6 +4,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,13 @@ public final class Device extends FirebaseObject {
         if (deviceSnapshot.hasChild(Constants.Strings.Fields.TOKEN)) {
             setToken(deviceSnapshot.child(Constants.Strings.Fields.TOKEN).getValue().toString());
         }
+    }
+    public static ArrayList<Device> toArrayList(DataSnapshot deviceReferences) {
+        final ArrayList<Device> devices = new ArrayList<>();
+        for(DataSnapshot deviceReference:deviceReferences.getChildren()) {
+            devices.add(new Device(deviceReference));
+        }
+        return devices;
     }
 //    Other Methods
     @Override

@@ -85,7 +85,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     private void pullItemsData(final ViewHolder holder) {
         switch (holder.notificationItem.getSubjectType()) {
             case MEMBER:
-                Backend.getReference(activity,R.string.firebase_users_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -105,7 +105,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case TEAM:
-                Backend.getReference(activity,R.string.firebase_teams_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -133,7 +133,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         switch (holder.notificationItem.getObjectType()) {
 
             case BRANDING_ELEMENT:
-                Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -150,7 +150,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case CHAT:
-                Backend.getReference(activity,R.string.firebase_chats_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_chats_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -167,7 +167,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case MEMBER:
-                Backend.getReference(activity,R.string.firebase_users_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -184,7 +184,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 });
                 break;
             case TEAM:
-                Backend.getReference(activity,R.string.firebase_teams_directory).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {

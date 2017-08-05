@@ -14,7 +14,7 @@ public abstract class FirebaseEntity extends FirebaseObject {
     private EntityStatus entityStatus = EntityStatus.DEFAULT;
 //    Class Enums
     public enum EntityType {
-        US, THEM, DEFAULT;
+    HOST, CLIENT, DEFAULT;
 
         public String toMapStyleString() {
             return String.valueOf(this.toInt(true));
@@ -23,14 +23,14 @@ public abstract class FirebaseEntity extends FirebaseObject {
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
                 switch (this) {
-                    case US: return Constants.Ints.EntityTypes.IDs.US;
-                    case THEM: return Constants.Ints.EntityTypes.IDs.THEM;
+                    case HOST: return Constants.Ints.EntityTypes.IDs.HOST;
+                    case CLIENT: return Constants.Ints.EntityTypes.IDs.CLIENT;
                     default: return DEFAULT_ID;
                 }
             } else {
                 switch (this) {
-                    case US: return Constants.Ints.EntityTypes.Indices.US;
-                    case THEM: return Constants.Ints.EntityTypes.Indices.THEM;
+                    case HOST: return Constants.Ints.EntityTypes.Indices.HOST;
+                    case CLIENT: return Constants.Ints.EntityTypes.Indices.CLIENT;
                     default: return DEFAULT_ID;
                 }
             }
@@ -48,12 +48,12 @@ public abstract class FirebaseEntity extends FirebaseObject {
 
         public static EntityType getType(int type) {
             switch (type) {
-                case Constants.Ints.EntityTypes.IDs.US:
-                case Constants.Ints.EntityTypes.Indices.US:
-                    return US;
-                case Constants.Ints.EntityTypes.IDs.THEM:
-                case Constants.Ints.EntityTypes.Indices.THEM:
-                    return THEM;
+                case Constants.Ints.EntityTypes.IDs.HOST:
+                case Constants.Ints.EntityTypes.Indices.HOST:
+                    return HOST;
+                case Constants.Ints.EntityTypes.IDs.CLIENT:
+                case Constants.Ints.EntityTypes.Indices.CLIENT:
+                    return CLIENT;
                 default:
                     return DEFAULT;
             }
@@ -219,7 +219,7 @@ public abstract class FirebaseEntity extends FirebaseObject {
             }
         }
 
-        public static ArrayList<FirebaseEntity.EntityStatus> getAllEntityStatii() {
+        public static ArrayList<FirebaseEntity.EntityStatus> getAllStatii() {
             final ArrayList<FirebaseEntity.EntityStatus> entityStatii = new ArrayList<>();
             for (int i = 0; i < getNumberOfEntityStatii(); i++) {
                 entityStatii.add(getStatus(i));
