@@ -331,7 +331,7 @@ public class TeamManagementFragment extends Fragment {
                                                 if (dataSnapshot.exists()) {
                                                     final User currentUser = new User(dataSnapshot);
                                                     if (currentUser != null) {
-                                                        recyclerView.setAdapter(new TeamMembersAdapter(activity,teamItem,teamMembers,currentUser));
+                                                        recyclerView.setAdapter(new TeamMembersAdapter(activity, teamMembers,currentUser));
                                                     }
                                                 }
                                             }
@@ -377,7 +377,7 @@ public class TeamManagementFragment extends Fragment {
         final TextInputEditText teamUsername = (TextInputEditText)view.findViewById(R.id.input_team_username);
         teamUsername.setText(google.getUsername());
 
-        recyclerView.setAdapter(new TeamMembersAdapter(activity,google,members, new User()));
+        recyclerView.setAdapter(new TeamMembersAdapter(activity, members, new User()));
 
     }
 

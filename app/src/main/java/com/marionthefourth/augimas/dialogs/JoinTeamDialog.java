@@ -12,9 +12,9 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -103,12 +103,8 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         teamItem.addUser(user,memberRole,memberStatus);
         Backend.update(activity,user);
         Backend.update(activity,teamItem);
-        // Alert User that the team has been alerted of your request
-
-        FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
-
+        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
         Backend.upstreamNotification(activity,user, Notification.NotificationVerbType.REQUEST, teamItem);
-
         dialog.dismiss();
     }
 

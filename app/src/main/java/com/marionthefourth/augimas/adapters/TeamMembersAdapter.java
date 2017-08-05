@@ -17,10 +17,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
-import com.marionthefourth.augimas.classes.objects.entities.Team;
-import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 
 import java.util.ArrayList;
 
@@ -28,26 +27,22 @@ import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
 
 public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.ViewHolder> {
-
-    private Team team;
-    private Activity activity;
     private User currentUser;
+    private Activity activity;
     private ArrayList<User> members = new ArrayList<>();
-
-    public TeamMembersAdapter(Activity activity, Team team, ArrayList<User> members, User currentUser) {
-        this.team = team;
-        this.activity = activity;
+//    Adapter Constructor
+    public TeamMembersAdapter(Activity activity, ArrayList<User> members, User currentUser) {
         this.members = members;
+        this.activity = activity;
         this.currentUser = currentUser;
     }
-
+//    Adapter Methods
     @Override
     public TeamMembersAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_team_member, parent, false);
         return new TeamMembersAdapter.ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final TeamMembersAdapter.ViewHolder holder, final int index) {
         holder.userItem = members.get(index);
@@ -74,7 +69,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                 final TextView tv = (TextView) v.findViewById(R.id.spinnerTarget);
 
                 tv.setText(FirebaseEntity.EntityRole.getRole(position).toString());
-//                tv.setText(testarray.get(position));
 
                 final View finalV = v;
                 Backend.getReference(activity,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
@@ -201,12 +195,11 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         }
 
     }
-
     @Override
     public int getItemCount() {
         return members.size();
     }
-
+//    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public User userItem;
@@ -225,5 +218,4 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
             return super.toString() + " '" + mTeamMemberNameLabel.getText() + "'";
         }
     }
-
 }

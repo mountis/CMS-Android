@@ -19,43 +19,28 @@ public final class User extends FirebaseEntity {
     private String teamUID  = "";
     @Exclude
     private String password = "";
-
+//    User Constructors
     public User() {}
-
+    public User(final Parcel in) {
+        final User user = (User) in.readSerializable();
+        setUID(user.getUID());
+        setEmail(user.getEmail());
+        setTeamUID(user.getTeamUID());
+        setPassword(user.getPassword());
+        setUsername(user.getUsername());
+        setRole(user.getRole());
+        setStatus(user.getStatus());
+    }
     public User(final String username) {
         this();
         setUsername(username);
     }
-
-    public User(final String username, final FirebaseEntity.EntityRole role) {
-        this(username);
-        setRole(role);
-    }
-
-    public User(final String firstname, final String lastname, final FirebaseEntity.EntityRole role) {
-        setName(firstname + " " + lastname);
-        setRole(role);
-    }
-
-    public User(final String username, final String password) {
-        this(username);
-        setPassword(password);
-    }
-
-    public User(final String username, final String email, final String fullname, final String uid) {
-        setUID(uid);
-        setName(fullname);
-        setEmail(email);
-        setUsername(username);
-    }
-
     public User(final ArrayList<String> fields) {
         setEmail(fields.get(3));
         setPassword(fields.get(1));
         setUsername(fields.get(0));
         setName(fields.get(4));
     }
-
     public User(final DataSnapshot userSnapshot) {
         this();
         if (userSnapshot.hasChild(Constants.Strings.Fields.USERNAME)) {
@@ -83,33 +68,97 @@ public final class User extends FirebaseEntity {
             setStatus(EntityStatus.getStatus(userSnapshot.child(Constants.Strings.Fields.ENTITY_STATUS).getValue().toString()));
         }
     }
+    public User(final String username, final FirebaseEntity.EntityRole role) {
+        this(username);
+        setRole(role);
+    }
+    public User(final String firstname, final String lastname, final FirebaseEntity.EntityRole role) {
+        setName(firstname + " " + lastname);
+        setRole(role);
+    }
+    public User(final String username, final String password) {
+        this(username);
+        setPassword(password);
+    }
+    public User(final String username, final String email, final String fullname, final String uid) {
+        setUID(uid);
+        setName(fullname);
+        setEmail(email);
+        setUsername(username);
+    }
+//    Functional Methods
+    @Override
+    public Map<String, String> toMap() {
+    final HashMap<String, String> result = new HashMap<>();
+    if (getUID() != null) {
+        result.put(Constants.Strings.UIDs.UID, getUID());
+    }
+    if (getUsername() != null) {
+        result.put(Constants.Strings.Fields.USERNAME, getUsername());
+    }
+    if (getEmail() != null) {
+        result.put(Constants.Strings.Fields.EMAIL, getEmail());
+    }
+    if (getName() != null) {
+        result.put(Constants.Strings.Fields.FULL_NAME, getName());
+    }
+    if (getTeamUID() != null) {
+        result.put(Constants.Strings.UIDs.TEAM_UID, getTeamUID());
+    }
+    result.put(Constants.Strings.Fields.ENTITY_ROLE, String.valueOf(getRole().toInt(true)));
+    result.put(Constants.Strings.Fields.ENTITY_STATUS, String.valueOf(getStatus().toInt(true)));
+    result.put(Constants.Strings.Fields.ENTITY_TYPE, String.valueOf(getType().toInt(true)));
 
-    public User(final Parcel in) {
-        final User user = (User) in.readSerializable();
-        setUID(user.getUID());
-        setEmail(user.getEmail());
-        setTeamUID(user.getTeamUID());
-        setPassword(user.getPassword());
-        setUsername(user.getUsername());
-        setRole(user.getRole());
-        setStatus(user.getStatus());
+
+    return result;
+}
+    public boolean isInChat(Chat chat) {
+    for (int i = 0; i < chat.getTeamUIDs().size(); i++) {
+        if (chat.getTeamUIDs().get(i).equals(getTeamUID())) {
+            return true;
+        }
     }
 
-    public String getEmail() { return email; }
-    public String getTeamUID() { return teamUID; }
-    public String getPassword() { return password; }
-
-    public void setEmail(final String email) { this.email = email; }
-    public void setTeamUID(final String teamUID) { this.teamUID = teamUID; }
-    public void setPassword(final String password) {
-        this.password = password;
+    return false;
+}
+    public boolean isInTeam(Team team) {
+        return getTeamUID().equals(team.getUID());
     }
+    public static User getMessageSender(ArrayList<User> users, Message message) {
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).sentMessage(message)) {
+                return users.get(i);
+            }
+        }
 
+        return null;
+    }
+    public boolean sentMessage(Message message) {
+        return message.getSenderUID().equals(getUID());
+    }
+//    Parcel Details
     @Override
     public int describeContents() {
         return 0;
     }
-
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+//    Class Getters and Setters
+    public String getEmail() { return email; }
+    public void setEmail(final String email) { this.email = email; }
+    public String getTeamUID() { return teamUID; }
+    public void setTeamUID(final String teamUID) { this.teamUID = teamUID; }
+    public String getPassword() { return password; }
+    public void setPassword(final String password) {
+        this.password = password;
+    }
+//    Other Methods
     public boolean equals(final Object o) {
         final User comparedUser = (User)o;
         return comparedUser.getEmail().equals(this.getEmail())
@@ -126,7 +175,6 @@ public final class User extends FirebaseEntity {
                 &&
                 comparedUser.getRole().equals(this.getRole());
     }
-
     @Override
     public String getField(final int index) {
         switch (index) {
@@ -142,71 +190,6 @@ public final class User extends FirebaseEntity {
             default: return null;
         }
     }
-
-    public boolean isInTeam(Team team) {
-        return getTeamUID().equals(team.getUID());
-    }
-
-    public boolean isInChat(Chat chat) {
-        for (int i = 0; i < chat.getTeamUIDs().size(); i++) {
-            if (chat.getTeamUIDs().get(i).equals(getTeamUID())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean sentMessage(Message message) {
-        return message.getSenderUID().equals(getUID());
-    }
-
-    public static User getMessageSender(ArrayList<User> users, Message message) {
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).sentMessage(message)) {
-                return users.get(i);
-            }
-        }
-
-        return null;
-    }
-
-    @Exclude
-    @Override
-    public Map<String, String> toMap() {
-        final HashMap<String, String> result = new HashMap<>();
-        if (getUID() != null) {
-            result.put(Constants.Strings.UIDs.UID, getUID());
-        }
-        if (getUsername() != null) {
-            result.put(Constants.Strings.Fields.USERNAME, getUsername());
-        }
-        if (getEmail() != null) {
-            result.put(Constants.Strings.Fields.EMAIL, getEmail());
-        }
-        if (getName() != null) {
-            result.put(Constants.Strings.Fields.FULL_NAME, getName());
-        }
-        if (getTeamUID() != null) {
-            result.put(Constants.Strings.UIDs.TEAM_UID, getTeamUID());
-        }
-        result.put(Constants.Strings.Fields.ENTITY_ROLE, String.valueOf(getRole().toInt(true)));
-        result.put(Constants.Strings.Fields.ENTITY_STATUS, String.valueOf(getStatus().toInt(true)));
-        result.put(Constants.Strings.Fields.ENTITY_TYPE, String.valueOf(getType().toInt(true)));
-
-
-        return result;
-    }
-
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public User createFromParcel(Parcel in) {
-            return new User(in);
-        }
-        public User[] newArray(int size) {
-            return new User[size];
-        }
-    };
-
     public static ArrayList<String> getField(ArrayList<User> users, int position) {
         ArrayList<String> field = new ArrayList<>();
         for (int i = 0; i < users.size(); i++) {
@@ -214,7 +197,6 @@ public final class User extends FirebaseEntity {
         }
         return field;
     }
-
     @Override
     public String description() {
         return getUsername() + " " + getEmail();

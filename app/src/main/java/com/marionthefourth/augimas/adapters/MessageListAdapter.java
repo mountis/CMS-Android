@@ -13,72 +13,68 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
-import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
-
     private final Channel channel;
     private final Context context;
-    private final ArrayList<Message> messages;
-    private Team team;
     private ArrayList<User> teamMembers;
-    private ArrayList<Team> teams = new ArrayList<>();
+    private final ArrayList<Message> messages;
     private OnMessageListFragmentInteractionListener mListener;
     private ArrayList<User> adminTeamMembers = new ArrayList<>();
     private ArrayList<User> clientTeamMembers = new ArrayList<>();
 
-    public MessageListAdapter(final Context context, final Channel channel, final ArrayList<Message> messages, final ArrayList<User> adminTeamMembers, final ArrayList<User> clientTeamMembers, final ArrayList<Team> teams, final OnMessageListFragmentInteractionListener mListener) {
+//    Adapter Constructors
+    public MessageListAdapter(final Context context, final Channel channel, final ArrayList<Message> messages, final ArrayList<User> teamMembers, final OnMessageListFragmentInteractionListener mListener) {
         this.channel = channel;
-        this.teams = teams;
+        this.context = context;
+        this.messages = messages;
+        this.mListener = mListener;
+        this.teamMembers = teamMembers;
+    }
+    public MessageListAdapter(final Context context, final Channel channel, final ArrayList<Message> messages, final ArrayList<User> adminTeamMembers, final ArrayList<User> clientTeamMembers, final OnMessageListFragmentInteractionListener mListener) {
+        this.channel = channel;
         this.context = context;
         this.messages = messages;
         this.mListener = mListener;
         this.clientTeamMembers = clientTeamMembers;
         this.adminTeamMembers = adminTeamMembers;
     }
-
-    public MessageListAdapter(final Context context, final Channel channel, final ArrayList<Message> messages, final ArrayList<User> teamMembers, final Team team, final OnMessageListFragmentInteractionListener mListener) {
-        this.channel = channel;
-        this.team = team;
-        this.context = context;
-        this.messages = messages;
-        this.mListener = mListener;
-        this.teamMembers = teamMembers;
-    }
-
-
-
+//    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_message, parent, false);
         return new ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        // Set chat item
+        // Set Chat Item
         holder.channelItem = channel;
+        // Set Message Item
         holder.messageItem = messages.get(position);
-
         if (adminTeamMembers.size() == 0) {
             handleSingleTeam(holder,position);
         } else {
             handleMultipleTeams(holder,position);
-
         }
-
-
     }
-
+    @Override
+    public int getItemCount() {
+        return messages.size();
+    }
+//    Listener Methods
+    public interface OnMessageListFragmentInteractionListener {
+    void onMessageListFragmentInteraction(View view, Message messageItem, User userItem);
+}
+    //    Team Handler Methods
     private void handleSingleTeam(final ViewHolder holder, int position) {
         // Figure out who is sending the message
         holder.senderItem = User.getMessageSender(teamMembers,holder.messageItem);
@@ -102,7 +98,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 holder.mMessageLabel.setGravity(Gravity.RIGHT);
 
             } else {
-
                 // Only Display Username if there are more than two users
                 if (teamMembers.size() > 2) {
                     // Get sender username and set it to label
@@ -150,7 +145,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
         });
     }
-
     private void handleMultipleTeams(final ViewHolder holder, int position) {
         ArrayList<User> users = new ArrayList<>();
         users.addAll(adminTeamMembers);
@@ -158,19 +152,15 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         // Figure out who is sending the message
         holder.senderItem = User.getMessageSender(users,holder.messageItem);
-
-
+        // Hide timestamp until we add back that feature
         holder.mTimestampLabel.setVisibility(View.GONE);
 
         // Check if sender matches your user for labeling purposes
         if (PROTOTYPE_MODE) {
             if (holder.senderItem.getUID().equals("31111")) {
-
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
                 }
-
 
                 LinearLayoutCompat messageViewLinearLayout = (LinearLayoutCompat) holder.mView.findViewById(R.id.item_linear_layout);
                 holder.mMessageLabel.setTextColor(ContextCompat.getColor(context, R.color.yourMessageTextColor));
@@ -181,19 +171,16 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
                 holder.mMessageLabel.setGravity(Gravity.RIGHT);
             } else {
-
                 // Only Display Username if there are more than two users
                 if (users.size() > 2) {
                     // Get sender username and set it to label
                     holder.mUsernameLabel.setText(holder.senderItem.getUsername());
                 }
-
                 if (position -1 >= 0) {
                     if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {
                         holder.mUsernameLabel.setVisibility(View.GONE);
                     }
                 }
-
                 // Only Display the Chat Letter on this message if the next one isn't by the same user
                 if (position + 1 < messages.size()) {
                     if (messages.get(position+1).getSenderUID().equals(holder.senderItem.getUID())) {
@@ -267,12 +254,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
         });
     }
-
-    @Override
-    public int getItemCount() {
-        return messages.size();
-    }
-
+    //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public Channel channelItem;
@@ -282,7 +264,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         public final AppCompatTextView mUsernameLabel;
         public final AppCompatTextView mTimestampLabel;
         public final AppCompatButton mChatLetterMoniker;
-
 
         public ViewHolder(View view) {
             super(view);
@@ -297,9 +278,5 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         public String toString() {
             return super.toString() + " '" + mMessageLabel.getText() + "'";
         }
-    }
-
-    public interface OnMessageListFragmentInteractionListener {
-        void onMessageListFragmentInteraction(View view, Message messageItem, User userItem);
     }
 }

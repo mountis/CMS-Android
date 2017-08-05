@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.save;
+import static com.marionthefourth.augimas.backend.Backend.create;
 
 public final class BrandingElementsFragment extends Fragment implements BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener {
 
@@ -164,7 +164,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 typesMade.add(false);
                 elements.add(new BrandingElement(BrandingElement.ElementType.getType(i)));
                 elements.get(elements.size()-1).setTeamUID(team.getUID());
-                save(activity,elements.get(elements.size()-1));
+                create(activity,elements.get(elements.size()-1));
             }
         }
 

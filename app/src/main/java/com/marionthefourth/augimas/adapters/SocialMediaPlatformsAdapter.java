@@ -26,16 +26,11 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Strings.YE
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
 
-/**
- * Created by MGR4 on 5/26/17.
- */
-
 public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMediaPlatformsAdapter.ViewHolder> {
-
     private Activity activity;
     private BrandingElement socialMediaElement;
     private ArrayList<String> socialMediaPlatforms = new ArrayList<>();
-
+//    Adapter Constructor
     public SocialMediaPlatformsAdapter(Activity activity, BrandingElement socialMediaElement) {
         this.activity = activity;
         this.socialMediaElement = socialMediaElement;
@@ -44,15 +39,13 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
             socialMediaPlatforms.remove(0);
         }
     }
-
-
+//    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_social_media, parent, false);
         return new SocialMediaPlatformsAdapter.ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (socialMediaPlatforms.get(position).equals(YES_VALUE)) {
@@ -111,12 +104,11 @@ public class SocialMediaPlatformsAdapter extends RecyclerView.Adapter<SocialMedi
         });
 
     }
-
     @Override
     public int getItemCount() {
         return socialMediaPlatforms.size();
     }
-
+//    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final AppCompatTextView mSocialMediaNameLabel;

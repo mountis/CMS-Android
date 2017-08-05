@@ -1,166 +1,55 @@
-// Marion Rucker
-// APD2 - C201703
-// Constants.java
-
 package com.marionthefourth.augimas.classes.constants;
 
 public final class Constants {
-
-    public static final class Strings {
-
-        public static final CharSequence QUESTIONNAIRE_KEY = "questionnaire";
-
-        public static final class Server {
-            public static final String BACKEND_SENDER_ID = "431269160141";
-            public static final String BACKEND_SERVER_CONNECTION = "@gcm.googleapis.com";
-            public static final String BACKEND_ACTION_MESSAGE = "MESSAGE";
-            public static final String BACKEND_ACTION_ECHO = "com.augimas.ECHO";
-        }
-
-        public static final class UIDs {
-            public static final String UID = "uid";
-            public static final String CHAT_UID = "chatUID";
-            public static final String SENDER_UID = "senderUID";
-            public static final String OBJECT_UID = "objectUID";
-            public static final String SUBJECT_UID = "subjectUID";
-            public static final String MESSAGE_UID = "messageUID";
-            public static final String TEAM_UID = "teamUID";
-            public static final String USER_UID = "userUID";
-            public static final String TEAM_UIDS = "teamUIDs";
-            public static final String MEMBER_UIDS = "memberUIDS";
-            public static final String RECEIVER_UID = "receiverUID";
-            public static final String CHANNEL_UID = "channelUID";
-            public static final String BRANDING_ELEMENT_UID = "brandingElementUID";
-        }
-
-        // Firebase Object Fields
-        public static final class Fields {
-            public static final String EMAIL = "email";
-            public static final String USERNAME = "username";
-            public static final String PASSWORD = "password";
-            public static final String NICKNAME = "nickname";
-            public static final String FULL_NAME = "fullname";
-            public static final String USERNAME_OR_EMAIL = "username_or_email";
-            public static final String TEAM_NAME = "teamName";
-            public static final String BRANDING_ELEMENT_TYPE = "elementType";
-            public static final String BRANDING_ELEMENT_STATUS = "elementStatus";
-            public static final String OBJECT_TYPE = "objectType";
-            public static final String SUBJECT_TYPE = "subjectType";
-            public static final String VERB_TYPE = "verbType";
-            public static final String ENTITY_ROLE = "role";
-            public static final String ENTITY_STATUS = "status";
-            public static final String ENTITY_TYPE = "type";
-            public static final String COMMUNICATION_TYPE  = "type";
-            public static final String TEXT = "text";
-            public static final String DATE = "date";
-            public static final String TIME = "time";
-            public static final String TITLE = "title";
-            public static final String BRANDING_ELEMENT_HEADER = "header";
-            public static final String CONTENTS = "contents";
-            public static final String FRAGMENT = "fragment";
-            public static final String TOKEN = "token";
-            public static final String MESSAGE = "message";
-            public static final String ACTION = "action";
-        }
-
-        public static final class BrandingTypes {
-            public static final String DOMAIN_NAME = "domainName";
-            public static final String SOCIAL_MEDIA_NAME = "socialMediaName";
-            public static final String MISSION_STATEMENT = "missionStatement";
-        }
-
-        public static final class Questionnaire {
-            public static final class Questions {
-                public static final String QUESTION_01 = "How satisfied overall were you with the UI/Layout of this screen?";
-                public static final String QUESTION_02 = "Do you have any suggestions for the UI/Layout of the app?";
-                public static final String QUESTION_03 = "Was there anything that stood out to you that you liked or wanted to see more of throughout the app?";
-                public static final String QUESTION_04 = "Did you have any issues with this screen? If so please list it below.";
-                public static final String QUESTION_05 = "How satisfied overall were you with your User Experience on this screen?";
-                public static final String QUESTION_06 = "Are there any additional features you want available on this screen?";
-
-            }
-
-            public static final class Screens {
-                public static final String SCREEN_01 = "Sign In";
-                public static final String SCREEN_02 = "Sign Up";
-                public static final String SCREEN_03 = "Home";
-                public static final String SCREEN_04 = "Dashboard";
-                public static final String SCREEN_05 = "Chats";
-                public static final String SCREEN_06 = "Notifications";
-                public static final String SCREEN_07 = "Settings";
-                public static final String SCREEN_08 = "Team Management";
-                public static final String SCREEN_09 = "Branding Element";
-            }
-        }
-
-        // Firebase
-        public static final String USER = "user";
-        public static final String BRANDING_ELEMENT = "brandingElement";
-        public static final String TEAM = "team";
-        public static final String SORT = "sort";
-        public static final String DESCRIPTION = "description";
-
-        // Firebase Detail Modes
-        public static final String DETAIL_MODE = "detailMode";
-        public static final String DETAIL_MODE_UPDATE = "update";
-        public static final String DETAIL_MODE_CREATE = "create";
-        public static final String DETAIL_MODE_LINK_ACCOUNT = "link";
-
-        // Home Sections
-        public static final String CHATS = "Chats";
-        public static final String CONTACTS = "Contacts";
-        public static final String REMINDERS = "Reminders";
-        /* Unused */
-        public static final String NOTIFICATIONS = "Notifications";
-
-        // Preference Items
-        public static final String BUILD_VERSION = "0.1";
-        public static final String SIGN_OUT = "Sign Out";
-        public static final String SWITCH_ACCOUNTS = "Switch Accounts";
-        public static final String MANAGE_TEAM = "Manage Team";
-
-        public static final String CHANGE_PASSWORD = "Change Password";
-
-        // Preference Key Items
-        public static final String SIGN_OUT_KEY = "signout";
-        public static final String MANAGE_TEAM_KEY = "manageTeam";
-        public static final String UPDATE_ACCOUNT_INFO_KEY = "updateAccountInfo";
-        public static final String BUILD_VERSION_KEY = "buildInformation";
-
-        public static final String ADMIN_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";
-        public static final String ADMIN_REQUEST_CODE = "1-0F-U$";
-        public static final String ADMIN_TEAM_NAME = "Augimas";
-        public static final String ADMIN_TEAM_USERNAME = "augimas";
-
-        public static final String NO_VALUE = "0x81BAC";
-        public static final String YES_VALUE = "0xA4BEF";
-
-        public static final class Fragments {
-            public static final String SETTINGS = "Settings";
-            public static final String SIGN_IN = "Sign In";
-            public static final String SIGN_UP = "Sign Up";
-            public static final String HOME = "Home";
-            public static final String DASHBOARD = "Dashboard";
-            public static final String CHAT = "Chat";
-            public static final String CHAT_LIST = "Chat List";
-            public static final String BRANDING_ELEMENT = "Branding Element";
-            public static final String BRANDING_ELEMENTS = "Branding Elements";
-            public static final String NOTIFICATIONS = "Notifications";
-            public static final String TEAM_MANAGEMENT = "Team Management";
-            public static final String TEAMS = "Teams";
-            public static final String QUESTIONNAIRE = "Questionnaire";
-
-        }
-
-    }
-
     public static final class Ints {
+        public final class Fragments {
+            public static final int DASHBOARD     = 0x19151AB;
+            public static final int CHAT          = 0x8816231;
+            public static final int NOTIFICATION  = 0x4718591;
+            public static final int SETTINGS      = 0x9102612;
+        }
         public static final class UIDs {
             public static final int UID                 = 10;
             public static final int TEAM_UID            = 14;
             public static final int CHAT_UID            = 16;
         }
+        public static final class Views {
+            public static final class Buttons {
+                public static final class Indices {
+                    public static final int SIGN_IN_BUTTON          = 0;
+                    public static final int FORGOT_PASSWORD_BUTTON  = 1;
+                    public static final int SIGN_UP_TEXT_BUTTON     = 2;
+                    public static final int SIGN_UP_BUTTON          = 0;
+                    public static final int SIGN_IN_TEXT_BUTTON     = 1;
+                }
+            }
+            public static final class Widgets {
+                public static final class IDs {
+                    public static final int SNACKBAR                  = 0x5000001;
+                    public static final int TOAST                     = 0x5000002;
+                    public static final int PROGRESS_DIALOG           = 0x5000003;
+                }
+                public static final class Indices {
 
+                }
+            }
+        }
+        public static final class Fields {
+            public static final int USERNAME            = 0;
+            public static final int USERNAME_OR_EMAIL   = 0;
+            public static final int PASSWORD            = 1;
+            public static final int CONFIRM_PASSWORD    = 2;
+            public static final int EMAIL               = 3;
+            public static final int FULL_NAME           = 4;
+        }
+        public static final class Activities {
+            public static final int SIGN_IN_ACTIVITY          = 0x1000010;
+            public static final int SIGN_UP_ACTIVITY          = 0x1000020;
+            public static final int HOME_ACTIVITY             = 0x2000110;
+            public static final int CONTACTS_ACTIVITY         = 0x2000210;
+            public static final int CHATS_ACTIVITY            = 0x2000310;
+            public static final int CHAT_ACTIVITY             = 0x3000311;
+        }
         public static final class EntityTypes {
             public static final class Indices {
                 public static final int US = 0;
@@ -201,45 +90,6 @@ public final class Constants {
                 public static final int AWAITING    = 0x6A5E1;
                 public static final int NONE        = 0x9D7E2;
                 public static final int BLOCKED     = 0x5F4D9;
-            }
-        }
-        public static final class CommunicationTypes {
-            public static final class Indices {
-                public static final int A = 0;
-                public static final int B = 1;
-                public static final int C = 2;
-            }
-            public static final class IDs {
-                public static final int A = 0x518FA;
-                public static final int B = 0x697EB;
-                public static final int C = 0x786DC;
-            }
-
-        }
-        public static final class CommunicationTines {
-            public static final class Indices {
-                public static final int ONE     = 0;
-                public static final int TWO     = 1;
-                public static final int THREE   = 2;
-            }
-            public static final class IDs {
-                public static final int ONE     = 0x871BA;
-                public static final int TWO     = 0x680BA;
-                public static final int THREE   = 0x599BA;
-            }
-        }
-        public static final class BrandingElementStatii {
-            public static final class Indices {
-                public static final int APPROVED    = 0;
-                public static final int AWAITING    = 1;
-                public static final int INCOMPLETE  = 2;
-                public static final int NONE        = 3;
-            }
-            public static final class IDs {
-                public static final int APPROVED    = 0x7B6F2;
-                public static final int AWAITING    = 0x6A5E1;
-                public static final int INCOMPLETE  = 0x9D7A8;
-                public static final int NONE        = 0x9D7E2;
             }
         }
         public static final class NotificationTypes {
@@ -303,77 +153,66 @@ public final class Constants {
                     public static final int TEAM                = 3;
                 }
             }
-
-
         }
-
-        public final class Fragments {
-            public static final int DASHBOARD     = 0x19151AB;
-            public static final int CHAT          = 0x8816231;
-            public static final int NOTIFICATION  = 0x4718591;
-            public static final int SETTINGS      = 0x9102612;
-        }
-
-        public static final int DEFAULT_ID          = 0x4E3C8;
-
-        public static final class Fields {
-            public static final int USERNAME            = 0;
-            public static final int USERNAME_OR_EMAIL   = 0;
-            public static final int PASSWORD            = 1;
-            public static final int CONFIRM_PASSWORD    = 2;
-            public static final int EMAIL               = 3;
-            public static final int FULL_NAME           = 4;
-        }
-
-        public static final int ENTITY_ROLE         = 18;
-        public static final int ENTITY_STATUS       = 20;
-        public static final int ENTITY_TYPE         = 22;
-
-        // Special Numbers
         public static final class SignificantNumbers {
             public static final int MINIMUM_PASSWORD_COUNT = 6;
             public static final int GENERAL_PADDING_AMOUNT = 24;
         }
-
-        public static final class Views {
-            public static final class Buttons {
-                public static final class Indices {
-                    public static final int SIGN_IN_BUTTON          = 0;
-                    public static final int FORGOT_PASSWORD_BUTTON  = 1;
-                    public static final int SIGN_UP_TEXT_BUTTON     = 2;
-                    public static final int SIGN_UP_BUTTON          = 0;
-                    public static final int SIGN_IN_TEXT_BUTTON     = 1;
-                }
+        public static final class CommunicationTypes {
+            public static final class Indices {
+                public static final int A = 0;
+                public static final int B = 1;
+                public static final int C = 2;
             }
-            public static final class Widgets {
-                public static final class IDs {
-                    public static final int SNACKBAR                  = 0x5000001;
-                    public static final int TOAST                     = 0x5000002;
-                    public static final int PROGRESS_DIALOG           = 0x5000003;
-                }
-                public static final class Indices {
+            public static final class IDs {
+                public static final int A = 0x518FA;
+                public static final int B = 0x697EB;
+                public static final int C = 0x786DC;
+            }
 
-                }
+        }
+        public static final class CommunicationTines {
+            public static final class Indices {
+                public static final int ONE     = 0;
+                public static final int TWO     = 1;
+                public static final int THREE   = 2;
+            }
+            public static final class IDs {
+                public static final int ONE     = 0x871BA;
+                public static final int TWO     = 0x680BA;
+                public static final int THREE   = 0x599BA;
             }
         }
-
+        public static final class BrandingElementStatii {
+            public static final class Indices {
+                public static final int APPROVED    = 0;
+                public static final int AWAITING    = 1;
+                public static final int INCOMPLETE  = 2;
+                public static final int NONE        = 3;
+            }
+            public static final class IDs {
+                public static final int APPROVED    = 0x7B6F2;
+                public static final int AWAITING    = 0x6A5E1;
+                public static final int INCOMPLETE  = 0x9D7A8;
+                public static final int NONE        = 0x9D7E2;
+            }
+        }
+        public static final class Firebase {
+            public static final int FIREBASE_CONTENT_CHAT     = 0x0000011;
+            public static final int FIREBASE_CONTENT_MESSAGE  = 0x0000012;
+            public static final int FIREBASE_CONTENT_REMINDER = 0x0000013;
+        }
+        public static final int DEFAULT_ID          = 0x4E3C8;
+        public static final int ENTITY_ROLE         = 18;
+        public static final int ENTITY_STATUS       = 20;
+        public static final int ENTITY_TYPE         = 22;
         // Firebase Objects
         public static final int FIREBASE_USER             = 0x0000001;
         public static final int FIREBASE_CONTENT_CONTACT  = 0x0000010;
-        public static final int FIREBASE_CONTENT_CHAT     = 0x0000011;
-        public static final int FIREBASE_CONTENT_MESSAGE  = 0x0000012;
-        public static final int FIREBASE_CONTENT_REMINDER = 0x0000013;
+
 
         // Activities & Fragments
 
-        public static final class Activities {
-            public static final int SIGN_IN_ACTIVITY          = 0x1000010;
-            public static final int SIGN_UP_ACTIVITY          = 0x1000020;
-            public static final int HOME_ACTIVITY             = 0x2000110;
-            public static final int CONTACTS_ACTIVITY         = 0x2000210;
-            public static final int CHATS_ACTIVITY            = 0x2000310;
-            public static final int CHAT_ACTIVITY             = 0x3000311;
-        }
 
         // Other Views
 
@@ -419,7 +258,6 @@ public final class Constants {
                 public static final int NINJA = 0x00080458;
             }
         }
-
         public static final class Services {
             public static final class Indices {
                 public static final int FACEBOOK    = 0;
@@ -472,9 +310,7 @@ public final class Constants {
                 public static final int PRODUCTS_SERVICES = 0x289BABA;
             }
         }
-
     }
-
     public static final class Bools {
         public static final boolean PROTOTYPE_MODE = false;
 
@@ -495,5 +331,154 @@ public final class Constants {
             public static final boolean DISPLAY_QUESTIONNAIRE = false;
             public static final boolean DISPLAY_SETTINGS = true;
         }
+    }
+    public static final class Strings {
+        public static final CharSequence QUESTIONNAIRE_KEY = "questionnaire";
+
+        public static final class UIDs {
+            public static final String UID = "uid";
+            public static final String CHAT_UID = "chatUID";
+            public static final String SENDER_UID = "senderUID";
+            public static final String OBJECT_UID = "objectUID";
+            public static final String SUBJECT_UID = "subjectUID";
+            public static final String MESSAGE_UID = "messageUID";
+            public static final String TEAM_UID = "teamUID";
+            public static final String USER_UID = "userUID";
+            public static final String TEAM_UIDS = "teamUIDs";
+            public static final String MEMBER_UIDS = "memberUIDS";
+            public static final String RECEIVER_UID = "receiverUID";
+            public static final String CHANNEL_UID = "channelUID";
+            public static final String BRANDING_ELEMENT_UID = "brandingElementUID";
+            public static final String DEVICE_UID = "deviceUID";
+        }
+        public static final class Fields {
+            public static final String EMAIL = "email";
+            public static final String USERNAME = "username";
+            public static final String PASSWORD = "password";
+            public static final String NICKNAME = "nickname";
+            public static final String FULL_NAME = "fullname";
+            public static final String USERNAME_OR_EMAIL = "username_or_email";
+            public static final String TEAM_NAME = "teamName";
+            public static final String BRANDING_ELEMENT_TYPE = "elementType";
+            public static final String BRANDING_ELEMENT_STATUS = "elementStatus";
+            public static final String OBJECT_TYPE = "objectType";
+            public static final String SUBJECT_TYPE = "subjectType";
+            public static final String VERB_TYPE = "verbType";
+            public static final String ENTITY_ROLE = "role";
+            public static final String ENTITY_STATUS = "status";
+            public static final String ENTITY_TYPE = "type";
+            public static final String COMMUNICATION_TYPE  = "type";
+            public static final String TEXT = "text";
+            public static final String DATE = "date";
+            public static final String TIME = "time";
+            public static final String TITLE = "title";
+            public static final String BRANDING_ELEMENT_HEADER = "header";
+            public static final String CONTENTS = "contents";
+            public static final String FRAGMENT = "fragment";
+            public static final String TOKEN = "token";
+            public static final String MESSAGE = "message";
+            public static final String ACTION = "action";
+        }
+        public static final class Server {
+            public static final String BACKEND_SENDER_ID = "431269160141";
+            public static final String BACKEND_SERVER_CONNECTION = "@gcm.googleapis.com";
+            public static final String BACKEND_ACTION_MESSAGE = "MESSAGE";
+            public static final String BACKEND_ACTION_ECHO = "com.augimas.ECHO";
+        }
+        public static final class Firebase {
+            public static final class General {
+
+            }
+            public static final class DetailModes {
+                public static final String DETAIL_MODE = "detailMode";
+                public static final String DETAIL_MODE_UPDATE = "update";
+                public static final String DETAIL_MODE_CREATE = "create";
+                public static final String DETAIL_MODE_LINK_ACCOUNT = "link";
+            }
+
+        }
+        public static final class Fragments {
+            public static final String SETTINGS = "Settings";
+            public static final String SIGN_IN = "Sign In";
+            public static final String SIGN_UP = "Sign Up";
+            public static final String HOME = "Home";
+            public static final String DASHBOARD = "Dashboard";
+            public static final String CHAT = "Chat";
+            public static final String CHAT_LIST = "Chat List";
+            public static final String BRANDING_ELEMENT = "Branding Element";
+            public static final String BRANDING_ELEMENTS = "Branding Elements";
+            public static final String NOTIFICATIONS = "Notifications";
+            public static final String TEAM_MANAGEMENT = "Team Management";
+            public static final String TEAMS = "Teams";
+            public static final String QUESTIONNAIRE = "Questionnaire";
+
+        }
+        public static final class Preferences {
+            public static final class Items {
+                public static final String BUILD_VERSION = "0.1";
+                public static final String SIGN_OUT = "Sign Out";
+                public static final String SWITCH_ACCOUNTS = "Switch Accounts";
+                public static final String MANAGE_TEAM = "Manage Team";
+                public static final String CHANGE_PASSWORD = "Change Password";
+            }
+            public static final class Keys {
+
+            }
+        }
+        public static final class HomeSections {
+            public static final String CHATS = "Chats";
+            public static final String CONTACTS = "Contacts";
+            public static final String REMINDERS = "Reminders";
+            /* Unused */
+            public static final String NOTIFICATIONS = "Notifications";
+        }
+        public static final class BrandingTypes {
+            public static final String DOMAIN_NAME = "domainName";
+            public static final String SOCIAL_MEDIA_NAME = "socialMediaName";
+            public static final String MISSION_STATEMENT = "missionStatement";
+        }
+        public static final class Questionnaire {
+            public static final class Questions {
+                public static final String QUESTION_01 = "How satisfied overall were you with the UI/Layout of this screen?";
+                public static final String QUESTION_02 = "Do you have any suggestions for the UI/Layout of the app?";
+                public static final String QUESTION_03 = "Was there anything that stood out to you that you liked or wanted to see more of throughout the app?";
+                public static final String QUESTION_04 = "Did you have any issues with this screen? If so please list it below.";
+                public static final String QUESTION_05 = "How satisfied overall were you with your User Experience on this screen?";
+                public static final String QUESTION_06 = "Are there any additional features you want available on this screen?";
+
+            }
+
+            public static final class Screens {
+                public static final String SCREEN_01 = "Sign In";
+                public static final String SCREEN_02 = "Sign Up";
+                public static final String SCREEN_03 = "Home";
+                public static final String SCREEN_04 = "Dashboard";
+                public static final String SCREEN_05 = "Chats";
+                public static final String SCREEN_06 = "Notifications";
+                public static final String SCREEN_07 = "Settings";
+                public static final String SCREEN_08 = "Team Management";
+                public static final String SCREEN_09 = "Branding Element";
+            }
+        }
+
+        public static final String USER = "user";
+        public static final String BRANDING_ELEMENT = "brandingElement";
+        public static final String TEAM = "team";
+        public static final String SORT = "sort";
+        public static final String DESCRIPTION = "description";
+        // Preference Key Items
+        public static final String SIGN_OUT_KEY = "signout";
+        public static final String MANAGE_TEAM_KEY = "manageTeam";
+        public static final String UPDATE_ACCOUNT_INFO_KEY = "updateAccountInfo";
+        public static final String BUILD_VERSION_KEY = "buildInformation";
+
+        public static final String ADMIN_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";
+        public static final String HOST_REQUEST_CODE = "1-0F-U$";
+        public static final String ADMIN_TEAM_NAME = "Augimas";
+        public static final String ADMIN_TEAM_USERNAME = "augimas";
+
+        public static final String NO_VALUE = "0x81BAC";
+        public static final String YES_VALUE = "0xA4BEF";
+
     }
 }

@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,7 +20,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import com.marionthefourth.augimas.R;
@@ -41,12 +38,8 @@ import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 import com.onesignal.OneSignal;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.content.ContentValues.TAG;
@@ -57,8 +50,8 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.build;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class Backend {
-
-    public static void signin(final Activity activity, final View view, final User user) {
+//    Signin/out/up Methods
+    public static void signIn(final Activity activity, final View view, final User user) {
         final Context context = view.getContext();
         final DatabaseReference usersRef = getReference(activity, R.string.firebase_users_directory);
         final ProgressDialog loadingProgress = build(view, R.string.progress_signing_in);
@@ -81,7 +74,7 @@ public final class Backend {
                                     if (newUser.getUsername().equals(user.getUsername()) || newUser.getEmail().equals(user.getUsername())) {
                                         // Ensure no one is signed in
                                         if (getCurrentUser() != null && user.getTeamUID().equals("")) {
-                                            logout((AppCompatActivity) context, false);
+                                            signOut((AppCompatActivity) context, false);
                                         }
 
                                         // Sign In
@@ -106,11 +99,11 @@ public final class Backend {
                                                             display(view, TOAST, R.string.success_signin);
 
                                                             if (!user.getTeamUID().equals("")) {
-                                                                FirebaseMessaging.getInstance().subscribeToTopic(user.getTeamUID());
+                                                                Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
                                                             }
 
                                                             OneSignal.syncHashedEmail(user.getEmail());
-                                                            OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+                                                            Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
 
                                                             final Intent homeIntent = new Intent(context, HomeActivity.class);
                                                             context.startActivity(homeIntent);
@@ -140,145 +133,7 @@ public final class Backend {
         }
 
     }
-
-    private void upstreamNotification(final String teamUID,final Notification notification)
-    {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                int SDK_INT = android.os.Build.VERSION.SDK_INT;
-                if (SDK_INT > 8) {
-                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-                            .permitAll().build();
-                    StrictMode.setThreadPolicy(policy);
-
-                    //This is a Simple Logic to Send Notification different Device Programmatically....
-
-                    try {
-                        String jsonResponse;
-
-                        URL url = new URL("https://onesignal.com/api/v1/notifications");
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setUseCaches(false);
-                        con.setDoOutput(true);
-                        con.setDoInput(true);
-
-                        con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        con.setRequestProperty("Authorization", "Basic ZGUxMDg2ZmUtZThiZC00YzVjLTkwODktYTdlZmQ2MDhhYjZj");
-                        con.setRequestMethod("POST");
-
-                        String strJsonBody = "{"
-                                + "\"app_id\": \"7432468f-5504-4ffb-813b-88f9a45dc575\","
-
-                                + "\"filters\": [{\"field\": \"tag\", \"key\": \"teamUID\", \"relation\": \"=\", \"value\": \"" + teamUID + "\"}],"
-
-                                + "\"data\": {\"foo\": \"bar\"},"
-                                + "\"contents\": {\"en\": \"English Message\"}"
-                                + "}";
-
-
-                        System.out.println("strJsonBody:\n" + strJsonBody);
-
-                        byte[] sendBytes = strJsonBody.getBytes("UTF-8");
-                        con.setFixedLengthStreamingMode(sendBytes.length);
-
-                        OutputStream outputStream = con.getOutputStream();
-                        outputStream.write(sendBytes);
-
-                        int httpResponse = con.getResponseCode();
-                        System.out.println("httpResponse: " + httpResponse);
-
-                        if (httpResponse >= HttpURLConnection.HTTP_OK
-                                && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
-                            Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
-                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                            scanner.close();
-                        } else {
-                            Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
-                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                            scanner.close();
-                        }
-                        System.out.println("jsonResponse:\n" + jsonResponse);
-
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
-    public static void updateEmail(final Activity activity, final String email) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (FragmentHelper.isValidEmail(email)) {
-            user.updateEmail(email)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                // Pull User Info to update their email info
-                                getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        if (dataSnapshot.exists()) {
-                                            final User currentUser = new User(dataSnapshot);
-
-                                            currentUser.setEmail(email);
-                                            OneSignal.syncHashedEmail(email);
-
-                                            update(activity,currentUser);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-                                Log.d(TAG, "User email address updated.");
-                            }
-                        }
-                    });
-        }
-
-    }
-    public static void updateUsername(final Activity activity, final String username) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (username != null && !username.equals("")) {
-            Backend.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        final User currentUser = new User(dataSnapshot);
-
-                        currentUser.setUsername(username);
-                        Backend.update(activity,currentUser);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
-
-
-    }
-    public static DatabaseReference getReference(final Context context, final int reference) {
-        final String CURRENT_REFERENCE = context.getResources().getString(reference);
-        switch (reference) {
-            case R.string.firebase_url_directory:
-                return FirebaseDatabase.getInstance().getReference();
-            default: return getReference(
-                    context,
-                        R.string.firebase_url_directory
-                ).child(CURRENT_REFERENCE);
-        }
-    }
-    public static void logout(final AppCompatActivity appCompatActivity, final boolean shouldCloseActivity) {
+    public static void signOut(final Activity appCompatActivity, final boolean shouldCloseActivity) {
         if (Constants.Bools.FeaturesAvailable.SIGN_OUT) {
             FirebaseAuth.getInstance().signOut();
             display(appCompatActivity.findViewById(R.id.content).getRootView(), TOAST,R.string.success_signout);
@@ -293,61 +148,80 @@ public final class Backend {
         }
 
     }
-    public static User getCurrentUser() {
-        final User user = new User();
-        final com.google.firebase.auth.FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null) {
-            user.setEmail(firebaseUser.getEmail());
-            user.setUID(firebaseUser.getUid());
-            return user;
+//    Reference Methods
+    public static DatabaseReference getReference(final Context context, final int reference) {
+        final String CURRENT_REFERENCE = context.getResources().getString(reference);
+        switch (reference) {
+            case R.string.firebase_url_directory:
+                return FirebaseDatabase.getInstance().getReference();
+            default: return getReference(
+                    context,
+                        R.string.firebase_url_directory
+                ).child(CURRENT_REFERENCE);
+        }
+    }
+//    Data CUD Methods
+    public static void update(final Activity activity, FirebaseObject firebaseObject){
+        DatabaseReference myRef = null;
+        DatabaseReference itemRef;
+        if (firebaseObject instanceof User) {
+            myRef = getReference(activity,R.string.firebase_users_directory);
+        } else if (firebaseObject instanceof Team) {
+            myRef = getReference(activity,R.string.firebase_teams_directory);
+        } else if (firebaseObject instanceof BrandingElement) {
+            myRef = getReference(activity,R.string.firebase_branding_element_contents_directory);
+        } else if (firebaseObject instanceof Chat) {
+            myRef = getReference(activity,R.string.firebase_chats_directory);
+        } else if (firebaseObject instanceof Message) {
+            myRef = getReference(activity,R.string.firebase_messages_directory);
+        } else if (firebaseObject instanceof Notification) {
+            myRef = getReference(activity,R.string.firebase_notifications_directory);
+        } else if (firebaseObject instanceof Channel) {
+            myRef = getReference(activity,R.string.firebase_channels_directory);
         }
 
-        return null;
+        if (myRef != null) {
+            itemRef = myRef.child(firebaseObject.getUID());
+            itemRef.setValue(firebaseObject.toMap());
+        }
     }
+    public static void delete(final Activity activity, FirebaseObject firebaseObject) {
 
-    public static void send(final Activity activity, final Notification notification) {
-        save(activity,notification);
-        sendPushNotification(activity,notification);
-    }
+        int directory = R.string.firebase_database_url;
 
-    public static void upstreamNotification(final Activity activity, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
-        final Notification notification = new Notification(subject,object,verbType);
-        save(activity,notification);
-        sendPushNotification(activity,notification);
-    }
+        if (firebaseObject instanceof User) {
+            directory = R.string.firebase_users_directory;
+        } else if (firebaseObject instanceof Chat) {
+            directory = R.string.firebase_chats_directory;
+        } else if (firebaseObject instanceof Message) {
+            directory = R.string.firebase_messages_directory;
+        } else if (firebaseObject instanceof BrandingElement) {
+            directory = R.string.firebase_branding_element_contents_directory;
+        } else if (firebaseObject instanceof Team) {
+            directory = R.string.firebase_teams_directory;
+        } else if (firebaseObject instanceof Notification){
+            directory = R.string.firebase_notifications_directory;
+        } else if (firebaseObject instanceof Channel) {
+            directory = R.string.firebase_channels_directory;
+        }
 
-    private static void sendPushNotification(final Activity activity, final Notification notification) {
-        final Bundle notificationDataBundle = notification.toBundle();
-
-        Backend.getReference(activity,R.string.firebase_notifications_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+        getReference(
+                activity,
+                directory
+        ).child(firebaseObject.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                int notificationCount = 0;
-
-                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                    notificationCount = (int) dataSnapshot.getChildrenCount();
-                }
-
-                final AtomicInteger NOTIFICATION_ID = new AtomicInteger(notificationCount);
-
-                FirebaseMessaging fm = FirebaseMessaging.getInstance();
-
-                final RemoteMessage remoteMessage = new RemoteMessage.Builder(notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
-                        .setMessageId(Integer.toString(NOTIFICATION_ID.incrementAndGet()))
-                        .addData(Constants.Strings.Fields.MESSAGE, notification.getMessage())
-                        .addData(Constants.Strings.Fields.ACTION,"Check it out!")
-                        .addData(Constants.Strings.UIDs.TEAM_UID,notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
-                        .addData(Constants.Strings.Fields.FRAGMENT,notificationDataBundle.getString(Constants.Strings.Fields.FRAGMENT)).build();
-
-                fm.send(remoteMessage);
+                dataSnapshot.getRef().setValue(null);
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
-    }
+            public void onCancelled(DatabaseError databaseError) {
 
-    public static void save(final Context context, final FirebaseObject firebaseObject) {
+            }
+        });
+
+    }
+    public static void create(final Context context, final FirebaseObject firebaseObject) {
         String key;
         DatabaseReference myRef;
         DatabaseReference itemRef;
@@ -412,72 +286,152 @@ public final class Backend {
         }
 
     }
-
-    public static void update(final Activity activity, FirebaseObject firebaseObject){
-        DatabaseReference myRef = null;
-        DatabaseReference itemRef;
-        if (firebaseObject instanceof User) {
-            myRef = getReference(activity,R.string.firebase_users_directory);
-        } else if (firebaseObject instanceof Team) {
-            myRef = getReference(activity,R.string.firebase_teams_directory);
-        } else if (firebaseObject instanceof BrandingElement) {
-            myRef = getReference(activity,R.string.firebase_branding_element_contents_directory);
-        } else if (firebaseObject instanceof Chat) {
-            myRef = getReference(activity,R.string.firebase_chats_directory);
-        } else if (firebaseObject instanceof Message) {
-            myRef = getReference(activity,R.string.firebase_messages_directory);
-        } else if (firebaseObject instanceof Notification) {
-            myRef = getReference(activity,R.string.firebase_notifications_directory);
-        } else if (firebaseObject instanceof Channel) {
-            myRef = getReference(activity,R.string.firebase_channels_directory);
-        }
-
-        if (myRef != null) {
-            itemRef = myRef.child(firebaseObject.getUID());
-            itemRef.setValue(firebaseObject.toMap());
-        }
+//    Notification Methods
+    public static void send(final Activity activity, final Notification notification) {
+        create(activity,notification);
+        sendPushNotification(activity,notification);
     }
+    public static void upstreamNotification(final Activity activity, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
+        final Notification notification = new Notification(subject,object,verbType);
+        create(activity,notification);
+        sendPushNotification(activity,notification);
+    }
+    private static void sendPushNotification(final Activity activity, final Notification notification) {
+        final Bundle notificationDataBundle = notification.toBundle();
 
-    public static void delete(final Activity activity, FirebaseObject firebaseObject) {
-
-        int directory = R.string.firebase_database_url;
-
-        if (firebaseObject instanceof User) {
-            directory = R.string.firebase_users_directory;
-        } else if (firebaseObject instanceof Chat) {
-            directory = R.string.firebase_chats_directory;
-        } else if (firebaseObject instanceof Message) {
-            directory = R.string.firebase_messages_directory;
-        } else if (firebaseObject instanceof BrandingElement) {
-            directory = R.string.firebase_branding_element_contents_directory;
-        } else if (firebaseObject instanceof Team) {
-            directory = R.string.firebase_teams_directory;
-        } else if (firebaseObject instanceof Notification){
-            directory = R.string.firebase_notifications_directory;
-        } else if (firebaseObject instanceof Channel) {
-            directory = R.string.firebase_channels_directory;
-        }
-
-        getReference(
-                activity,
-                directory
-        ).child(firebaseObject.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Backend.getReference(activity,R.string.firebase_notifications_directory).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                dataSnapshot.getRef().setValue(null);
+                int notificationCount = 0;
+
+                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                    notificationCount = (int) dataSnapshot.getChildrenCount();
+                }
+
+                final AtomicInteger NOTIFICATION_ID = new AtomicInteger(notificationCount);
+
+                FirebaseMessaging fm = FirebaseMessaging.getInstance();
+
+                final RemoteMessage remoteMessage = new RemoteMessage.Builder(notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
+                        .setMessageId(Integer.toString(NOTIFICATION_ID.incrementAndGet()))
+                        .addData(Constants.Strings.Fields.MESSAGE, notification.getMessage())
+                        .addData(Constants.Strings.Fields.ACTION,"Check it out!")
+                        .addData(Constants.Strings.UIDs.TEAM_UID,notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
+                        .addData(Constants.Strings.Fields.FRAGMENT,notificationDataBundle.getString(Constants.Strings.Fields.FRAGMENT)).build();
+
+                fm.send(remoteMessage);
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
+    }
+//    Subscription Methods
+    public static void unsubscribeFrom(String uid) {
+        OneSignal.deleteTag(uid);
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(uid);
+}
+    public static void subscribeTo(String tag, String uid) {
+        OneSignal.sendTag(tag,uid);
+        FirebaseMessaging.getInstance().subscribeToTopic(uid);
+}
+//    Other Methods
+    public static User getCurrentUser() {
+        final User user = new User();
+        final com.google.firebase.auth.FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            user.setEmail(firebaseUser.getEmail());
+            user.setUID(firebaseUser.getUid());
+            return user;
+        }
+
+        return null;
+    }
+    public static void sendRegistrationToServer(final Context context, final String token) {
+        Backend.getReference(context, R.string.firebase_devices_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                    for (DataSnapshot deviceSnapshot:dataSnapshot.getChildren()) {
+                        final Device device = new Device(deviceSnapshot);
+                        if (device.getToken().equals(token)) {
+                            return;
+                        }
+                    }
+
+                    final Device currentDevice = new Device(token);
+                    Backend.create(context,currentDevice);
+                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
+                } else {
+                    final Device currentDevice = new Device(token);
+                    Backend.create(context,currentDevice);
+                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+    }
+    //    Updating Account Information Methods [Unused]
+    public static void updateEmail(final Activity activity, final String email) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (FragmentHelper.isValidEmail(email)) {
+            user.updateEmail(email)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                // Pull User Info to update their email info
+                                getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            final User currentUser = new User(dataSnapshot);
+
+                                            currentUser.setEmail(email);
+                                            OneSignal.syncHashedEmail(email);
+
+                                            update(activity,currentUser);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                                Log.d(TAG, "User email address updated.");
+                            }
+                        }
+                    });
+        }
 
     }
+    public static void updateUsername(final Activity activity, final String username) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    public static void printIDToken() {
-        Log.d("FCM", "Instance ID: " + FirebaseInstanceId.getInstance().getToken());
+        if (username != null && !username.equals("")) {
+            Backend.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User currentUser = new User(dataSnapshot);
+
+                        currentUser.setUsername(username);
+                        Backend.update(activity,currentUser);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
 
     }
-
 }

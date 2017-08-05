@@ -7,16 +7,13 @@ import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created on 8/3/17.
- */
-
 public final class Device extends FirebaseObject {
-
     private String token = "";
-
-    public Device() {}
-
+//    Device Constructors
+    public Device(String deviceToken) {
+        super();
+        setToken(deviceToken);
+    }
     public Device(DataSnapshot deviceSnapshot) {
         if (deviceSnapshot.hasChild(Constants.Strings.UIDs.UID)) {
             setUID(deviceSnapshot.child(Constants.Strings.UIDs.UID).getValue().toString());
@@ -25,27 +22,19 @@ public final class Device extends FirebaseObject {
             setToken(deviceSnapshot.child(Constants.Strings.Fields.TOKEN).getValue().toString());
         }
     }
-
-    public Device(String deviceToken) {
-        super();
-        setToken(deviceToken);
-    }
-
+//    Other Methods
     @Override
     public String getField(int index) {
         return null;
     }
-
     @Override
     public String description() {
         return null;
     }
-
     @Override
     public int describeContents() {
         return 0;
     }
-
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -57,11 +46,10 @@ public final class Device extends FirebaseObject {
         }
         return result;
     }
-
+//    Class Getters & Setters
     public String getToken() {
         return token;
     }
-
     public void setToken(String token) {
         this.token = token;
     }

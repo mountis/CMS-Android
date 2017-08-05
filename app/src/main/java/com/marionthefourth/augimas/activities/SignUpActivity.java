@@ -8,14 +8,13 @@ import android.view.MenuItem;
 import com.marionthefourth.augimas.R;
 
 public final class SignUpActivity extends AppCompatActivity {
-
+//    Activity Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:

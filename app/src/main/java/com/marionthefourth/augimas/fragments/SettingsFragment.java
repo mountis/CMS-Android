@@ -20,7 +20,7 @@ import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.dialogs.AdminRequestDialog;
+import com.marionthefourth.augimas.dialogs.HostRequestDialog;
 import com.marionthefourth.augimas.dialogs.ChangePasswordDialog;
 import com.marionthefourth.augimas.backend.Backend;
 
@@ -110,7 +110,7 @@ public final class SettingsFragment extends PreferenceFragment {
         signOutPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Backend.logout((AppCompatActivity) activity,true);
+                Backend.signOut((AppCompatActivity) activity,true);
                 return true;
             }
         });
@@ -122,7 +122,7 @@ public final class SettingsFragment extends PreferenceFragment {
                 buildButtonTapped++;
 
                 if (buildButtonTapped == 5) {
-                    new AdminRequestDialog(activity,containingView);
+                    new HostRequestDialog(activity,containingView);
                     buildButtonTapped = 0;
                 }
 

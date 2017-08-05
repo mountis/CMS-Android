@@ -13,37 +13,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Chat extends FirebaseCommunication {
-
     @Exclude
     private ArrayList<String> teamUIDs = new ArrayList<>();
-    @Exclude
-    private ArrayList<Channel> channels = new ArrayList<>();
-
+//    Chat Constructors
     public Chat() {}
-
-    public Chat(final Team team) {
-        this();
-        getTeamUIDs().add(team.getUID());
-    }
-
-    public Chat(final Team team, CommunicationType type) {
-        this(team);
-        setType(type);
-    }
-
-    public Chat(final ArrayList<Team> teams) {
-        this();
-        setTeamUIDs(Team.getField(teams, Constants.Ints.UIDs.UID));
-    }
-
     public Chat(final Parcel in) {
         final Chat chat = (Chat)in.readSerializable();
         setUID(chat.getUID());
         setTeamUIDs(chat.getTeamUIDs());
     }
-
+    public Chat(final Team team) {
+        this();
+        getTeamUIDs().add(team.getUID());
+    }
+    public Chat(final ArrayList<Team> teams) {
+        this();
+        setTeamUIDs(Team.getField(teams, Constants.Ints.UIDs.UID));
+    }
     public Chat(final DataSnapshot chatReference) {
-
         int count = 1;
 
         if (chatReference.hasChild(Constants.Strings.UIDs.UID)) {
@@ -61,42 +48,23 @@ public final class Chat extends FirebaseCommunication {
         }
 
     }
-
+    public Chat(final Team team, CommunicationType type) {
+        this(team);
+        setType(type);
+    }
     public Chat(Team teamOne, Team teamTwo, CommunicationType type) {
         this(teamOne,type);
         getTeamUIDs().add(teamTwo.getUID());
     }
-
-    public ArrayList<String> getTeamUIDs() {
-        return teamUIDs;
-    }
-    public void setTeamUIDs(final ArrayList<String> teamUIDs) { this.teamUIDs = teamUIDs; }
-    public void setUIDsFromTeams(final ArrayList<Team> teams) {
-        for (int i = 0; i < teams.size(); i++) {
-            setTeamUIDs(Team.getField(teams,Constants.Ints.UIDs.UID));
-        }
-    }
-
-    public boolean hasTeam(String teamUID) {
-        for (int i = 0; i < teamUIDs.size();i++) {
-            if (teamUID.equals(teamUIDs.get(i))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+//    Other Methods
     @Override
     public String getField(final int index) {
         return null;
     }
-
     @Override
-    public int describeContents() {
-        return 0;
+    public String description() {
+        return null;
     }
-
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -113,12 +81,26 @@ public final class Chat extends FirebaseCommunication {
 
         return result;
     }
+//    Functional Methods
+    public boolean hasTeam(String teamUID) {
+        for (int i = 0; i < teamUIDs.size();i++) {
+            if (teamUID.equals(teamUIDs.get(i))) {
+                return true;
+            }
+        }
 
-    @Override
-    public String description() {
-        return null;
+        return false;
     }
-
+//    Class Getters & Setters
+    public ArrayList<String> getTeamUIDs() {
+        return teamUIDs;
+    }
+    public void setTeamUIDs(final ArrayList<String> teamUIDs) { this.teamUIDs = teamUIDs; }
+//    Parcel Details
+    @Override
+    public int describeContents() {
+        return 0;
+    }
     public static final Creator CREATOR = new Creator() {
         public Chat createFromParcel(Parcel in) {
             return new Chat(in);
@@ -127,5 +109,4 @@ public final class Chat extends FirebaseCommunication {
             return new Chat[size];
         }
     };
-
 }

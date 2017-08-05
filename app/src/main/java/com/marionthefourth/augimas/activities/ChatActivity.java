@@ -27,10 +27,9 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public final class ChatActivity extends AppCompatActivity {
-
     private ViewPager mViewPager;
     private ChatActivity.SectionsPagerAdapter mSectionsPagerAdapter;
-
+//    Activity Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,16 +51,7 @@ public final class ChatActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
         setupTabItemTitles(tabLayout);
-
     }
-
-    private ArrayList<String> getChannelUIDsFromIntent() {
-        final ArrayList<String> channelUIDs = new ArrayList<>();
-        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.US.toInt(false)));
-        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.THEM.toInt(false)));
-        return channelUIDs;
-    }
-
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
@@ -71,25 +61,13 @@ public final class ChatActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
+//    Action Bar Methods
     private void setupActionBar(final ActionBar actionBar) {
-        setActionBarTitle(actionBar);
+        actionBar.setTitle("Chat");
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
-
-    private void setActionBarTitle(ActionBar actionBar) {
-        actionBar.setTitle("Chat");
-    }
-
+//    Tab Item Naming Methods
     private void setupTabItemTitles(final TabLayout tabLayout) {
-        // Get TeamUIDs from the Intent
-
-        // Get Current User
-        // Get Current User & Current Team
-        setTabText(tabLayout);
-    }
-
-    private void setTabText(final TabLayout tabLayout) {
         final ArrayList<String> teamUIDs = getTeamUIDsFromIntent();
 
         Backend.getReference(this,R.string.firebase_users_directory).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
@@ -131,16 +109,7 @@ public final class ChatActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
                 // TODO - Display Empty Chat
             }
-        });
-    }
-
-    private ArrayList<String> getTeamUIDsFromIntent() {
-        final ArrayList<String> teamUIDs = new ArrayList<>();
-        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.US.toInt(false)));
-        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.THEM.toInt(false)));
-        return teamUIDs;
-    }
-
+        });    }
     private void setTabTextToOtherTeamName(final TabLayout tabLayout, ArrayList<String> teamUIDs) {
         // Pull the Team from Firebase matching the other Team UID
         Backend.getReference(this,R.string.firebase_teams_directory).child(teamUIDs.get(FirebaseEntity.EntityType.THEM.toInt(false))).addValueEventListener(new ValueEventListener() {
@@ -163,9 +132,20 @@ public final class ChatActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
+//    Intent Methods
+    private ArrayList<String> getTeamUIDsFromIntent() {
+        final ArrayList<String> teamUIDs = new ArrayList<>();
+        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.US.toInt(false)));
+        teamUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.THEM.toInt(false)));
+        return teamUIDs;
+    }
+    private ArrayList<String> getChannelUIDsFromIntent() {
+        final ArrayList<String> channelUIDs = new ArrayList<>();
+        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.US.toInt(false)));
+        channelUIDs.add(getIntent().getStringExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.THEM.toInt(false)));
+        return channelUIDs;
+    }
+//    Section Pager Adapter
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -182,5 +162,4 @@ public final class ChatActivity extends AppCompatActivity {
             return 2;
         }
     }
-
 }

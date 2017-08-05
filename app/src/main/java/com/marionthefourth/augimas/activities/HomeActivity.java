@@ -39,10 +39,8 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener, TeamsFragment.OnTeamsFragmentInteractionListener {
-
     private int selectedFragment = Constants.Ints.Fragments.DASHBOARD;
-
-//    Activity Method
+//    Activity Methods
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,7 +112,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
-
 //    Navigation Methods
     private void removeNavigationItem() {
         BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
@@ -405,18 +402,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
         }
     }
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
-        @Override
-        public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
-            determineHomeState(item);
-            return true;
-        }
-
-    };
-
-//    Other Methods
-
-
 //    Listener Methods
     @Override
     public void onTeamsFragmentInteraction(final Context context, final Team teamItem) {
@@ -486,5 +471,12 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         });
 
     }
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
+            determineHomeState(item);
+            return true;
+        }
 
+    };
 }

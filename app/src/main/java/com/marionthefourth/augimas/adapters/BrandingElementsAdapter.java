@@ -17,47 +17,37 @@ import com.marionthefourth.augimas.dialogs.ElementStatusDialog;
 import java.util.ArrayList;
 
 public final class BrandingElementsAdapter extends RecyclerView.Adapter<BrandingElementsAdapter.ViewHolder> {
-
     private Team team;
     private Activity activity;
     private ArrayList<BrandingElement> elements;
     private BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener mListener;
-
+//    Adapter Constructor
     public BrandingElementsAdapter(Activity activity, ArrayList<BrandingElement> elements, Team team, BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener mListener) {
         this.activity = activity;
         this.elements = elements;
         this.team = team;
         this.mListener = mListener;
     }
-
+//    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_branding_element, parent, false);
         return new BrandingElementsAdapter.ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.elementItem = elements.get(position);
-
         holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader());
-//        holder.mBrandingElementStatus.setBackground(holder.elementItem.getStatus().toDrawable(context));
         holder.mBrandingElementStatus.setBackgroundDrawable(holder.elementItem.getStatus().toDrawable(activity));
-
-        // Set view click listener
         holder.mView.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
                     mListener.OnBrandingElementsFragmentInteractionListener(activity,holder.elementItem,team);
                 }
             }
         });
-
         holder.mBrandingElementStatus.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -66,16 +56,15 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
             }
         });
     }
-
     @Override
     public int getItemCount() {
         return elements.size();
     }
-
+//    Listener Methods
     public interface OnBrandingElementsFragmentInteractionListener {
         void OnBrandingElementsFragmentInteractionListener(Context context, BrandingElement elementItem, Team teamItem);
     }
-
+//    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public BrandingElement elementItem;

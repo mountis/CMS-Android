@@ -8,7 +8,6 @@ import android.view.View;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
@@ -21,8 +20,8 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.delete;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
+import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 public final class LeaveTeamDialog extends AlertDialog.Builder {
@@ -73,7 +72,7 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                             final Team teamItem = new Team(dataSnapshot);
                                             teamItem.removeUser(currentUserItem);
 
-                                            FirebaseMessaging.getInstance().unsubscribeFromTopic(teamItem.getUID());
+                                            Backend.unsubscribeFrom(teamItem.getUID());
 
                                             update(activity,currentUserItem);
                                             upstreamNotification(activity, currentUserItem, Notification.NotificationVerbType.LEFT, teamItem);

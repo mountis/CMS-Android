@@ -75,7 +75,6 @@
                 <category android:name="YOUR_PACKAGE_NAME" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.google.firebase.iid.FirebaseInstanceIdInternalReceiver" android:exported="false" />
 
     </application>
 

@@ -11,39 +11,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Questionnaire extends FirebaseContent {
-
     private String userUID = "";
-
     private ArrayList<String> questions = new ArrayList<>();
-
+//    Questionnaire Constructor
     public Questionnaire(Parcel in) {
         super();
     }
-
+//    Other Methods
     @Override
     public String getField(int index) {
         return null;
     }
-
     @Override
     public String description() {
         return null;
     }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public Questionnaire createFromParcel(Parcel in) {
-            return new Questionnaire(in);
-        }
-        public Questionnaire[] newArray(int size) {
-            return new Questionnaire[size];
-        }
-    };
-
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -57,4 +39,17 @@ public final class Questionnaire extends FirebaseContent {
 
         return result;
     }
+//    Parcel Details
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public Questionnaire createFromParcel(Parcel in) {
+            return new Questionnaire(in);
+        }
+        public Questionnaire[] newArray(int size) {
+            return new Questionnaire[size];
+        }
+    };
 }

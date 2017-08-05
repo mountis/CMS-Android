@@ -81,7 +81,7 @@ public class TeamsFragment extends Fragment {
                         if (teamItems.size() == 0) {
                             recyclerView.setAdapter(null);
                         } else {
-                            recyclerView.setAdapter(new TeamsAdapter(activity,teamItems, teamListener,chatListener));
+                            recyclerView.setAdapter(new TeamsAdapter(activity,teamItems));
                         }
                     } else {
                         recyclerView.setAdapter(null);

@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.save;
+import static com.marionthefourth.augimas.backend.Backend.create;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChatFragment extends Fragment implements MessageListAdapter.OnMessageListFragmentInteractionListener {
@@ -129,7 +129,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         ArrayList<Team> teams = new ArrayList<>();
         teams.add(new Team("Augimas","51515",adminUsers));
 
-        recyclerView.setAdapter(new MessageListAdapter(activity,channel,messages,adminUsers,users,teams,ChatFragment.this));
+        recyclerView.setAdapter(new MessageListAdapter(activity,channel,messages,adminUsers,users, ChatFragment.this));
 
     }
 
@@ -152,7 +152,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     );
 
                                     // Save Message to Firebase
-                                    save(activity,message);
+                                    create(activity,message);
 
                                     // Clear input text
                                     inputField.setText("");
@@ -254,7 +254,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         final ArrayList<Team> sortedTeams = new ArrayList<>();
                                                         final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
 
-                                                        recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers,currentTeam,ChatFragment.this));
+                                                        recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers, ChatFragment.this));
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
@@ -345,7 +345,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                 sortedTeamUsers.add(teamUsers.get(i));
                                                             }                                                        }
                                                     }
-                                                    recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1),sortedTeams,ChatFragment.this));
+                                                    recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1), ChatFragment.this));
                                                     return;
                                                 } else {
                                                     recyclerView.setAdapter(null);

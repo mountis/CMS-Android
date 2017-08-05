@@ -1,83 +1,20 @@
 package com.marionthefourth.augimas.classes.objects;
 
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v7.app.AppCompatActivity;
 
-import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_CONTENT_CONTACT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_USER;
 
 public abstract class FirebaseObject implements Serializable, Parcelable {
-
     private String uid;
-
     public abstract String getField(final int index);
-
-    public Bundle toBundle(final AppCompatActivity appCompatActivity, final int FIREBASE_CONTENT) {
-        Bundle bundle = new Bundle();
-        String resource = null;
-        switch (FIREBASE_CONTENT) {
-            case FIREBASE_USER:
-                resource = appCompatActivity.getResources().getString(R.string.firebase_user);
-                break;
-            case FIREBASE_CONTENT_CONTACT:
-//                resource = appCompatActivity.getResources().getString(R.string.firebase_contact);
-                break;
-            default:
-                return null;
-        }
-
-        bundle.putSerializable(resource,this);
-        return bundle;
-    }
-
-    public final String getUID() {
-        return uid;
-    }
-    public final void setUID(final String uid) { this.uid = uid; }
-
-    public final static String[] stringArrayFromBundle(final Bundle bundle, final String fieldResources[]) {
-        String stringArray[] = new String[fieldResources.length];
-        for (int i = 0; i < fieldResources.length;i++) {
-            stringArray[i] = bundle.getString(fieldResources[i]);
-        }
-        return stringArray;
-    }
-
-    public final static FirebaseObject fromBundle(final AppCompatActivity appCompatActivity, final Bundle bundle, final int FIREBASE_CONTENT) {
-        String resource = "";
-        switch (FIREBASE_CONTENT) {
-                case FIREBASE_USER:
-                    resource = appCompatActivity.getResources().getString(R.string.firebase_user);
-                    break;
-                case FIREBASE_CONTENT_CONTACT:
-//                    resource = appCompatActivity.getResources().getString(R.string.firebase_contact);
-                    return (FirebaseObject)bundle.getSerializable(resource);
-                default:
-                    return null;
-        }
-
-        if (!resource.equals("")) {
-
-        }
-
-        return null;
-    }
-
-    public final static Bundle toBundle(final AppCompatActivity appCompatActivity, final ArrayList<FirebaseObject> items) {
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(appCompatActivity.getResources().getString(R.string.firebase_object),items);
-        return bundle;
-    }
-
+//    Other Methods
     public final static FirebaseObject getFirebaseObjectFromFields(final ArrayList<String> fields, final int OBJECT_TYPE) {
 
         switch (OBJECT_TYPE) {
@@ -91,11 +28,16 @@ public abstract class FirebaseObject implements Serializable, Parcelable {
         }
         return null;
     }
-
+//    Abstract Methods
     public abstract String description();
     public abstract int describeContents();
     public abstract Map<String, String> toMap();
-
+//    Parcel Details
     @Override
     public final void writeToParcel(final Parcel dest, final int flags) { dest.writeSerializable(this); }
+//    Class Getters & Setters
+    public final String getUID() {
+        return uid;
+    }
+    public final void setUID(final String uid) { this.uid = uid; }
 }

@@ -31,9 +31,6 @@ import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 
-import me.pushy.sdk.Pushy;
-import me.pushy.sdk.util.exceptions.PushyException;
-
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_USER;
@@ -104,11 +101,6 @@ public final class SignInFragment extends Fragment {
                     loadingProgress.dismiss();
                     final User currentUser = new User(dataSnapshot);
                     if (!currentUser.getTeamUID().equals("")) {
-                        try {
-                            Pushy.subscribe(currentUser.getTeamUID(), getContext());
-                        } catch (PushyException e) {
-                            e.printStackTrace();
-                        }
                         OneSignal.sendTag(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
 
                     }
@@ -205,7 +197,7 @@ public final class SignInFragment extends Fragment {
                         display(view,SNACKBAR,R.string.feature_unavailable);
                     }
 
-                    Backend.signin(activity,view,user);
+                    Backend.signIn(activity,view,user);
                 }
             }
         });

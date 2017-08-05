@@ -7,19 +7,15 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
 
 public final class Branding {
-
     public enum TLD {
         COM,NET,ME,ORG,US,INFO,LA,ASIA,BIZ,TV,UK,WS,NU,NYC,OKINAWA,ONL,NETWORK,NINJA,DEFAULT;
-
         @Override
         public String toString() {
             return "." + super.toString().toLowerCase();
         }
-
         public String toMapStyleString() {
             return String.valueOf(this.toInt(true));
         }
-
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
                 switch (this) {
@@ -152,7 +148,6 @@ public final class Branding {
             return 18;
         }
     }
-
     public enum Service {
         FACEBOOK,TWITTER,INSTAGRAM,REDDIT,GAB,LINKEDIN,PINTEREST,SNAPCHAT,TUMBLR,VIBER,WECHAT,WEIBO,YOUTUBE,DEFAULT;
 

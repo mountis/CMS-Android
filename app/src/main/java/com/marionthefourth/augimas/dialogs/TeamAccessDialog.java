@@ -28,6 +28,7 @@ import com.marionthefourth.augimas.backend.Backend;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.classes.objects.communication.Channel.sortChannels;
 
 /**
  * Created on 7/24/17.
@@ -172,26 +173,6 @@ public final class TeamAccessDialog extends Builder {
 
             }
         });
-    }
-
-    private ArrayList<String> sortChannels(final ArrayList<Channel> channels) {
-        final ArrayList<Channel> sortedChannels = new ArrayList<>(channels.size());
-        final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
-        if (channels.size() == 2) {
-            if (channels.get(0).getName().equals("")) {
-                sortedChannels.add(channels.get(1));
-                sortedChannels.add(channels.get(0));
-            } else {
-                sortedChannels.add(channels.get(0));
-                sortedChannels.add(channels.get(1));
-            }
-
-            for (int i = 0; i < sortedChannels.size(); i++) {
-                channelUIDs.add(sortedChannels.get(i).getUID());
-            }
-        }
-
-        return channelUIDs;
     }
 
 }

@@ -7,13 +7,12 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
 
 public abstract class FirebaseEntity extends FirebaseObject {
-
     private String name = "";
     private String username = "";
     private EntityRole entityRole = EntityRole.DEFAULT;
     private EntityType entityType = EntityType.DEFAULT;
     private EntityStatus entityStatus = EntityStatus.DEFAULT;
-
+//    Class Enums
     public enum EntityType {
         US, THEM, DEFAULT;
 
@@ -245,7 +244,7 @@ public abstract class FirebaseEntity extends FirebaseObject {
             return 4;
         }
     }
-
+//    Functional Methods
     public final boolean hasInclusiveAccess(EntityRole accessRole) {
         int accessLevel = 0;
         int userAccessLevel = 0;
@@ -265,30 +264,15 @@ public abstract class FirebaseEntity extends FirebaseObject {
             return false;
         }
     }
-
-    public final boolean hasExclusiveAccess(EntityRole accessRole) {
-        int accessLevel = 0;
-        int userAccessLevel = 0;
-        for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
-            if (accessRole.equals(EntityRole.getRole(i))) {
-                accessLevel = i;
-            }
-            if (getRole().equals(EntityRole.getRole(i))) {
-                userAccessLevel = i;
-            }
-        }
-
-        return userAccessLevel < accessLevel;
-    }
-
+//    Class Getters & Setters
     public final String getName() { return name; }
-    public final EntityRole getRole() { return entityRole; }
-    public final EntityType getType() { return entityType; }
-    public final String getUsername() { return username; }
-    public final EntityStatus getStatus() { return entityStatus; }
     public final void setName(final String name) { this.name = name; }
+    public final EntityRole getRole() { return entityRole; }
     public final void setRole(final EntityRole entityRole) { this.entityRole = entityRole; }
+    public final EntityType getType() { return entityType; }
     public final void setType(final EntityType entityType) { this.entityType = entityType; }
+    public final String getUsername() { return username; }
     public final void setUsername(final String username) { this.username = username; }
+    public final EntityStatus getStatus() { return entityStatus; }
     public final void setStatus(final EntityStatus entityStatus) { this.entityStatus = entityStatus; }
 }

@@ -200,7 +200,7 @@ public final class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (PROTOTYPE_MODE) {
-                    Backend.signin(activity, view,null);
+                    Backend.signIn(activity, view,null);
                 } else {
                     if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
@@ -390,13 +390,13 @@ public final class SignUpFragment extends Fragment {
                     newUserReference.setValue(user.toMap());
                     OneSignal.syncHashedEmail(user.getEmail());
 
-                    OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+                    Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
 
                     // Display Snackbar letting the user know they sucessfully signed up
                     loadingProgress.show();
                     display(view,SNACKBAR,R.string.success_signup);
                     // Sign in the new user
-                    Backend.signin(activity,view,user);
+                    Backend.signIn(activity,view,user);
                 }
             }
 

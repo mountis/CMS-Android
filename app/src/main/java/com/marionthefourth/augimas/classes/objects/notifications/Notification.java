@@ -22,21 +22,18 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAU
 import static com.marionthefourth.augimas.classes.objects.notifications.Notification.NotificationObjectType.BRANDING_ELEMENT;
 
 public final class Notification extends FirebaseContent {
-
     @Exclude
     private FirebaseObject subject;
     @Exclude
     private FirebaseObject object;
-
     private String objectUID;
     private String subjectUID;
     private String receiverUID;
-
     private ArrayList<String> receiverUIDs = new ArrayList<>();
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
     private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
     private NotificationSubjectType subjectType = NotificationSubjectType.DEFAULT;
-
+//    Class Enums
     public enum NotificationSubjectType {
         MEMBER, TEAM, DEFAULT;
 
@@ -298,68 +295,8 @@ public final class Notification extends FirebaseContent {
             return 5;
         }
     }
-
+//    Notification Constructors
     public Notification() { }
-
-    public Notification(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
-        setVerbType(vType);
-        setObjectType(oType);
-        setSubjectType(sType);
-    }
-
-    public Notification(final FirebaseObject subject, final NotificationVerbType vType) {
-        setVerbType(vType);
-        setSubject(subject);
-    }
-
-    public Notification(final FirebaseObject subject, final NotificationVerbType vType, final BrandingElement.ElementType brandingElementType) {
-        this(subject,vType);
-    }
-
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
-        this(subject,vType);
-        setObject(object);
-        setReceiverUIDs(subject,object,vType);
-    }
-
-    private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, NotificationVerbType vType) {
-        if (subject instanceof FirebaseEntity) {
-            if (subject instanceof User) {
-                if (object instanceof FirebaseEntity) {
-                    if (object instanceof User) {
-                    } else if (object instanceof Team) {
-                        getReceiverUIDs().add(object.getUID());
-                    }
-                } else if (object instanceof FirebaseContent) {
-                    if (object instanceof BrandingElement) {
-
-                    }
-                }
-            } else  if (subject instanceof Team){
-                if (object instanceof FirebaseEntity) {
-                    if (object instanceof User) {
-                    } else if (object instanceof Team) {
-                        getReceiverUIDs().add(object.getUID());
-                    }
-                } else if (object instanceof FirebaseContent) {
-                    if (object instanceof BrandingElement) {
-
-                    }
-                }
-            }
-        }
-
-        if (object instanceof FirebaseEntity) {
-            if (subject instanceof User) {
-
-            } else  if (subject instanceof Team){
-                getReceiverUIDs().add(subject.getUID());
-            }
-        } else if (object instanceof FirebaseContent) {
-
-        }
-    }
-
     public Notification(final Parcel in) {
         final Notification notification = (Notification) in.readSerializable();
         setUID(notification.getUID());
@@ -368,7 +305,6 @@ public final class Notification extends FirebaseContent {
         setVerbType(notification.getVerbType());
         setReceiverUIDs(notification.getReceiverUIDs());
     }
-
     public Notification(final DataSnapshot nRef) {
         this();
         if (nRef.hasChild(Constants.Strings.UIDs.UID)) {
@@ -396,7 +332,100 @@ public final class Notification extends FirebaseContent {
             index++;
         }
     }
+    public Notification(final FirebaseObject subject, final NotificationVerbType vType) {
+        setVerbType(vType);
+        setSubject(subject);
+    }
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
+        this(subject,vType);
+        setObject(object);
+        setReceiverUIDs(subject,object,vType);
+    }
+    public Notification(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
+        setVerbType(vType);
+        setObjectType(oType);
+        setSubjectType(sType);
+    }
+    public Notification(final FirebaseObject subject, final NotificationVerbType vType, final BrandingElement.ElementType brandingElementType) {
+        this(subject,vType);
+    }
+//    Functional Methods
+    public Bundle toBundle() {
+    final Bundle bundle = new Bundle();
+    String entityTeamUID;
+    String navigationDirection;
+    switch(getSubjectType()) {
+        case MEMBER:
+            entityTeamUID = ((User) getSubject()).getTeamUID();
+            break;
+        case TEAM:
+        default:
+            entityTeamUID = getSubject().getUID();
+            break;
+    }
+    switch (getObjectType()) {
+        case BRANDING_ELEMENT:
+            navigationDirection = Constants.Strings.Fragments.BRANDING_ELEMENTS;
+            break;
+        case CHAT:
+            navigationDirection = Constants.Strings.Fragments.CHAT;
+            break;
+        case MEMBER:
+        case TEAM:
+        default:
+            navigationDirection = Constants.Strings.Fragments.TEAM_MANAGEMENT;
+            break;
 
+    }
+
+    bundle.putString(Constants.Strings.Fields.MESSAGE,getMessage());
+    bundle.putString(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
+    bundle.putString(Constants.Strings.Fields.FRAGMENT,navigationDirection);
+
+    return bundle;
+}
+    @Override
+    public Map<String, String> toMap() {
+        final HashMap<String, String> result = new HashMap<>();
+        if (getUID() != null) {
+            result.put(Constants.Strings.UIDs.UID, getUID());
+        }
+        if (getObject() != null) {
+            result.put(Constants.Strings.UIDs.OBJECT_UID, getObjectUID());
+        }
+        if (getSubject() != null) {
+            result.put(Constants.Strings.UIDs.SUBJECT_UID, getSubjectUID());
+        }
+        if (!getObjectType().equals(null)) {
+            result.put(Constants.Strings.Fields.OBJECT_TYPE, getObjectType().toMapStyleString());
+        }
+        if (!getSubjectType().equals(null)) {
+            result.put(Constants.Strings.Fields.SUBJECT_TYPE, getSubjectType().toMapStyleString());
+        }
+        if (!getVerbType().equals(null)) {
+            result.put(Constants.Strings.Fields.VERB_TYPE, getVerbType().toMapStyleString());
+        }
+        if (!getReceiverUIDs().equals(null)) {
+            for (int i = 0; i < getReceiverUIDs().size(); i++) {
+                result.put(Constants.Strings.UIDs.RECEIVER_UID+i, getReceiverUIDs().get(i).toString());
+            }
+        }
+        return result;
+    }
+    public boolean goesToUID(String uid) {
+        for (int i = 0; i < getReceiverUIDs().size(); i++) {
+            if (getReceiverUIDs().get(i).equals(uid)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    //    Parcel Details
+    @Override
+    public int describeContents() {
+        return 0;
+    }
     public static final Creator CREATOR = new Creator() {
         public Notification createFromParcel(Parcel in) {
             return new Notification(in);
@@ -405,7 +434,16 @@ public final class Notification extends FirebaseContent {
             return new Notification[size];
         }
     };
-
+//    Other Methods
+    @Override
+    public String getField(int index) {
+        return null;
+    }
+    @Override
+    public String description() {
+        return null;
+    }
+    //    Class Getters & Setters
     public String getMessage() {
         String subjectPart = "";
         String verbPart = "";
@@ -491,34 +529,46 @@ public final class Notification extends FirebaseContent {
         }
 
     }
+    private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, NotificationVerbType vType) {
+        if (subject instanceof FirebaseEntity) {
+            if (subject instanceof User) {
+                if (object instanceof FirebaseEntity) {
+                    if (object instanceof User) {
+                    } else if (object instanceof Team) {
+                        getReceiverUIDs().add(object.getUID());
+                    }
+                } else if (object instanceof FirebaseContent) {
+                    if (object instanceof BrandingElement) {
 
-    public boolean goesToUID(String uid) {
-        for (int i = 0; i < getReceiverUIDs().size(); i++) {
-            if (getReceiverUIDs().get(i).equals(uid)) {
-                return true;
+                    }
+                }
+            } else  if (subject instanceof Team){
+                if (object instanceof FirebaseEntity) {
+                    if (object instanceof User) {
+                    } else if (object instanceof Team) {
+                        getReceiverUIDs().add(object.getUID());
+                    }
+                } else if (object instanceof FirebaseContent) {
+                    if (object instanceof BrandingElement) {
+
+                    }
+                }
             }
         }
 
-        return false;
+        if (object instanceof FirebaseEntity) {
+            if (subject instanceof User) {
+
+            } else  if (subject instanceof Team){
+                getReceiverUIDs().add(subject.getUID());
+            }
+        } else if (object instanceof FirebaseContent) {
+
+        }
     }
     public String getObjectUID() { return objectUID; }
-    public FirebaseObject getObject() { return object; }
-    public String getSubjectUID() { return subjectUID; }
-    public FirebaseObject getSubject() { return subject; }
-    public String getReceiverUID() { return receiverUID; }
-    public NotificationVerbType getVerbType() { return verbType; }
-    public ArrayList<String> getReceiverUIDs() { return receiverUIDs; }
-    public NotificationObjectType getObjectType() { return objectType; }
-    public NotificationSubjectType getSubjectType() { return subjectType; }
     public void setObjectUID(final String objectUID) { this.objectUID = objectUID; }
-    public void setSubjectUID(final String subjectUID) { this.subjectUID = subjectUID; }
-    public void setReceiverUID(final String receiverUID) { this.receiverUID = receiverUID; }
-    public void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }
-    public void setObjectType(final NotificationObjectType objectType) { this.objectType = objectType; }
-    public void setReceiverUIDs(final ArrayList<String> receiverUIDs) { this.receiverUIDs = receiverUIDs; }
-    public void setSubjectType(final NotificationSubjectType subjectType) { this.subjectType = subjectType; }
-    public void setVerbType(final String verbType) { this.verbType = NotificationVerbType.getType(verbType); }
-    public void setObjectType(final String objectType) { this.objectType = NotificationObjectType.getType(objectType); }
+    public FirebaseObject getObject() { return object; }
     public NotificationObjectType setObject(final FirebaseObject object) {
         this.object = object;
         setObjectUID(object.getUID());
@@ -536,8 +586,9 @@ public final class Notification extends FirebaseContent {
 
         return getObjectType();
     }
-    public void setSubjectType(final String subjectType) { this.subjectType = NotificationSubjectType.getType(subjectType); }
-
+    public String getSubjectUID() { return subjectUID; }
+    public void setSubjectUID(final String subjectUID) { this.subjectUID = subjectUID; }
+    public FirebaseObject getSubject() { return subject; }
     public NotificationSubjectType setSubject(final FirebaseObject subject) {
         this.subject = subject;
         setSubjectUID(subject.getUID());
@@ -551,84 +602,12 @@ public final class Notification extends FirebaseContent {
 
         return getSubjectType();
     }
-
-    @Override
-    public String getField(int index) {
-        return null;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Exclude
-    @Override
-    public Map<String, String> toMap() {
-        final HashMap<String, String> result = new HashMap<>();
-        if (getUID() != null) {
-            result.put(Constants.Strings.UIDs.UID, getUID());
-        }
-        if (getObject() != null) {
-            result.put(Constants.Strings.UIDs.OBJECT_UID, getObjectUID());
-        }
-        if (getSubject() != null) {
-            result.put(Constants.Strings.UIDs.SUBJECT_UID, getSubjectUID());
-        }
-        if (!getObjectType().equals(null)) {
-            result.put(Constants.Strings.Fields.OBJECT_TYPE, getObjectType().toMapStyleString());
-        }
-        if (!getSubjectType().equals(null)) {
-            result.put(Constants.Strings.Fields.SUBJECT_TYPE, getSubjectType().toMapStyleString());
-        }
-        if (!getVerbType().equals(null)) {
-            result.put(Constants.Strings.Fields.VERB_TYPE, getVerbType().toMapStyleString());
-        }
-        if (!getReceiverUIDs().equals(null)) {
-            for (int i = 0; i < getReceiverUIDs().size(); i++) {
-                result.put(Constants.Strings.UIDs.RECEIVER_UID+i, getReceiverUIDs().get(i).toString());
-            }
-        }
-        return result;
-    }
-
-    public Bundle toBundle() {
-        final Bundle bundle = new Bundle();
-        String entityTeamUID;
-        String navigationDirection;
-        switch(getSubjectType()) {
-            case MEMBER:
-                entityTeamUID = ((User) getSubject()).getTeamUID();
-                break;
-            case TEAM:
-            default:
-                entityTeamUID = getSubject().getUID();
-                break;
-        }
-        switch (getObjectType()) {
-            case BRANDING_ELEMENT:
-                navigationDirection = Constants.Strings.Fragments.BRANDING_ELEMENTS;
-                break;
-            case CHAT:
-                navigationDirection = Constants.Strings.Fragments.CHAT;
-                break;
-            case MEMBER:
-            case TEAM:
-            default:
-                navigationDirection = Constants.Strings.Fragments.TEAM_MANAGEMENT;
-                break;
-
-        }
-
-        bundle.putString(Constants.Strings.Fields.MESSAGE,getMessage());
-        bundle.putString(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
-        bundle.putString(Constants.Strings.Fields.FRAGMENT,navigationDirection);
-
-        return bundle;
-    }
-
-    @Override
-    public String description() {
-        return null;
-    }
+    public NotificationVerbType getVerbType() { return verbType; }
+    public void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }
+    public ArrayList<String> getReceiverUIDs() { return receiverUIDs; }
+    public void setReceiverUIDs(final ArrayList<String> receiverUIDs) { this.receiverUIDs = receiverUIDs; }
+    public NotificationObjectType getObjectType() { return objectType; }
+    public void setObjectType(final NotificationObjectType objectType) { this.objectType = objectType; }
+    public NotificationSubjectType getSubjectType() { return subjectType; }
+    public void setSubjectType(final NotificationSubjectType subjectType) { this.subjectType = subjectType; }
 }

@@ -25,26 +25,24 @@ import com.marionthefourth.augimas.backend.Backend;
 import java.util.ArrayList;
 
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
-
     private Activity activity;
     private ArrayList<Notification> notifications = new ArrayList<>();
-
+//    Adapter Constructor
     public NotificationsAdapter(Activity activity, ArrayList<Notification> notifications) {
         this.activity = activity;
         this.notifications = notifications;
     }
-
+//    Adapter Methods
     @Override
     public NotificationsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_notification, parent, false);
         return new NotificationsAdapter.ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final NotificationsAdapter.ViewHolder holder, int position) {
         holder.notificationItem = notifications.get(position);
-        pullSubjectAndObjectItems(holder);
+        pullItemsData(holder);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,8 +77,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             }
         });
     }
-
-    private void pullSubjectAndObjectItems(final ViewHolder holder) {
+    @Override
+    public int getItemCount() {
+        return notifications.size();
+    }
+//    Backend Pulling Methods
+    private void pullItemsData(final ViewHolder holder) {
         switch (holder.notificationItem.getSubjectType()) {
             case MEMBER:
                 Backend.getReference(activity,R.string.firebase_users_directory).child(holder.notificationItem.getSubjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -91,7 +93,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (teamMember != null) {
                                 holder.mIconLetterMoniker.setText(teamMember.getName().substring(0,1));
                                 holder.notificationItem.setSubject(teamMember);
-                                pullObjectItem(holder);
+                                pullObjectItemData(holder);
                             }
                         }
                     }
@@ -112,7 +114,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                                 holder.mIconLetterMoniker.setText(teamItem.getName().substring(0,1));
                                 holder.notificationItem.setSubject(teamItem);
 
-                                pullObjectItem(holder);
+                                pullObjectItemData(holder);
                             }
                         }
                     }
@@ -127,8 +129,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 break;
         }
     }
-
-    private void pullObjectItem(final ViewHolder holder) {
+    private void pullObjectItemData(final ViewHolder holder) {
         switch (holder.notificationItem.getObjectType()) {
 
             case BRANDING_ELEMENT:
@@ -203,18 +204,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 break;
         }
     }
-
-    @Override
-    public int getItemCount() {
-        return notifications.size();
-    }
-
+//    View Holder Methods
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public Notification notificationItem;
         public final AppCompatTextView mNotificationText;
         public final AppCompatButton mIconLetterMoniker;
-
 
         public ViewHolder(View view) {
             super(view);

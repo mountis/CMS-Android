@@ -3,7 +3,6 @@ package com.marionthefourth.augimas.classes.objects.communication;
 import android.os.Parcel;
 
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.Exclude;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -12,29 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Message extends FirebaseCommunication {
-
     private String text         = "";
     private String channelUID   = "";
     private String senderUID    = "";
     private String timestamp    = "";
-    @Exclude
-    private Channel channel;
-
+//    Message Constructors
     public Message() {}
-
-    public Message(final Channel channel, final User sender, final String text) {
-        setText(text);
-        setChannelUID(channel.getUID());
-        setSenderUID(sender.getUID());
-//        setType(chat.getType());
-    }
-
-    public Message(final String channelUID, final String senderUID, final String text) {
-        setText(text);
-        setChannelUID(channelUID);
-        setSenderUID(senderUID);
-    }
-
     public Message(final Parcel in) {
         final Message message = (Message)in.readSerializable();
         setUID(message.getUID());
@@ -43,7 +25,6 @@ public final class Message extends FirebaseCommunication {
         setSenderUID(message.getSenderUID());
         setType(message.getType());
     }
-
     public Message(final DataSnapshot messageReference) {
         if (messageReference.hasChild(Constants.Strings.UIDs.CHANNEL_UID)) {
             setChannelUID(messageReference.child(Constants.Strings.UIDs.CHANNEL_UID).getValue().toString());
@@ -69,42 +50,25 @@ public final class Message extends FirebaseCommunication {
             setType(CommunicationType.getType(messageReference.child(Constants.Strings.Fields.COMMUNICATION_TYPE).getValue().toString()));
         }
     }
-
-    public String getText() {
-        return text;
+    public Message(final Channel channel, final User sender, final String text) {
+        setText(text);
+        setChannelUID(channel.getUID());
+        setSenderUID(sender.getUID());
     }
-    public String getChannelUID() {
-        return channelUID;
+    public Message(final String channelUID, final String senderUID, final String text) {
+        setText(text);
+        setChannelUID(channelUID);
+        setSenderUID(senderUID);
     }
-    public String getSenderUID() {
-        return senderUID;
+//    Other Methods
+    @Override
+    public String description() {
+        return null;
     }
-    public String getTimestamp() { return timestamp; }
-    public void setText(String text) {
-        this.text = text;
-    }
-    public void setChannelUID(String channelUID) {
-        this.channelUID = channelUID;
-    }
-    public void setSenderUID(String senderUID) {
-        this.senderUID = senderUID;
-    }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
-
-    public boolean isFromChat(final Chat chat) {
-        return chat.getUID().equals(getChannelUID());
-    }
-
     @Override
     public String getField(final int index) {
         return null;
     }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -131,12 +95,36 @@ public final class Message extends FirebaseCommunication {
 
         return result;
     }
-
-    @Override
-    public String description() {
-        return null;
+//    Functional Methods
+    public boolean isFromChat(final Chat chat) {
+        return chat.getUID().equals(getChannelUID());
     }
-
+//    Class Getters & Setters
+    public String getText() {
+        return text;
+    }
+    public void setText(String text) {
+        this.text = text;
+    }
+    public String getChannelUID() {
+        return channelUID;
+    }
+    public void setChannelUID(String channelUID) {
+        this.channelUID = channelUID;
+    }
+    public String getSenderUID() {
+        return senderUID;
+    }
+    public void setSenderUID(String senderUID) {
+        this.senderUID = senderUID;
+    }
+    public String getTimestamp() { return timestamp; }
+    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+//    Parcel Details
+    @Override
+    public int describeContents() {
+        return 0;
+    }
     public static final Creator CREATOR = new Creator() {
         public Message createFromParcel(Parcel in) {
             return new Message(in);
@@ -146,5 +134,4 @@ public final class Message extends FirebaseCommunication {
             return new Message[size];
         }
     };
-
 }

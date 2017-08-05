@@ -27,11 +27,10 @@ import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
 
 public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
-
     private Activity activity;
     private BrandingElement domainName;
     private ArrayList<String> domainNameExtensions = new ArrayList<>();
-
+//    Adapter Constructor
     public TLDAdapter(final Activity activity, BrandingElement domainName) {
         this.activity = activity;
         this.domainName = domainName;
@@ -40,14 +39,13 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
             this.domainNameExtensions.remove(0);
         }
     }
-
+//    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_domain, parent, false);
         return new TLDAdapter.ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (domainNameExtensions.get(position).equals(YES_VALUE)) {
@@ -97,14 +95,12 @@ public class TLDAdapter extends RecyclerView.Adapter<TLDAdapter.ViewHolder> {
                 });
             }
         });
-
     }
-
     @Override
     public int getItemCount() {
         return domainNameExtensions.size();
     }
-
+//    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public AppCompatTextView mDomainNameLabel;

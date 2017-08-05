@@ -12,10 +12,10 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
@@ -29,7 +29,6 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.save;
 import static com.marionthefourth.augimas.backend.Backend.send;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
@@ -149,13 +148,13 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         newTeam.setStatus(FirebaseEntity.EntityStatus.AWAITING);
                                         newTeam.setType(FirebaseEntity.EntityType.THEM);
 
-                                        save(activity,newTeam);
+                                        Backend.create(activity,newTeam);
                                         createElements(activity,newTeam);
 
                                         // Create Chat between the two chats
                                         final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
 
-                                        save(activity,connectedChat);
+                                        Backend.create(activity,connectedChat);
                                         // Create Channels
                                         createChannels(activity,teamItem, newTeam, connectedChat);
 
@@ -169,7 +168,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         final Notification joinedTeamNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.JOIN);
                                         send(activity,joinedTeamNotification);
 
-                                        FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
+                                        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
                                         final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                         activity.startActivity(homeIntent);
@@ -198,7 +197,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
         for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
             final BrandingElement elementItem = new BrandingElement(BrandingElement.ElementType.getType(i));
             elementItem.setTeamUID(teamItem.getUID());
-            save(activity,elementItem);
+            Backend.create(activity,elementItem);
         }
     }
 
@@ -215,7 +214,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                 default:
                     break;
             }
-            save(activity,channel);
+            Backend.create(activity,channel);
         }
     }
 

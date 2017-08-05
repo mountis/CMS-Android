@@ -21,14 +21,12 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAU
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.NO_VALUE;
 
 public class BrandingElement extends FirebaseContent {
-
     private ElementType type = ElementType.DEFAULT;
     private ElementStatus status = ElementStatus.DEFAULT;
     private String header = ElementType.DEFAULT.toString();
-
     @Exclude
     private ArrayList<String> contents = new ArrayList<>();
-
+//    Class Enums
     public enum ElementType {
         DOMAIN_NAME,SOCIAL_MEDIA_NAME,MISSION_STATEMENT,TARGET_AUDIENCE,STYLE_GUIDE,LOGO,PRODUCTS_SERVICES,DEFAULT;
 
@@ -251,16 +249,47 @@ public class BrandingElement extends FirebaseContent {
         }
 
     }
-
+//    Branding Element Constructors
     public BrandingElement() {}
-
+    public BrandingElement(final Parcel in) {
+        final BrandingElement brandingElement = (BrandingElement)in.readSerializable();
+        setType(brandingElement.getType());
+        setStatus(brandingElement.getStatus());
+        setHeader(brandingElement.getType().toString());
+        setTeamUID(brandingElement.getTeamUID());
+    }
     public BrandingElement(final ElementType type) {
         this();
         setType(type);
         setHeader(type.toString());
         initContents(type);
     }
+    public BrandingElement(final DataSnapshot brandingElementSnapshot) {
+        this();
+        if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE)) {
+            setType(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()));
+            setHeader(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()).toString());
+        }
+        if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS)) {
+            setStatus(ElementStatus.getStatus(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS).getValue().toString()));
+        }
+        if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.UID)) {
+            setUID(brandingElementSnapshot.child(Constants.Strings.UIDs.UID).getValue().toString());
+        }
+        if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.TEAM_UID)) {
+            setTeamUID(brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue().toString());
+        }
 
+        initContents(type);
+        fillContents(brandingElementSnapshot);
+
+
+    }
+    public BrandingElement(final ElementType type, final ElementStatus status) {
+        this(type);
+        setStatus(status);
+    }
+//    Init Methods
     private void initContents(ElementType type) {
         if (getContents().size() == 0) {
             getContents().add("");
@@ -295,34 +324,6 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
-
-    public BrandingElement(final ElementType type, final ElementStatus status) {
-        this(type);
-        setStatus(status);
-    }
-
-    public BrandingElement(final DataSnapshot brandingElementSnapshot) {
-        this();
-        if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE)) {
-            setType(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()));
-            setHeader(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()).toString());
-        }
-        if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS)) {
-            setStatus(ElementStatus.getStatus(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS).getValue().toString()));
-        }
-        if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.UID)) {
-            setUID(brandingElementSnapshot.child(Constants.Strings.UIDs.UID).getValue().toString());
-        }
-        if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.TEAM_UID)) {
-            setTeamUID(brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue().toString());
-        }
-
-        initContents(type);
-        fillContents(brandingElementSnapshot);
-
-
-    }
-
     private void fillContents(final DataSnapshot brandingElementSnapshot) {
 
         int currentIndex = 0;
@@ -358,52 +359,6 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
-
-    public BrandingElement(final Parcel in) {
-        final BrandingElement brandingElement = (BrandingElement)in.readSerializable();
-        setType(brandingElement.getType());
-        setStatus(brandingElement.getStatus());
-        setHeader(brandingElement.getType().toString());
-        setTeamUID(brandingElement.getTeamUID());
-    }
-
-    public String getHeader() {
-        return header;
-    }
-    public ElementType getType() {
-        return type;
-    }
-    public ElementStatus getStatus() { return status; }
-    public ArrayList<String> getContents() { return contents; }
-    public void setType(final ElementType type) {
-        this.type = type;
-    }
-    public void setHeader(final String header) {
-        this.header = header;
-    }
-    public void setStatus(final ElementStatus status) {
-        this.status = status;
-    }
-    public void setContents(final ArrayList<String> contents) { this.contents = contents; }
-    @Override
-    public String getField(int index) {
-        return null;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public BrandingElement createFromParcel(Parcel in) {
-            return new BrandingElement(in);
-        }
-        public BrandingElement[] newArray(int size) {
-            return new BrandingElement[size];
-        }
-    };
-
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
@@ -423,7 +378,14 @@ public class BrandingElement extends FirebaseContent {
 
         return result;
     }
-
+    @Override
+    public String description() {
+        return null;
+    }
+    @Override
+    public String getField(int index) {
+        return null;
+    }
     private void saveContents(HashMap<String, String> result) {
         int currentIndex = 0;
         while (!contents.get(currentIndex).equals("")) {
@@ -455,11 +417,35 @@ public class BrandingElement extends FirebaseContent {
             }
         }
     }
-
-    @Override
-    public String description() {
-        return null;
+//    Class Getters & Setters
+    public String getHeader() {
+        return header;
     }
-
-
+    public void setHeader(final String header) {
+        this.header = header;
+    }
+    public ElementType getType() {
+        return type;
+    }
+    public void setType(final ElementType type) {
+        this.type = type;
+    }
+    public ElementStatus getStatus() { return status; }
+    public void setStatus(final ElementStatus status) {
+        this.status = status;
+    }
+    public ArrayList<String> getContents() { return contents; }
+//    Parcel Details
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public BrandingElement createFromParcel(Parcel in) {
+            return new BrandingElement(in);
+        }
+        public BrandingElement[] newArray(int size) {
+            return new BrandingElement[size];
+        }
+    };
 }
