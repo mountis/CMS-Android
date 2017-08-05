@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.save;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
@@ -124,11 +124,11 @@ public final class AdminRequestDialog extends AlertDialog.Builder {
         if (inputs.get(0).getText().toString().equals(ADMIN_REQUEST_CODE)) {
             // Requesting Addition to Admin Team
             teamItem.addUser(currentUser, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
-            sendNotification(activity,currentUser, Notification.NotificationVerbType.REQUEST,teamItem);
+            upstreamNotification(activity,currentUser, Notification.NotificationVerbType.REQUEST,teamItem);
         } else {
             // Bypass, Adds to Admin Team as Owner
             teamItem.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
-            sendNotification(activity,currentUser, Notification.NotificationVerbType.JOIN,teamItem);
+            upstreamNotification(activity,currentUser, Notification.NotificationVerbType.JOIN,teamItem);
         }
 
         FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());

@@ -107,7 +107,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
 
         FirebaseMessaging.getInstance().subscribeToTopic(teamItem.getUID());
 
-        Backend.sendNotification(activity,user, Notification.NotificationVerbType.REQUEST, teamItem);
+        Backend.upstreamNotification(activity,user, Notification.NotificationVerbType.REQUEST, teamItem);
 
         dialog.dismiss();
     }

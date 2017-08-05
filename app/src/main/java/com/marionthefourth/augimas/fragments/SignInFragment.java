@@ -21,18 +21,20 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.activities.SignUpActivity;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.dialogs.RecoverPasswordDialog;
-import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
+import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 
 import me.pushy.sdk.Pushy;
 import me.pushy.sdk.util.exceptions.PushyException;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.FIREBASE_USER;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.FORGOT_PASSWORD_BUTTON;
@@ -40,7 +42,6 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_TEXT_BUTTON;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.DeviceHelper.dismissKeyboard;
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.build;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
@@ -90,8 +91,6 @@ public final class SignInFragment extends Fragment {
     }
 
     private void checkIfUserIsLoggedIn(final Activity activity, final View view, final User user) {
-        // TODO: Set Joint UID for User before signing in
-
         // Attempt to get the current user if null, they aren't logged in
         if (user != null) {
             final ProgressDialog loadingProgress = build(view,R.string.progress_signing_in);
@@ -110,7 +109,12 @@ public final class SignInFragment extends Fragment {
                         } catch (PushyException e) {
                             e.printStackTrace();
                         }
+                        OneSignal.sendTag(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
+
                     }
+                    OneSignal.syncHashedEmail(user.getEmail());
+                    OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+
                     display(view, Constants.Ints.Views.Widgets.IDs.TOAST,R.string.welcome_back_text,currentUser.getUsername());
                     Intent homeIntent = new Intent(view.getContext(), HomeActivity.class);
                     startActivity(homeIntent);

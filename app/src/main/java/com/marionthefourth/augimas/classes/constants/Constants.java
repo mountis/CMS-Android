@@ -10,6 +10,13 @@ public final class Constants {
 
         public static final CharSequence QUESTIONNAIRE_KEY = "questionnaire";
 
+        public static final class Server {
+            public static final String BACKEND_SENDER_ID = "431269160141";
+            public static final String BACKEND_SERVER_CONNECTION = "@gcm.googleapis.com";
+            public static final String BACKEND_ACTION_MESSAGE = "MESSAGE";
+            public static final String BACKEND_ACTION_ECHO = "com.augimas.ECHO";
+        }
+
         public static final class UIDs {
             public static final String UID = "uid";
             public static final String CHAT_UID = "chatUID";

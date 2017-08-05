@@ -1,12 +1,9 @@
 package com.marionthefourth.augimas.activities;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
@@ -19,6 +16,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
@@ -31,20 +29,17 @@ import com.marionthefourth.augimas.fragments.NotificationsFragment;
 import com.marionthefourth.augimas.fragments.SettingsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
-import com.marionthefourth.augimas.backend.Backend;
-import com.marionthefourth.augimas.backend.notification.BackendNotificationService;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
+import static com.marionthefourth.augimas.classes.objects.communication.Channel.sortChannels;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener, TeamsFragment.OnTeamsFragmentInteractionListener {
 
-    boolean mBound = false;
-    BackendNotificationService mService;
     private int selectedFragment = Constants.Ints.Fragments.DASHBOARD;
 
 //    Activity Method
@@ -118,23 +113,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Bind to LocalService
-        Intent intent = new Intent(this, BackendNotificationService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
     }
 
 //    Navigation Methods
@@ -437,25 +415,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     };
 
 //    Other Methods
-    private ArrayList<String> sortChannels(final ArrayList<Channel> channels) {
-        final ArrayList<Channel> sortedChannels = new ArrayList<>(channels.size());
-        final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
-        if (channels.size() == 2) {
-            if (channels.get(0).getName().equals("")) {
-                sortedChannels.add(channels.get(1));
-                sortedChannels.add(channels.get(0));
-            } else {
-                sortedChannels.add(channels.get(0));
-                sortedChannels.add(channels.get(1));
-            }
 
-            for (int i = 0; i < sortedChannels.size(); i++) {
-                channelUIDs.add(sortedChannels.get(i).getUID());
-            }
-        }
-
-        return channelUIDs;
-    }
 
 //    Listener Methods
     @Override
@@ -527,21 +487,4 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
     }
 
-    /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            BackendNotificationService.LocalBinder binder = (BackendNotificationService.LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-        }
-    };
 }

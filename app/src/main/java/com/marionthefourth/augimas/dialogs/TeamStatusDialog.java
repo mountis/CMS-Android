@@ -21,7 +21,7 @@ import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
@@ -79,10 +79,10 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
 
                                 switch (finalI) {
                                     case 0:
-                                        sendNotification(activity,getCurrentUser(), Notification.NotificationVerbType.APPROVE,teamItem);
+                                        upstreamNotification(activity,getCurrentUser(), Notification.NotificationVerbType.APPROVE,teamItem);
                                         break;
                                     case 1:
-                                        sendNotification(activity,getCurrentUser(), Notification.NotificationVerbType.BLOCK,teamItem);
+                                        upstreamNotification(activity,getCurrentUser(), Notification.NotificationVerbType.BLOCK,teamItem);
                                         break;
                                 }
                             }

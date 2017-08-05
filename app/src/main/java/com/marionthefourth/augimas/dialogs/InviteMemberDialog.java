@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 
 public final class InviteMemberDialog extends AlertDialog.Builder {
     public InviteMemberDialog(final Activity activity, final View containingView) {
@@ -165,7 +165,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         Backend.update(activity,teamItem);
         // Alert User that the team has been alerted of your request
         FragmentHelper.display(activity.findViewById(R.id.container),TOAST,R.string.you_added_to_the_team);
-        sendNotification(activity,invitedUserItem,verb,teamItem);
+        upstreamNotification(activity,invitedUserItem,verb,teamItem);
 
         dialog.dismiss();
     }

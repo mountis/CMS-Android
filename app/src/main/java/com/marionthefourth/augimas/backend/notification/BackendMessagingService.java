@@ -26,17 +26,25 @@ public final class BackendMessagingService extends FirebaseMessagingService {
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated.
         Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
+
+        // Check if message contains a data payload.
+        if (remoteMessage.getData().size() > 0) {
+            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+            // In this case the XMPP Server sends a payload data
+            sendNotification(remoteMessage.getData(),remoteMessage.getNotification().getBody());
+        }
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
-            sendNotification(remoteMessage.getData());
+            Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
+
+            sendNotification(null,remoteMessage.getNotification().getBody());
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
 
     }
 
-    private void sendNotification(Map<String, String> messageBody) {
+    private void sendNotification(Map<String, String> messageBody, String body) {
         Intent intent = new Intent(this, SignInActivity.class);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -44,18 +52,22 @@ public final class BackendMessagingService extends FirebaseMessagingService {
                 PendingIntent.FLAG_ONE_SHOT);
 
         String message = "Default Message";
-
-        if (messageBody.containsKey("message")) {
-            message = messageBody.get("message");
-        }
-
         String navigationDirection = Constants.Strings.Fragments.HOME;
 
-        if (messageBody.containsKey(Constants.Strings.Fields.FRAGMENT)) {
-            navigationDirection = messageBody.get(Constants.Strings.Fields.FRAGMENT);
-        }
+        if (messageBody != null) {
+            if (messageBody.containsKey("message")) {
+                message = messageBody.get("message");
+            }
+            if (messageBody.containsKey(Constants.Strings.Fields.FRAGMENT)) {
+                navigationDirection = messageBody.get(Constants.Strings.Fields.FRAGMENT);
+            }
 
-        intent.putExtra(Constants.Strings.Fields.FRAGMENT,navigationDirection);
+            intent.putExtra(Constants.Strings.Fields.FRAGMENT,navigationDirection);
+        } else {
+            if (body != null) {
+                message = body;
+            }
+        }
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)

@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -37,9 +39,14 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
+import com.onesignal.OneSignal;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.content.ContentValues.TAG;
@@ -102,6 +109,9 @@ public final class Backend {
                                                                 FirebaseMessaging.getInstance().subscribeToTopic(user.getTeamUID());
                                                             }
 
+                                                            OneSignal.syncHashedEmail(user.getEmail());
+                                                            OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+
                                                             final Intent homeIntent = new Intent(context, HomeActivity.class);
                                                             context.startActivity(homeIntent);
                                                         }
@@ -131,6 +141,73 @@ public final class Backend {
 
     }
 
+    private void upstreamNotification(final String teamUID,final Notification notification)
+    {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                int SDK_INT = android.os.Build.VERSION.SDK_INT;
+                if (SDK_INT > 8) {
+                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                            .permitAll().build();
+                    StrictMode.setThreadPolicy(policy);
+
+                    //This is a Simple Logic to Send Notification different Device Programmatically....
+
+                    try {
+                        String jsonResponse;
+
+                        URL url = new URL("https://onesignal.com/api/v1/notifications");
+                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                        con.setUseCaches(false);
+                        con.setDoOutput(true);
+                        con.setDoInput(true);
+
+                        con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        con.setRequestProperty("Authorization", "Basic ZGUxMDg2ZmUtZThiZC00YzVjLTkwODktYTdlZmQ2MDhhYjZj");
+                        con.setRequestMethod("POST");
+
+                        String strJsonBody = "{"
+                                + "\"app_id\": \"7432468f-5504-4ffb-813b-88f9a45dc575\","
+
+                                + "\"filters\": [{\"field\": \"tag\", \"key\": \"teamUID\", \"relation\": \"=\", \"value\": \"" + teamUID + "\"}],"
+
+                                + "\"data\": {\"foo\": \"bar\"},"
+                                + "\"contents\": {\"en\": \"English Message\"}"
+                                + "}";
+
+
+                        System.out.println("strJsonBody:\n" + strJsonBody);
+
+                        byte[] sendBytes = strJsonBody.getBytes("UTF-8");
+                        con.setFixedLengthStreamingMode(sendBytes.length);
+
+                        OutputStream outputStream = con.getOutputStream();
+                        outputStream.write(sendBytes);
+
+                        int httpResponse = con.getResponseCode();
+                        System.out.println("httpResponse: " + httpResponse);
+
+                        if (httpResponse >= HttpURLConnection.HTTP_OK
+                                && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
+                            Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
+                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                            scanner.close();
+                        } else {
+                            Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
+                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                            scanner.close();
+                        }
+                        System.out.println("jsonResponse:\n" + jsonResponse);
+
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
     public static void updateEmail(final Activity activity, final String email) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -148,6 +225,8 @@ public final class Backend {
                                             final User currentUser = new User(dataSnapshot);
 
                                             currentUser.setEmail(email);
+                                            OneSignal.syncHashedEmail(email);
+
                                             update(activity,currentUser);
                                         }
                                     }
@@ -231,7 +310,7 @@ public final class Backend {
         sendPushNotification(activity,notification);
     }
 
-    public static void sendNotification(final Activity activity, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
+    public static void upstreamNotification(final Activity activity, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final FirebaseObject object) {
         final Notification notification = new Notification(subject,object,verbType);
         save(activity,notification);
         sendPushNotification(activity,notification);
@@ -252,19 +331,19 @@ public final class Backend {
                 final AtomicInteger NOTIFICATION_ID = new AtomicInteger(notificationCount);
 
                 FirebaseMessaging fm = FirebaseMessaging.getInstance();
-                fm.send(new RemoteMessage.Builder(getCurrentUser().getUID() + "@gcm.googleapis.com")
+
+                final RemoteMessage remoteMessage = new RemoteMessage.Builder(notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
                         .setMessageId(Integer.toString(NOTIFICATION_ID.incrementAndGet()))
                         .addData(Constants.Strings.Fields.MESSAGE, notification.getMessage())
                         .addData(Constants.Strings.Fields.ACTION,"Check it out!")
                         .addData(Constants.Strings.UIDs.TEAM_UID,notificationDataBundle.getString(Constants.Strings.UIDs.TEAM_UID))
-                        .addData(Constants.Strings.Fields.FRAGMENT,notificationDataBundle.getString(Constants.Strings.Fields.FRAGMENT))
-                        .build());
+                        .addData(Constants.Strings.Fields.FRAGMENT,notificationDataBundle.getString(Constants.Strings.Fields.FRAGMENT)).build();
+
+                fm.send(remoteMessage);
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 

@@ -33,6 +33,7 @@ import com.marionthefourth.augimas.classes.objects.FirebaseObject;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
 import com.marionthefourth.augimas.backend.Backend;
+import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 
@@ -387,6 +388,10 @@ public final class SignUpFragment extends Fragment {
                     user.setUID(resultUID);
                     // Set the new user reference's value to the firebase user's value
                     newUserReference.setValue(user.toMap());
+                    OneSignal.syncHashedEmail(user.getEmail());
+
+                    OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+
                     // Display Snackbar letting the user know they sucessfully signed up
                     loadingProgress.show();
                     display(view,SNACKBAR,R.string.success_signup);

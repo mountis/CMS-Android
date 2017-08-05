@@ -6,6 +6,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseCommunication;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +51,26 @@ public final class Channel extends FirebaseCommunication {
             setName(chatReference.child(Constants.Strings.Fields.FULL_NAME).getValue().toString());
         }
 
+    }
+
+    public static ArrayList<String> sortChannels(final ArrayList<Channel> channels) {
+        final ArrayList<Channel> sortedChannels = new ArrayList<>(channels.size());
+        final ArrayList<String> channelUIDs = new ArrayList<>(channels.size());
+        if (channels.size() == 2) {
+            if (channels.get(0).getName().equals("")) {
+                sortedChannels.add(channels.get(1));
+                sortedChannels.add(channels.get(0));
+            } else {
+                sortedChannels.add(channels.get(0));
+                sortedChannels.add(channels.get(1));
+            }
+
+            for (int i = 0; i < sortedChannels.size(); i++) {
+                channelUIDs.add(sortedChannels.get(i).getUID());
+            }
+        }
+
+        return channelUIDs;
     }
 
     @Override

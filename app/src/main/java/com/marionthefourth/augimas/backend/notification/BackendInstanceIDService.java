@@ -12,8 +12,9 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.entities.Device;
 
-public final class BackendInstanceIDService extends FirebaseInstanceIdService {
+public final class BackendInstanceIDService extends FirebaseInstanceIdService implements ServerRequestListener {
     private static final String TAG = "FirebaseIDService";
+    private TokenService tokenService;
 
     @Override
     public void onTokenRefresh() {
@@ -21,7 +22,9 @@ public final class BackendInstanceIDService extends FirebaseInstanceIdService {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
-        sendRegistrationToServer(refreshedToken);
+//        sendRegistrationToServer(refreshedToken);
+        tokenService = new TokenService(this, this);
+        tokenService.registerTokenInDB(refreshedToken);
     }
 
     /**
@@ -58,4 +61,14 @@ public final class BackendInstanceIDService extends FirebaseInstanceIdService {
         });
     }
 
+    @Override
+    public void onComplete() {
+        Log.d(TAG, "Token registered successfully in the DB");
+
+    }
+
+    @Override
+    public void onError(String message) {
+        Log.d(TAG, "Error trying to register the token in the DB: " + message);
+    }
 }

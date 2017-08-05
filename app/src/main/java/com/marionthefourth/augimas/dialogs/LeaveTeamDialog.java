@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.delete;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
+import static com.marionthefourth.augimas.backend.Backend.upstreamNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
@@ -76,7 +76,7 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                             FirebaseMessaging.getInstance().unsubscribeFromTopic(teamItem.getUID());
 
                                             update(activity,currentUserItem);
-                                            sendNotification(activity, currentUserItem, Notification.NotificationVerbType.LEFT, teamItem);
+                                            upstreamNotification(activity, currentUserItem, Notification.NotificationVerbType.LEFT, teamItem);
                                             FragmentHelper.display(activity.findViewById(R.id.container), TOAST,R.string.left_team);
 
                                             Backend.getReference(activity,R.string.firebase_users_directory).addListenerForSingleValueEvent(new ValueEventListener() {

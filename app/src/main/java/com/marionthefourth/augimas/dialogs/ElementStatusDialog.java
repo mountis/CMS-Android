@@ -76,23 +76,15 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                         Backend.getReference(activity,R.string.firebase_branding_elements_directory).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                                    if (elementItem != null) {
-                                        elementItem.setStatus(BrandingElement.ElementStatus.getStatus(finalI));
-                                        update(activity,elementItem);
-
-                                        // TODO - Send Notifcation Alerting Teams of Update
-                                        sendNotifications(activity,holder.elementItem);
-                                        dialog.dismiss();
-                                    }
-                                }
+                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+                                elementItem.setStatus(BrandingElement.ElementStatus.getStatus(finalI));
+                                update(activity,elementItem);
+                                sendNotifications(activity,holder.elementItem);
+                                dialog.dismiss();
                             }
 
                             @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
+                            public void onCancelled(DatabaseError databaseError) {}
                         });
                     }
 
