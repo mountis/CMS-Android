@@ -374,7 +374,7 @@ public final class Backend {
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
-    //    Updating Account Information Methods [Unused]
+//    Updating Account Information Methods [Unused]
     public static void updateEmail(final Activity activity, final String email) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
