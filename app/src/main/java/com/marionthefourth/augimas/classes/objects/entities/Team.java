@@ -114,9 +114,9 @@ public final class Team extends FirebaseEntity {
             user.setStatus(EntityStatus.DEFAULT);
             return true;
         }
-
         return false;
     }
+
     public void addUser(final User accountToAdd, final EntityRole memberRole, final EntityStatus memberStatus) {
         accountToAdd.setTeamUID(getUID());
         accountToAdd.setRole(memberRole);

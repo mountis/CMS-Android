@@ -1,8 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.view.View;
@@ -71,7 +69,6 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
             }
 
             buttons.get(i).setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onClick(View v) {
                     holder.mBrandingElementStatus.setBackgroundDrawable(BrandingElement.ElementStatus.getStatus(finalI).toDrawable(getContext()));
@@ -81,7 +78,9 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                                elementItem.setStatus(BrandingElement.ElementStatus.getStatus(finalI));
+
+                                elementItem.setStatus(BrandingElement.ElementStatus.fromVerb(buttons.get(finalI).getText().toString()));
+                                holder.elementItem = elementItem;
                                 update(elementItem, activity);
                                 sendNotifications(holder.elementItem, activity);
                                 dialog.dismiss();
@@ -138,8 +137,8 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                                             Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID());
                                         }
                                     }
-                                    send(activity,teamUpdatedStatusNotification);
-                                    send(activity,userUpdatedStatusNotification);
+                                    send(teamUpdatedStatusNotification, activity);
+                                    send(userUpdatedStatusNotification, activity);
                                 }
                             }
 

@@ -247,7 +247,7 @@ public final class Backend {
             itemRef.setValue(firebaseObject.toMap());
         }
     }
-    public static void delete(final Activity activity, FirebaseObject firebaseObject) {
+    public static void delete(FirebaseObject firebaseObject, final Activity activity) {
 
         int directory = R.string.firebase_database_url;
 
@@ -348,7 +348,7 @@ public final class Backend {
 
     }
 //    Notification Methods
-    public static void send(final Activity activity, final Notification notification) {
+    public static void send(final Notification notification, final Activity activity) {
         create(activity,notification);
 //        sendPushNotification(activity,notification);
     }
@@ -361,8 +361,6 @@ public final class Backend {
                     StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                             .permitAll().build();
                     StrictMode.setThreadPolicy(policy);
-
-                    //This is a Simple Logic to Send Notification different Device Programmatically....
 
                     try {
                         String jsonResponse;
@@ -452,11 +450,11 @@ public final class Backend {
                     }
 
                     final Device currentDevice = new Device(token);
-                    Backend.create(context,currentDevice);
+//                    Backend.create(context,currentDevice);
                     Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
                 } else {
                     final Device currentDevice = new Device(token);
-                    Backend.create(context,currentDevice);
+//                    Backend.create(context,currentDevice);
                     Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
                 }
             }

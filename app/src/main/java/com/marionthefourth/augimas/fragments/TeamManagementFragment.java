@@ -70,20 +70,23 @@ public class TeamManagementFragment extends Fragment {
 
             final Activity activity = getActivity();
 
-            getView().setFocusableInTouchMode(true);
-            getView().requestFocus();
-            getView().setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                        final Activity activity = getActivity();
-                        final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                        activity.startActivity(homeIntent);
-                        return true;
+            if (this != null) {
+                getView().setFocusableInTouchMode(true);
+                getView().requestFocus();
+                getView().setOnKeyListener(new View.OnKeyListener() {
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                            final Activity activity = getActivity();
+                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                            activity.startActivity(homeIntent);
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            });
+                });
+            }
+
 
             Team teamItem = null;
 

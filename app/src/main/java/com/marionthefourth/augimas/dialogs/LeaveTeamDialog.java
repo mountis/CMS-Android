@@ -96,10 +96,10 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                                             }
                                                         }
                                                     } else {
-                                                        delete(activity,teamItem);
+                                                        delete(teamItem, activity);
                                                     }
                                                 } else {
-                                                    delete(activity,teamItem);
+                                                    delete(teamItem, activity);
                                                 }
                                             }
 

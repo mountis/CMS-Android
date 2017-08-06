@@ -66,8 +66,6 @@ public class BrandingElement extends FirebaseContent {
 
             }
 
-
-
         }
 
         public String toMapStyleString() {
@@ -163,8 +161,27 @@ public class BrandingElement extends FirebaseContent {
                     return "Approve";
                 case AWAITING:
                     return "Awaiting Approval";
+                case INCOMPLETE:
+                    return "Incomplete";
+                case NONE:
+                    return "None";
                 default:
                     return this.toString();
+            }
+        }
+
+        public static ElementStatus fromVerb(String verb) {
+            switch (verb) {
+                case "Approve":
+                    return APPROVED;
+                case "Awaiting Approval":
+                    return AWAITING;
+                case "Incomplete":
+                    return INCOMPLETE;
+                case "None":
+                    return NONE;
+                default:
+                    return DEFAULT;
             }
         }
 
@@ -194,14 +211,14 @@ public class BrandingElement extends FirebaseContent {
 
         public static ElementStatus getStatus(final String status) {
             for (int i = 0; i < getNumberOfElementStatii(); i++) {
-                if (status.equals(getStatus(i).toString()) || status.equals(getStatus(i).toMapStyleString())) {
-                    return getAllElementStatii().get(i);
+                if (status.toLowerCase().equals(getStatus(i).toString().toLowerCase()) || status.toLowerCase().equals(getStatus(i).toMapStyleString().toLowerCase())) {
+                    return getAllStatii().get(i);
                 }
             }
             return null;
         }
 
-        public static ArrayList<ElementStatus> getAllElementStatii() {
+        public static ArrayList<ElementStatus> getAllStatii() {
             final ArrayList<ElementStatus> elementStatii = new ArrayList<>();
             for (int i = 0; i < getNumberOfElementStatii(); i++) {
                 elementStatii.add(getStatus(i));

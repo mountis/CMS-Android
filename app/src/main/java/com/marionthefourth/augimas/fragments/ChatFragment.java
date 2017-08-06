@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.MessageListAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
@@ -25,14 +26,16 @@ import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.helpers.DeviceHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.create;
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.create;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChatFragment extends Fragment implements MessageListAdapter.OnMessageListFragmentInteractionListener {
@@ -153,6 +156,68 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
                                     // Save Message to Firebase
                                     create(activity,message);
+
+                                    Backend.getReference(R.string.firebase_channels_directory,activity).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                            final Channel channelItem = new Channel(dataSnapshot);
+
+                                            Backend.getReference(R.string.firebase_chats_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot.hasChildren()) {
+                                                        for(final Chat chatItem:Chat.toArrayList(dataSnapshot)) {
+                                                            if (channelItem.getChatUID().equals(chatItem.getUID())) {
+                                                                Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                        if (dataSnapshot.hasChildren()) {
+                                                                            Team otherTeam = null;
+                                                                            Team clientTeam = null;
+                                                                            for(final Team teamItem:Team.toFilteredArrayList(dataSnapshot,Constants.Strings.UIDs.CHAT_UID,chatItem.getUID())) {
+                                                                                if (currentUser.isInTeam(teamItem)) {
+                                                                                    clientTeam = teamItem;
+                                                                                } else {
+                                                                                    otherTeam = teamItem;
+                                                                                }
+                                                                            }
+
+                                                                            if (channelItem.getName().equals("")) {
+                                                                                Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),otherTeam.getUID());
+                                                                                Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
+                                                                            } else {
+                                                                                Backend.sendUpstreamNotification(sendNotification(clientTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
+                                                                            }
+
+                                                                            DeviceHelper.dismissKeyboard(getView());
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(DatabaseError databaseError) {}
+                                                                });
+                                                            }
+
+
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+
 
                                     // Clear input text
                                     inputField.setText("");

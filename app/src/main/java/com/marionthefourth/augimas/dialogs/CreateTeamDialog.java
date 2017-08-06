@@ -168,9 +168,9 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
 //                                        Create and Send Notifications
                                         final Notification teamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
                                         teamCreatedNotification.getReceiverUIDs().add(teamItem.getUID());
-                                        send(activity,teamCreatedNotification);
+                                        send(teamCreatedNotification, activity);
                                         final Notification joinedTeamNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.JOIN);
-                                        send(activity,joinedTeamNotification);
+                                        send(joinedTeamNotification, activity);
 
                                         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
                                         Backend.sendUpstreamNotification(teamCreatedNotification, teamItem.getUID());

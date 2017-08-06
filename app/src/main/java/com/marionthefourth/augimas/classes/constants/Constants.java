@@ -99,6 +99,7 @@ public final class Constants {
                     public static final int APPROVE             = 0x853ACF93;
                     public static final int AWAIT               = 0x765FEF02;
                     public static final int CREATE              = 0x123ABC91;
+                    public static final int CHAT                = 0x29081182;
                     public static final int DISAPPROVE          = 0x677EBF11;
                     public static final int INVITE              = 0x589DDF24;
                     public static final int JOIN                = 0x126FCF60;
@@ -127,6 +128,7 @@ public final class Constants {
                     public static final int REQUEST_JOIN        = 12;
                     public static final int UPDATE              = 13;
                     public static final int BLOCK               = 14;
+                    public static final int CHAT                = 15;
                 }
             }
             public static final class Subjects {

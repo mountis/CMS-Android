@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public final class BackendMessagingService extends FirebaseMessagingService {
@@ -53,8 +52,7 @@ public final class BackendMessagingService extends FirebaseMessagingService {
                 final ArrayMap<String,String> mapBody = (ArrayMap<String, String>) messageBody;
 
                 JSONObject jsonObject = new JSONObject();
-
-                final Iterator<Map.Entry<String, String>> obj = mapBody.entrySet().iterator();
+                JSONObject jsonObject1 = new JSONObject();
 
                 int i = 0;
 
@@ -63,6 +61,9 @@ public final class BackendMessagingService extends FirebaseMessagingService {
                         if (i == 0) {
                             jsonObject.put(entrySet.getKey(),entrySet.getValue());
                             if (jsonObject != null) {
+                                for (int j = 0; j < 1; j++) {
+                                    jsonObject1.put("body",mapBody.get(j));
+                                }
                                 messageBody = parseCustomJSONString(jsonObject.getString("custom"));
                                 if (messageBody.containsKey(Constants.Strings.Fields.MESSAGE)) {
                                     message = messageBody.get(Constants.Strings.Fields.MESSAGE);
@@ -71,6 +72,7 @@ public final class BackendMessagingService extends FirebaseMessagingService {
                                     navigationDirection = messageBody.get(Constants.Strings.Fields.FRAGMENT);
                                 }
                             }
+
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -136,11 +138,8 @@ public final class BackendMessagingService extends FirebaseMessagingService {
             if (quoteCount != 1) {
                 // Read next 2 quotes
                 final String sub1 = nC;
-                int aSlice = sub1.indexOf("\"");
-
-                final String sub2 = custom.substring(aSlice);
-                int bSlice = sub2.indexOf("\"");
-                Log.i("","Sub 1: " + sub1 + " & Sub 2: " + sub2);
+                int aSlice = sub1.indexOf("\"")+1;
+                int bSlice = sub1.indexOf("\"",aSlice+1);
                 Log.i("","Slice A: " + aSlice + " & Slice B: " + bSlice + " & String Length: " + custom.length());
                 if (aSlice == -1 || bSlice == -1) {
                     return result;
@@ -148,26 +147,26 @@ public final class BackendMessagingService extends FirebaseMessagingService {
 
                 // Check content if it matches particular keys
 
-                final String key = custom.substring(aSlice,bSlice);
+                final String key = sub1.substring(aSlice,bSlice);
 
-                final String newCustom = custom.substring(bSlice);
+                final String newCustom = sub1.substring(bSlice+1);
                 if (key.contains(Constants.Strings.Fields.FRAGMENT) ||
-                        key.contains(Constants.Strings.Fields.MESSAGE)) {
+                        key.contains(Constants.Strings.Fields.MESSAGE) ||
+                        key.contains(Constants.Strings.UIDs.SENDER_UID)) {
                     // If it matches, capture the data between the next two quotes
-                    int cSlice = newCustom.indexOf("\"");
-                    final String sub4 = newCustom.substring(cSlice);
-                    int dSlice = sub4.indexOf("\"");
+                    int cSlice = newCustom.indexOf("\"")+1;
+                    int dSlice = newCustom.indexOf("\"",cSlice+1);
 
-                    Log.i("","Sub 3: " + newCustom + " & Sub 4: " + sub4);
                     Log.i("","Slice C: " + aSlice + " & Slice D: " + bSlice + " & String Length: " + newCustom.length());
 
                     if (cSlice == -1 || dSlice == -1 && cSlice > dSlice) {
                         return result;
                     }
 
+                    final String data = newCustom.substring(cSlice,dSlice);
+
                     if (key.contains(Constants.Strings.Fields.FRAGMENT)) {
                         // You'll be able to judge
-                        final String data = custom.substring(cSlice,dSlice);
                         if (data.contains(Constants.Strings.Fragments.HOME) || data.contains(Constants.Strings.Fragments.DASHBOARD)) {
                             result.put(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.HOME);
                         } else if (data.contains(Constants.Strings.Fragments.CHAT)) {
@@ -179,15 +178,21 @@ public final class BackendMessagingService extends FirebaseMessagingService {
                         } else {
                             // CIJISOFA
                         }
-                    } else {
-                        final String data = custom.substring(cSlice,dSlice-1);
+                    } else if (key.contains(Constants.Strings.Fields.MESSAGE)){
                         result.put(Constants.Strings.Fields.MESSAGE,data);
+                    } else if (key.contains(Constants.Strings.UIDs.SENDER_UID)) {
+                        result.put(Constants.Strings.UIDs.SENDER_UID,data);
                     }
 
-                    indexOfQuote = custom.substring(dSlice).indexOf("\"");
+                    if (result.size() == 3) {
+                        return result;
+                    }
+
+                    custom = newCustom.substring(dSlice+1);
+                    indexOfQuote = custom.indexOf("\"");
                     Log.i("",result.toString());
                 } else {
-                    indexOfQuote = bSlice;
+                    indexOfQuote = bSlice+1;
                     Log.i("",result.toString());
                 }
             } else {

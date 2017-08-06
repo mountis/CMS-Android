@@ -103,7 +103,7 @@ public final class Notification extends FirebaseContent {
 
     }
     public enum NotificationVerbType {
-        ADD, APPROVE, AWAIT, CREATE ,DISAPPROVE, INVITE, JOIN, LEFT, RECEIVE,
+        ADD, APPROVE, AWAIT, CREATE , CHAT, DISAPPROVE, INVITE, JOIN, LEFT, RECEIVE,
         REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, DEFAULT, BLOCK;
 
         @Override
@@ -118,15 +118,15 @@ public final class Notification extends FirebaseContent {
         public static NotificationVerbType toVerbType(BrandingElement.ElementStatus status) {
             switch (status) {
                 case APPROVED:
-                    return Notification.NotificationVerbType.APPROVE;
+                    return NotificationVerbType.APPROVE;
                 case AWAITING:
-                    return Notification.NotificationVerbType.AWAIT;
+                    return NotificationVerbType.AWAIT;
                 case INCOMPLETE:
-                    return Notification.NotificationVerbType.DISAPPROVE;
+                    return NotificationVerbType.DISAPPROVE;
                 case NONE:
-                    return Notification.NotificationVerbType.UPDATE;
+                    return NotificationVerbType.AWAIT;
                 default:
-                    return Notification.NotificationVerbType.DEFAULT;
+                    return NotificationVerbType.DEFAULT;
             }
 
         }
@@ -136,8 +136,9 @@ public final class Notification extends FirebaseContent {
 
                     case ADD:               return Constants.Ints.NotificationTypes.Verbs.IDs.ADD;
                     case APPROVE:           return Constants.Ints.NotificationTypes.Verbs.IDs.APPROVE;
-                    case BLOCK:           return Constants.Ints.NotificationTypes.Verbs.IDs.BLOCK;
+                    case BLOCK:             return Constants.Ints.NotificationTypes.Verbs.IDs.BLOCK;
                     case AWAIT:             return Constants.Ints.NotificationTypes.Verbs.IDs.AWAIT;
+                    case CHAT:              return Constants.Ints.NotificationTypes.Verbs.IDs.CHAT;
                     case CREATE:            return Constants.Ints.NotificationTypes.Verbs.IDs.CREATE;
                     case DISAPPROVE:        return Constants.Ints.NotificationTypes.Verbs.IDs.DISAPPROVE;
                     case INVITE:            return Constants.Ints.NotificationTypes.Verbs.IDs.INVITE;
@@ -156,8 +157,9 @@ public final class Notification extends FirebaseContent {
                 switch(this) {
                     case ADD:               return Constants.Ints.NotificationTypes.Verbs.Indices.ADD;
                     case APPROVE:           return Constants.Ints.NotificationTypes.Verbs.Indices.APPROVE;
-                    case BLOCK:           return Constants.Ints.NotificationTypes.Verbs.Indices.BLOCK;
+                    case BLOCK:             return Constants.Ints.NotificationTypes.Verbs.Indices.BLOCK;
                     case AWAIT:             return Constants.Ints.NotificationTypes.Verbs.Indices.AWAIT;
+                    case CHAT:              return Constants.Ints.NotificationTypes.Verbs.Indices.CHAT;
                     case CREATE:            return Constants.Ints.NotificationTypes.Verbs.Indices.CREATE;
                     case DISAPPROVE:        return Constants.Ints.NotificationTypes.Verbs.Indices.DISAPPROVE;
                     case INVITE:            return Constants.Ints.NotificationTypes.Verbs.Indices.INVITE;
@@ -237,7 +239,7 @@ public final class Notification extends FirebaseContent {
         }
 
         public static int getNumberOfNotificationVerbTypes() {
-            return 15;
+            return 16;
         }
 
     }
@@ -543,14 +545,18 @@ public final class Notification extends FirebaseContent {
             switch (verbType) {
                 case ADD:
                     verbPart = "added";
+                    break;
                 case APPROVE:
                     verbPart = "approved";
                     break;
                 case AWAIT:
-                    verbPart = "is waiting for access";
+                    verbPart = "is waiting for access to";
                     break;
                 case CREATE:
                     verbPart = "created";
+                    break;
+                case CHAT:
+                    verbPart = "sent a message to";
                     break;
                 case DISAPPROVE:
                     verbPart = "disapproved";
@@ -566,6 +572,7 @@ public final class Notification extends FirebaseContent {
                     break;
                 case RECEIVE:
                     verbPart = "received";
+                    break;
                 case REQUEST:
                     verbPart = "is requesting";
                     break;
@@ -573,6 +580,7 @@ public final class Notification extends FirebaseContent {
                     verbPart = "is requesting access to";
                     break;
                 case REQUEST_APPROVAL:
+                    verbPart = "is requesting to approval of";
                     break;
                 case REQUEST_JOIN:
                     verbPart = "is requesting to join";
