@@ -43,7 +43,7 @@ public class BackendNotificationExtender extends NotificationExtenderService {
                     }
                     Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.logl)
+                            .setSmallIcon(R.drawable.filled_logo)
                             .setContentTitle("Augimas")
                             .setContentText(messageBody.getString(Constants.Strings.Fields.MESSAGE))
                             .setAutoCancel(true)
