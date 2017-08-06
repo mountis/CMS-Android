@@ -85,6 +85,8 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             Backend.getReference(R.string.firebase_teams_directory, HomeActivity.this).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+
                                     if (dataSnapshot.exists()) {
                                         final Team currentTeam = new Team(dataSnapshot);
                                         if (currentTeam != null) {
@@ -92,12 +94,34 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                                 removeNavigationItem();
                                                 manager.beginTransaction().replace(R.id.container, new TeamsFragment()).commit();
                                             } else {
-
-                                                manager.beginTransaction().replace(R.id.container, new BrandingElementsFragment().newInstance(currentUser.getTeamUID())).commit();
+                                                if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                                    manager.beginTransaction().replace(R.id.container, new BrandingElementsFragment().newInstance(currentUser.getTeamUID())).commit();
+                                                } else {
+                                                    final android.app.FragmentManager rManager = getFragmentManager();
+                                                    rManager.beginTransaction().setTransition(
+                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
+                                                            R.id.container,
+                                                            new SettingsFragment(),
+                                                            Constants.Strings.Fragments.SETTINGS).commit();
+                                                    selectedFragment = Constants.Ints.Fragments.SETTINGS;
+                                                    navigationView.setSelectedItemId(R.id.navigation_settings);
+                                                }
                                             }
                                         }
                                     } else {
-                                        manager.beginTransaction().replace(R.id.container, new BrandingElementsFragment().newInstance(currentUser.getTeamUID())).commit();
+                                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                            manager.beginTransaction().replace(R.id.container, new BrandingElementsFragment().newInstance(currentUser.getTeamUID())).commit();
+                                        } else {
+                                            final android.app.FragmentManager rManager = getFragmentManager();
+                                            rManager.beginTransaction().setTransition(
+                                                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
+                                                    R.id.container,
+                                                    new SettingsFragment(),
+                                                    Constants.Strings.Fragments.SETTINGS).commit();
+                                            selectedFragment = Constants.Ints.Fragments.SETTINGS;
+                                            navigationView.setSelectedItemId(R.id.navigation_settings);
+
+                                        }
                                     }
                                 }
 
@@ -148,13 +172,19 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
                     switch (item.getItemId()) {
                         case R.id.navigation_dashboard:
-                            handleDashboardNavigation(currentUser,manager);
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                handleDashboardNavigation(currentUser,manager);
+                            }
                             break;
                         case R.id.navigation_chat:
-                            handleChatNavigation(currentUser,manager);
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                handleChatNavigation(currentUser, manager);
+                            }
                             break;
                         case R.id.navigation_notifications:
-                            handleNotificationNavigation(manager);
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                handleNotificationNavigation(manager);
+                            }
                             break;
                         case R.id.navigation_settings:
                             handleSettingsNavigation(rManager);
@@ -176,6 +206,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                 final Menu menu = navigationView.getMenu();
 
                 final User currentUser = new User(dataSnapshot);
+
                 if (currentUser != null) {
                     if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
                         menu.removeItem(R.id.navigation_chat);
@@ -186,10 +217,22 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
                         }
                     } else {
-                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) || currentUser.getTeamUID().equals("")) {
+                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) && currentUser.getTeamUID().equals("")) {
                             navigationView.setSelectedItemId(R.id.navigation_settings);
                             menu.removeItem(R.id.navigation_chat);
+                            menu.removeItem(R.id.navigation_dashboard);
+                            menu.removeItem(R.id.navigation_notifications);
                             menu.removeItem(R.id.navigation_settings);
+
+                            if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) && !currentUser.getTeamUID().equals("")) {
+
+                            }
+
+                            final android.app.FragmentManager manager = getFragmentManager();
+                            handleSettingsNavigation(manager);
+                        } else if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) && !currentUser.getTeamUID().equals("")){
+                            navigationView.setSelectedItemId(R.id.navigation_settings);
+                            menu.removeItem(R.id.navigation_chat);
                             menu.removeItem(R.id.navigation_dashboard);
                             menu.removeItem(R.id.navigation_notifications);
 
@@ -252,6 +295,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             R.id.container,
                             new SettingsFragment(),
                             Constants.Strings.Fragments.SETTINGS).commit();
+
                 }
             }
             selectedFragment = Constants.Ints.Fragments.SETTINGS;

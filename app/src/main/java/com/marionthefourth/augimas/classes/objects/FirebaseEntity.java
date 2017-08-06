@@ -264,6 +264,25 @@ public abstract class FirebaseEntity extends FirebaseObject {
             return false;
         }
     }
+    public final boolean hasExclusiveAccess(EntityRole accessRole) {
+        int accessLevel = 0;
+        int userAccessLevel = 0;
+
+        if (getRole() != null) {
+            for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
+                if (accessRole.equals(EntityRole.getRole(i))) {
+                    accessLevel = i;
+                }
+                if (getRole().equals(EntityRole.getRole(i))) {
+                    userAccessLevel = i;
+                }
+            }
+
+            return userAccessLevel < accessLevel;
+        } else {
+            return false;
+        }
+    }
 //    Class Getters & Setters
     public final String getName() { return name; }
     public final void setName(final String name) { this.name = name; }

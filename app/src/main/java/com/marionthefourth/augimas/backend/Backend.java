@@ -289,11 +289,10 @@ public final class Backend {
 
         if (firebaseObject instanceof User) {
             myRef = getReference(R.string.firebase_users_directory, context);
-            itemRef = myRef.push();
-            final User userItem = (User)firebaseObject;
+            itemRef = myRef.child(firebaseObject.getUID());
 //            key = itemRef.getKey();
 //            userItem.setUID(key);
-            itemRef.setValue(userItem.toMap());
+            itemRef.setValue(firebaseObject.toMap());
         } else if (firebaseObject instanceof Chat) {
             myRef = getReference(R.string.firebase_chats_directory, context);
             itemRef = myRef.push();

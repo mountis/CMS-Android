@@ -48,10 +48,31 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         holder.userItem = members.get(index);
         holder.mTeamMemberNameLabel.setText(holder.userItem.getName());
 
+
+        Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final User currentUser = new User(dataSnapshot);
+
+
+//                for(FirebaseEntity.EntityRole role: FirebaseEntity.EntityRole.getAllRoles()) {
+//                    if (!currentUser.hasInclusiveAccess(role)) {
+//                        roles.remove(role);
+//                    }
+//                }
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         final ArrayList<FirebaseEntity.EntityRole> roles = FirebaseEntity.EntityRole.getAllRoles();
 
         roles.remove(FirebaseEntity.EntityRole.DEFAULT);
-
         final ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<FirebaseEntity.EntityRole>(activity,R.layout.spinner_item_team_member,R.id.team_member_role, roles) {
             public boolean areAllItemsEnabled() {
                 return false;
@@ -108,10 +129,9 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         };
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         holder.mTeamMemberRoleSpinner.setAdapter(adapter);
-
         holder.mTeamMemberRoleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(final AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(final AdapterView<?> parent, final View view, final int position, long id) {
                 Backend.getReference(R.string.firebase_users_directory, activity).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -119,24 +139,42 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                             final User modifyingUserItem = new User(dataSnapshot);
                             final FirebaseEntity.EntityRole selectedRole = (FirebaseEntity.EntityRole)parent.getSelectedItem();
 
-                            modifyingUserItem.setRole(selectedRole);
 
-                            switch (selectedRole) {
-                                case OWNER:
-                                case ADMIN:
-                                case EDITOR:
-                                case CHATTER:
-                                case VIEWER:
-                                    modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.APPROVED);
-                                    break;
-                                case NONE:
-                                    modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.AWAITING);
-                                    break;
-                                case DEFAULT:
-                                    break;
+
+                            if (!currentUser.hasInclusiveAccess(modifyingUserItem.getRole()) || modifyingUserItem.getUID().equals(currentUser.getUID())) {
+                                parent.setEnabled(false);
+                                view.setEnabled(false);
+                            } else {
+                                parent.setEnabled(true);
+                                view.setEnabled(true);
+
+                                final FirebaseEntity.EntityRole role = (FirebaseEntity.EntityRole) holder.mTeamMemberRoleSpinner.getItemAtPosition(position);
+
+                                if (currentUser.hasExclusiveAccess(role)) {
+                                    modifyingUserItem.setRole(selectedRole);
+                                } else {
+                                    modifyingUserItem.setRole((FirebaseEntity.EntityRole) holder.mTeamMemberRoleSpinner.getItemAtPosition(position+1));
+                                }
+
+                                switch (selectedRole) {
+                                    case OWNER:
+                                    case ADMIN:
+                                    case EDITOR:
+                                    case CHATTER:
+                                    case VIEWER:
+                                        modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.APPROVED);
+                                        break;
+                                    case NONE:
+                                        modifyingUserItem.setStatus(FirebaseEntity.EntityStatus.AWAITING);
+                                        break;
+                                    case DEFAULT:
+                                        break;
+                                }
+
+                                update(modifyingUserItem, activity);
                             }
 
-                            update(modifyingUserItem, activity);
+
                         }
                     }
 
@@ -172,10 +210,18 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                 }
                             } else {
                                 if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                                    if (!currentUserItem.hasInclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
                                         holder.mTeamMemberRoleSpinner.setEnabled(false);
                                     }
                                 } else if (currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
+                                } else if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                        holder.mTeamMemberRoleSpinner.setEnabled(false);
+                                    }
+                                }
+
+                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                                     holder.mTeamMemberRoleSpinner.setEnabled(false);
                                 }
                             }
