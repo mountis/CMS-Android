@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.onesignal.OneSignal;
 
 public final class SignInActivity extends AppCompatActivity {
@@ -24,14 +25,6 @@ public final class SignInActivity extends AppCompatActivity {
                 .init();
 
 
-        if (Backend.getCurrentUser() != null) {
-            final Bundle intent = getIntent().getExtras();
-            if (intent != null) {
-                final Intent homeIntent = new Intent(this,HomeActivity.class);
-                homeIntent.putExtras(intent);
-                startActivity(homeIntent);
-                return;
-            }
-        }
+
     }
 }

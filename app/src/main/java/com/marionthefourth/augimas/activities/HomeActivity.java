@@ -175,8 +175,8 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
 
                 final Menu menu = navigationView.getMenu();
 
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
+                final User currentUser = new User(dataSnapshot);
+                if (currentUser != null) {
                     if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
                         menu.removeItem(R.id.navigation_chat);
                         if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
@@ -198,6 +198,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         }
                     }
                 }
+
             }
 
             @Override
@@ -261,93 +262,99 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     }
     private void handleChatNavigation(final User currentUser, final FragmentManager manager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
-            if (selectedFragment != Constants.Ints.Fragments.CHAT) {
-                selectedFragment = Constants.Ints.Fragments.CHAT;
-                if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                    if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                        manager.beginTransaction().replace(R.id.container, new ChatListFragment()).commit();
-                    } else {
-                        // Get Channel UIDs & Team UIDs
-                        final ArrayList<String> teamUIDs = new ArrayList<>();
-                        final ArrayList<Channel> channels = new ArrayList<>();
+            if (getIntent().getExtras() != null) {
+//                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
 
-                        teamUIDs.add(currentUser.getTeamUID());
+            } else {
+                if (selectedFragment != Constants.Ints.Fragments.CHAT) {
+                    selectedFragment = Constants.Ints.Fragments.CHAT;
+                    if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                        if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
+                            manager.beginTransaction().replace(R.id.container, new ChatListFragment()).commit();
+                        } else {
+                            // Get Channel UIDs & Team UIDs
+                            final ArrayList<String> teamUIDs = new ArrayList<>();
+                            final ArrayList<Channel> channels = new ArrayList<>();
 
-                        Backend.getReference(R.string.firebase_chats_directory, this).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                    for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
-                                        final Chat chatItem = new Chat(chatReference);
-                                        if (chatItem != null) {
-                                            if (currentUser.isInChat(chatItem)) {
-                                                // Get Other Team Admin Team UID
-                                                Backend.getReference(R.string.firebase_teams_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                    @Override
-                                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                                        if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                                            for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                                                final Team teamItem = new Team(teamReference);
-                                                                if (teamItem != null && !currentUser.isInTeam(teamItem) && chatItem.hasTeam(teamItem.getUID())) {
-                                                                    teamUIDs.add(teamItem.getUID());
-                                                                    // Get Channel UIDs
-                                                                    Backend.getReference(R.string.firebase_channels_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                        @Override
-                                                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                            if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                                                                for (DataSnapshot channelReference:dataSnapshot.getChildren()) {
-                                                                                    final Channel channelItem = new Channel(channelReference);
-                                                                                    if (channelItem != null && channelItem.getChatUID().equals(chatItem.getUID())) {
-                                                                                        channels.add(channelItem);
-                                                                                    }
-                                                                                }
+                            teamUIDs.add(currentUser.getTeamUID());
 
-                                                                                if (channels.size() != 0) {
-                                                                                    Intent chatIntent = new Intent(HomeActivity.this,ChatActivity.class);
-                                                                                    for (int i = 0; i < channels.size();i++) {
-                                                                                        if (channels.get(i).getName().equals(teamItem.getName())) {
-                                                                                        } else if(channels.get(i).getName().equals("")) {
-                                                                                            chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false),channels.get(i).getUID());
-                                                                                        } else {
-                                                                                            chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false),channels.get(i).getUID());
+                            Backend.getReference(R.string.firebase_chats_directory, this).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                        for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
+                                            final Chat chatItem = new Chat(chatReference);
+                                            if (chatItem != null) {
+                                                if (currentUser.isInChat(chatItem)) {
+                                                    // Get Other Team Admin Team UID
+                                                    Backend.getReference(R.string.firebase_teams_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
+                                                                    final Team teamItem = new Team(teamReference);
+                                                                    if (teamItem != null && !currentUser.isInTeam(teamItem) && chatItem.hasTeam(teamItem.getUID())) {
+                                                                        teamUIDs.add(teamItem.getUID());
+                                                                        // Get Channel UIDs
+                                                                        Backend.getReference(R.string.firebase_channels_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                            @Override
+                                                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
+                                                                                    for (DataSnapshot channelReference:dataSnapshot.getChildren()) {
+                                                                                        final Channel channelItem = new Channel(channelReference);
+                                                                                        if (channelItem != null && channelItem.getChatUID().equals(chatItem.getUID())) {
+                                                                                            channels.add(channelItem);
                                                                                         }
                                                                                     }
 
-                                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false),teamUIDs.get(0));
-                                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false),teamUIDs.get(1));
+                                                                                    if (channels.size() != 0) {
+                                                                                        Intent chatIntent = new Intent(HomeActivity.this,ChatActivity.class);
+                                                                                        for (int i = 0; i < channels.size();i++) {
+                                                                                            if (channels.get(i).getName().equals(teamItem.getName())) {
+                                                                                            } else if(channels.get(i).getName().equals("")) {
+                                                                                                chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false),channels.get(i).getUID());
+                                                                                            } else {
+                                                                                                chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false),channels.get(i).getUID());
+                                                                                            }
+                                                                                        }
 
-                                                                                    startActivity(chatIntent);
+                                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false),teamUIDs.get(0));
+                                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false),teamUIDs.get(1));
 
+                                                                                        startActivity(chatIntent);
+
+                                                                                    }
                                                                                 }
                                                                             }
-                                                                        }
 
-                                                                        @Override
-                                                                        public void onCancelled(DatabaseError databaseError) {
+                                                                            @Override
+                                                                            public void onCancelled(DatabaseError databaseError) {
 
-                                                                        }
-                                                                    });
+                                                                            }
+                                                                        });
+                                                                    }
                                                                 }
                                                             }
                                                         }
-                                                    }
 
-                                                    @Override
-                                                    public void onCancelled(DatabaseError databaseError) {}
-                                                });
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {}
+                                                    });
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {}
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
 
+                        }
                     }
                 }
             }
+
         } else {
             display(TOAST, R.string.feature_unavailable, findViewById(R.id.content));
         }

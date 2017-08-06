@@ -127,13 +127,13 @@ public final class Notification extends FirebaseContent {
                     return NotificationVerbType.AWAIT;
                 default:
                     return NotificationVerbType.DEFAULT;
+
             }
 
         }
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
                 switch(this) {
-
                     case ADD:               return Constants.Ints.NotificationTypes.Verbs.IDs.ADD;
                     case APPROVE:           return Constants.Ints.NotificationTypes.Verbs.IDs.APPROVE;
                     case BLOCK:             return Constants.Ints.NotificationTypes.Verbs.IDs.BLOCK;
@@ -150,7 +150,6 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE;
-                    case DEFAULT:
                     default:                return DEFAULT_ID;
                 }
             } else {
@@ -171,7 +170,6 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE;
-                    case DEFAULT:
                     default:                return DEFAULT_ID;
                 }
             }
@@ -194,6 +192,9 @@ public final class Notification extends FirebaseContent {
                 case Constants.Ints.NotificationTypes.Verbs.IDs.CREATE:
                 case Constants.Ints.NotificationTypes.Verbs.Indices.CREATE:
                     return CREATE;
+                case Constants.Ints.NotificationTypes.Verbs.IDs.CHAT:
+                case Constants.Ints.NotificationTypes.Verbs.Indices.CHAT:
+                    return CHAT;
                 case Constants.Ints.NotificationTypes.Verbs.IDs.DISAPPROVE:
                 case Constants.Ints.NotificationTypes.Verbs.Indices.DISAPPROVE:
                     return DISAPPROVE;
@@ -433,7 +434,7 @@ public final class Notification extends FirebaseContent {
             upstreamJSON.put(Constants.Strings.Server.Fields.DATA,data);
 //            Add Language
             JSONObject englishMessage = new JSONObject();
-            englishMessage.put(Constants.Strings.Server.Fields.ENGLISH,Constants.Strings.Server.Fields.ENGLISH_MESSAGE);
+            englishMessage.put(Constants.Strings.Server.Fields.ENGLISH,getMessage());
             upstreamJSON.put(Constants.Strings.Server.Fields.CONTENTS,englishMessage);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -538,8 +539,8 @@ public final class Notification extends FirebaseContent {
                 case TEAM:
                     subjectPart = ((FirebaseEntity)getSubject()).getName();
                     break;
-                case DEFAULT:
-                    return "Unable to grab data!";
+                default:
+                    subjectPart = "[subjectPart]";
             }
 
             switch (verbType) {
@@ -589,10 +590,12 @@ public final class Notification extends FirebaseContent {
                     verbPart = "updated";
                     break;
                 case DEFAULT:
-                    return "Unable to grab data!";
+                    break;
                 case BLOCK:
                     verbPart = "blocked";
                     break;
+                default:
+                    verbPart = "[verbPart]";
             }
 
             switch (objectType) {
@@ -606,15 +609,13 @@ public final class Notification extends FirebaseContent {
                 case TEAM:
                     objectPart = ((FirebaseEntity)getObject()).getName();
                     break;
-                case DEFAULT:
-                    return "Unable to grab data!";
-
+                default:
+                    objectPart = "[objectPart]";
             }
 
             return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
         } else {
-            return "Unable to grab data!";
-
+            return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
         }
 
     }
@@ -660,7 +661,9 @@ public final class Notification extends FirebaseContent {
     public FirebaseObject getObject() { return object; }
     public NotificationObjectType setObject(final FirebaseObject object) {
         this.object = object;
-        setObjectUID(object.getUID());
+        if (object != null) {
+            setObjectUID(object.getUID());
+        }
         if (object instanceof Chat) {
             setObjectType(NotificationObjectType.CHAT);
         } else if (object instanceof BrandingElement) {

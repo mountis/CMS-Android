@@ -99,19 +99,20 @@ public final class User extends FirebaseEntity {
     }
 
     public static ArrayList<User> toFilteredArrayList(ArrayList<User> users,String field, String content) {
+        final ArrayList<User> filteredUserList = new ArrayList<>();
         for (final User userItem:users) {
             switch (field) {
                 case Constants.Strings.UIDs.TEAM_UID:
-                    if (!userItem.getTeamUID().equals(content)) users.remove(userItem);
+                    if (userItem.getTeamUID().equals(content)) filteredUserList.add(userItem);
                     break;
                 case Constants.Strings.Fields.ENTITY_ROLE:
-                    if (!userItem.getRole().toString().equals(content)) users.remove(userItem);
+                    if (userItem.getRole().toString().equals(content)) filteredUserList.add(userItem);
                     break;
                 default:
                     break;
             }
         }
-        return users;
+        return filteredUserList;
     }
 
     public static ArrayMap<EntityRole,ArrayList<User>> toRoleFilteredArrayMap(final ArrayList<User> users) {

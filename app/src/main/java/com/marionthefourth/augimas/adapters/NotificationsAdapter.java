@@ -57,6 +57,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                     default:
                         entityTeamUID = (holder.notificationItem.getSubject()).getUID();
                         break;
+
                 }
                 switch (holder.notificationItem.getObjectType()) {
                     case BRANDING_ELEMENT:
@@ -67,12 +68,26 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                         break;
                     case MEMBER:
                     case TEAM:
-                        intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.TEAM_MANAGEMENT);
-                        break;
+                        if (holder.notificationItem.getVerbType() == Notification.NotificationVerbType.CHAT) {
+                            intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.CHAT);
+                            if (holder.notificationItem.getObject() != null) {
+                                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
+                            }
+                        } else {
+                            intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.TEAM_MANAGEMENT);
+                            if (holder.notificationItem.getObject() != null) {
+                                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
+                            }
+                        }
 
+                        break;
                 }
-                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
-                activity.startActivity(intent);
+
+                if (entityTeamUID == null || entityTeamUID.equals("")) {
+                    intent.putExtra(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
+                    activity.startActivity(intent);
+                }
+
 
             }
         });
@@ -141,6 +156,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (elementItem != null) {
                                 holder.notificationItem.setObject(elementItem);
                                 holder.mNotificationText.setText(holder.notificationItem.getMessage());
+                                if (holder.mNotificationText.getText().equals("notification text")) {
+                                    holder.itemView.setVisibility(View.INVISIBLE);
+                                }
                             }
                         }
                     }
@@ -158,6 +176,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (chatItem != null) {
                                 holder.notificationItem.setObject(chatItem);
                                 holder.mNotificationText.setText(holder.notificationItem.getMessage());
+                                if (holder.mNotificationText.getText().equals("notification text")) {
+                                    holder.itemView.setVisibility(View.INVISIBLE);
+                                }
                             }
                         }
                     }
@@ -175,6 +196,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (userItem != null) {
                                 holder.notificationItem.setObject(userItem);
                                 holder.mNotificationText.setText(holder.notificationItem.getMessage());
+                                if (holder.mNotificationText.getText().equals("notification text")) {
+                                    holder.itemView.setVisibility(View.INVISIBLE);
+                                }
                             }
                         }
                     }
@@ -192,6 +216,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             if (teamItem != null) {
                                 holder.notificationItem.setObject(teamItem);
                                 holder.mNotificationText.setText(holder.notificationItem.getMessage());
+
+                                if (holder.mNotificationText.getText().equals("notification text")) {
+                                    holder.itemView.setVisibility(View.INVISIBLE);
+                                }
                             }
                         }
                     }

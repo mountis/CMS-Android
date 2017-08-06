@@ -174,10 +174,10 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                                                         if (dataSnapshot.hasChildren()) {
                                                                             Team otherTeam = null;
-                                                                            Team clientTeam = null;
-                                                                            for(final Team teamItem:Team.toFilteredArrayList(dataSnapshot,Constants.Strings.UIDs.CHAT_UID,chatItem.getUID())) {
+                                                                            Team yourTeam = null;
+                                                                            for(final Team teamItem:Team.toFilteredArrayList(Team.toArrayList(dataSnapshot),Constants.Strings.UIDs.CHAT_UID,chatItem.getTeamUIDs())) {
                                                                                 if (currentUser.isInTeam(teamItem)) {
-                                                                                    clientTeam = teamItem;
+                                                                                    yourTeam = teamItem;
                                                                                 } else {
                                                                                     otherTeam = teamItem;
                                                                                 }
@@ -187,7 +187,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                                 Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),otherTeam.getUID());
                                                                                 Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
                                                                             } else {
-                                                                                Backend.sendUpstreamNotification(sendNotification(clientTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
+                                                                                Backend.sendUpstreamNotification(sendNotification(yourTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
                                                                             }
 
                                                                             DeviceHelper.dismissKeyboard(getView());

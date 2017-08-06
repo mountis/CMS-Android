@@ -88,22 +88,50 @@ public final class Team extends FirebaseEntity {
     }
 
     public static ArrayList<Team> toFilteredArrayList(ArrayList<Team> teams,String field, String content) {
+        final ArrayList<Team> filteredTeamList = new ArrayList<>();
         for (final Team teamItem:teams) {
             switch (field) {
                 case Constants.Strings.UIDs.TEAM_UID:
-                    if (!teamItem.getUID().equals(content)) teams.remove(teamItem);
+                    if (!teamItem.getUID().equals(content)) filteredTeamList.add(teamItem);
+                    break;
+                case Constants.Strings.UIDs.CHAT_UID:
+                    if (!teamItem.equals(content)) filteredTeamList.add(teamItem);
                     break;
                 case Constants.Strings.Fields.ENTITY_ROLE:
-                    if (!teamItem.getRole().toString().equals(content)) teams.remove(teamItem);
+                    if (teamItem.getRole().toString().equals(content)) filteredTeamList.add(teamItem);
                     break;
                 case Constants.Strings.Fields.ENTITY_TYPE:
-                    if (!teamItem.getType().toString().equals(content)) teams.remove(teamItem);
+                    if (teamItem.getType().toString().equals(content)) filteredTeamList.add(teamItem);
                     break;
                 default:
                     break;
             }
         }
-        return teams;
+        return filteredTeamList;
+    }
+
+    public static ArrayList<Team> toFilteredArrayList(ArrayList<Team> teams,String field, ArrayList<String> content) {
+        final ArrayList<Team> filteredTeamList = new ArrayList<>();
+        for (int i = 0; i < content.size(); i++) {
+            for (final Team teamItem:teams) {
+                switch (field) {
+                    case Constants.Strings.UIDs.TEAM_UID:
+                    case Constants.Strings.UIDs.CHAT_UID:
+                        if (teamItem.getUID().equals(content.get(i))) filteredTeamList.add(teamItem);
+                        break;
+                    case Constants.Strings.Fields.ENTITY_ROLE:
+                        if (teamItem.getRole().toString().equals(content.get(i))) filteredTeamList.add(teamItem);
+                        break;
+                    case Constants.Strings.Fields.ENTITY_TYPE:
+                        if (teamItem.getType().toString().equals(content.get(i))) filteredTeamList.add(teamItem);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return filteredTeamList;
     }
 //    Functional Methods
     public boolean removeUser(User user) {

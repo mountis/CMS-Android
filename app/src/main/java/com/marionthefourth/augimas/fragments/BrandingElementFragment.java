@@ -23,15 +23,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.adapters.SocialMediaPlatformsAdapter;
 import com.marionthefourth.augimas.adapters.TLDAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.backend.Backend;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
@@ -68,24 +68,24 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                     final User userItem = new User(dataSnapshot);
                     if (userItem != null) {
 //                        ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                        getView().setFocusableInTouchMode(true);
-                        getView().requestFocus();
-                        getView().setOnKeyListener(new View.OnKeyListener() {
-                            @Override
-                            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                                    // handle back button's click listener
-//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
-                                    final AppCompatActivity activity = (AppCompatActivity) getActivity();
-                                    final FragmentManager manager = activity.getSupportFragmentManager();
+                        if (view != null) {
+                            view.setFocusableInTouchMode(true);
+                            view.requestFocus();
+                            view.setOnKeyListener(new View.OnKeyListener() {
+                                @Override
+                                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                                        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+                                        final FragmentManager manager = activity.getSupportFragmentManager();
 
-                                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
-
-                                    return true;
+                                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
+                                        return true;
+                                    }
+                                    return false;
                                 }
-                                return false;
-                            }
-                        });
+                            });
+                        }
+
                     }
                 }
             }

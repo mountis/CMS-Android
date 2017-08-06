@@ -50,6 +50,35 @@ public final class Channel extends FirebaseCommunication {
         }
         return channels;
     }
+
+    public static ArrayList<Channel> toFilteredArrayList(final ArrayList<Channel> channels,String field, String content) {
+        final ArrayList<Channel> filteredChannelList = new ArrayList<>();
+        for (final Channel channelItem:channels) {
+            switch (field) {
+                case Constants.Strings.UIDs.CHAT_UID:
+                    if (channelItem.getChatUID().equals(content)) filteredChannelList.add(channelItem);
+                    break;
+                case Constants.Strings.Fields.FULL_NAME:
+                    if (!channelItem.getName().equals(content)) filteredChannelList.add(channelItem);
+                default:
+                    break;
+            }
+        }
+        return filteredChannelList;
+    }
+
+    public static ArrayList<Channel> toFilteredArrayList(final ArrayList<Channel> channels,final ArrayList<String> fields, final ArrayList<String> content) {
+        final ArrayList<Channel> filteredChannelList = new ArrayList<>();
+
+        if (fields.size() > 0) {
+            filteredChannelList.addAll(Channel.toFilteredArrayList(channels,fields.get(0),content.get(0)));
+            fields.remove(0);
+            content.remove(0);
+            return Channel.toFilteredArrayList(filteredChannelList,fields,content);
+        }
+
+        return channels;
+    }
 //    Other Methods
     @Override
     public String getField(int index) {

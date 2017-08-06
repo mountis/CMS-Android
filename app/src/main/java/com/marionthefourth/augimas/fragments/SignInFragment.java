@@ -107,7 +107,12 @@ public final class SignInFragment extends Fragment {
                     OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
 
                     display(Constants.Ints.Views.Widgets.IDs.TOAST, R.string.welcome_back_text, currentUser.getUsername(), view);
-                    Intent homeIntent = new Intent(view.getContext(), HomeActivity.class);
+                    final Intent homeIntent = new Intent(activity,HomeActivity.class);
+
+                    final Bundle bundle = activity.getIntent().getExtras();
+                    if (bundle != null) {
+                        homeIntent.putExtras(bundle);
+                    }
                     startActivity(homeIntent);
                 }
 

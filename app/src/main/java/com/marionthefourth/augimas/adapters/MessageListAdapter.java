@@ -99,10 +99,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             } else {
                 // Only Display Username if there are more than two users
-                if (teamMembers.size() > 2) {
-                    // Get sender username and set it to label
-                    holder.mUsernameLabel.setText(holder.senderItem.getUsername());
-                }
+                holder.mUsernameLabel.setText(holder.senderItem.getUsername());
 
                 if (position -1 >= 0) {
                     if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {
@@ -171,11 +168,9 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
                 holder.mMessageLabel.setGravity(Gravity.RIGHT);
             } else {
-                // Only Display Username if there are more than two users
-                if (users.size() > 2) {
-                    // Get sender username and set it to label
-                    holder.mUsernameLabel.setText(holder.senderItem.getUsername());
-                }
+                // Get sender username and set it to label
+                holder.mUsernameLabel.setText(holder.senderItem.getUsername());
+
                 if (position -1 >= 0) {
                     if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {
                         holder.mUsernameLabel.setVisibility(View.GONE);
@@ -208,10 +203,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             } else {
 
                 // Only Display Username if there are more than two users
-                if (users.size() > 2) {
-                    // Get sender username and set it to label
-                    holder.mUsernameLabel.setText(holder.senderItem.getUsername());
-                }
+                holder.mUsernameLabel.setText(holder.senderItem.getUsername());
 
                 if (position -1 >= 0) {
                     if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {

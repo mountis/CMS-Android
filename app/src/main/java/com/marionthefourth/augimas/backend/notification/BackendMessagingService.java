@@ -22,6 +22,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+
 public final class BackendMessagingService extends FirebaseMessagingService {
 //    Service Methods
     @Override
@@ -96,19 +98,23 @@ public final class BackendMessagingService extends FirebaseMessagingService {
             }
         }
 
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.logl)
-                .setContentTitle("Augimas")
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent);
+        if (messageBody.containsKey(Constants.Strings.UIDs.SENDER_UID)) {
+            if (!messageBody.get(Constants.Strings.UIDs.SENDER_UID).equals(getCurrentUser().getUID())) {
+                Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.logl)
+                        .setContentTitle("Augimas")
+                        .setContentText(message)
+                        .setAutoCancel(true)
+                        .setSound(defaultSoundUri)
+                        .setContentIntent(pendingIntent);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                NotificationManager notificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+                notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+            }
+        }
     }
 
     private HashMap<String,String> parseCustomJSONString(String custom) {

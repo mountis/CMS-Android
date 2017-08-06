@@ -70,10 +70,10 @@ public class TeamManagementFragment extends Fragment {
 
             final Activity activity = getActivity();
 
-            if (this != null) {
-                getView().setFocusableInTouchMode(true);
-                getView().requestFocus();
-                getView().setOnKeyListener(new View.OnKeyListener() {
+            if (view != null) {
+                view.setFocusableInTouchMode(true);
+                view.requestFocus();
+                view.setOnKeyListener(new View.OnKeyListener() {
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
@@ -86,8 +86,6 @@ public class TeamManagementFragment extends Fragment {
                     }
                 });
             }
-
-
             Team teamItem = null;
 
             if (getArguments() != null) {

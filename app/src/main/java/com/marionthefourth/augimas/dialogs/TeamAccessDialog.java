@@ -107,14 +107,13 @@ public final class TeamAccessDialog extends Builder {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.hasChildren()) {
-                                        final ArrayList<Channel> channels = Channel.toArrayList(dataSnapshot);
-                                        for (final Channel channelItem:channels) {
-                                            if (channelItem.getChatUID().equals(chatItem.getUID())) {
-                                                if (!channelItem.getName().equals(teamItem.getName())) {
-                                                    channels.remove(channelItem);
-                                                }
-                                            }
-                                        }
+                                        ArrayList<String> fields = new ArrayList<>();
+                                        fields.add(Constants.Strings.UIDs.CHAT_UID);
+                                        fields.add(Constants.Strings.Fields.FULL_NAME);
+                                        ArrayList<String> content = new ArrayList<>();
+                                        content.add(chatItem.getUID());
+                                        content.add(teamItem.getName());
+                                        final ArrayList<Channel> channels = Channel.toFilteredArrayList(Channel.toArrayList(dataSnapshot),fields,content);
 
                                         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override

@@ -52,7 +52,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_branding_elements, container, false);
+        final View view = inflater.inflate(R.layout.fragment_branding_elements, container, false);
 
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.branding_elements_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -70,22 +70,22 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                             final User currentUser = new User(dataSnapshot);
                             if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
 //                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                                getView().setFocusableInTouchMode(true);
-                                getView().requestFocus();
-                                getView().setOnKeyListener(new View.OnKeyListener() {
-                                    @Override
-                                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                                            // handle back button's click listener
-//                                            Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
-                                            final Activity activity = getActivity();
-                                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                                            activity.startActivity(homeIntent);
-                                            return true;
+                                if (view != null) {
+                                    view.setFocusableInTouchMode(true);
+                                    view.requestFocus();
+                                    view.setOnKeyListener(new View.OnKeyListener() {
+                                        @Override
+                                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                                            if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                                                final Activity activity = getActivity();
+                                                final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                                                activity.startActivity(homeIntent);
+                                                return true;
+                                            }
+                                            return false;
                                         }
-                                        return false;
-                                    }
-                                });
+                                    });
+                                }
                             }
                         }
                     }
