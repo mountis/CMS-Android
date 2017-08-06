@@ -451,11 +451,11 @@ public final class Backend {
 
                     final Device currentDevice = new Device(token);
 //                    Backend.create(context,currentDevice);
-                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
+//                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
                 } else {
                     final Device currentDevice = new Device(token);
 //                    Backend.create(context,currentDevice);
-                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
+//                    Backend.subscribeTo(Constants.Strings.UIDs.DEVICE_UID,token);
                 }
             }
 
