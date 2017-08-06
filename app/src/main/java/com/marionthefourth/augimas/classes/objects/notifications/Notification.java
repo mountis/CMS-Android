@@ -434,7 +434,7 @@ public final class Notification extends FirebaseContent {
             upstreamJSON.put(Constants.Strings.Server.Fields.DATA,data);
 //            Add Language
             JSONObject englishMessage = new JSONObject();
-            englishMessage.put(Constants.Strings.Server.Fields.ENGLISH,getMessage());
+            englishMessage.put(Constants.Strings.Server.Fields.ENGLISH,Constants.Strings.Server.Fields.ENGLISH_MESSAGE);
             upstreamJSON.put(Constants.Strings.Server.Fields.CONTENTS,englishMessage);
         } catch (JSONException e) {
             e.printStackTrace();
