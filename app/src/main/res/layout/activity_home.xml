@@ -23,5 +23,10 @@
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
         app:menu="@menu/home_navigation" />
+    
+    <android.support.design.widget.FloatingActionButton
+        android:layout_gravity="bottom|right"
+        android:layout_width="25dp"
+        android:layout_height="25dp" />
 
 </android.support.design.widget.CoordinatorLayout>

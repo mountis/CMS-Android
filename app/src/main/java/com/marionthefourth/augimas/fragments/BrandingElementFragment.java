@@ -3,11 +3,9 @@ package com.marionthefourth.augimas.fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +19,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.adapters.DomainNamesAdapter;
+import com.marionthefourth.augimas.adapters.SocialMediaNamesAdapter;
 import com.marionthefourth.augimas.adapters.SocialMediaPlatformsAdapter;
 import com.marionthefourth.augimas.adapters.TLDAdapter;
 import com.marionthefourth.augimas.backend.Backend;
@@ -28,10 +28,8 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.helpers.DeviceHelper;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class BrandingElementFragment extends android.support.v4.app.Fragment {
@@ -154,41 +152,41 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 loadSocialMediaNameData(activity, view, recyclerView);
             }
 
-            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_social_media_update_button);
-            final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
+//            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_social_media_update_button);
+//            final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
 
-            updateButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                                elementItem.getContents().set(0,socialMediaInput.getText().toString());
-                                update(elementItem, activity);
-                                // TODO - Send Notification to Both Teams
-                                DeviceHelper.dismissKeyboard(view);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            });
+//            updateButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                            if (dataSnapshot.exists()) {
+//                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+//                                elementItem.getContents().set(0,socialMediaInput.getText().toString());
+//                                update(elementItem, activity);
+//                                // TODO - Send Notification to Both Teams
+//                                DeviceHelper.dismissKeyboard(view);
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {
+//
+//                        }
+//                    });
+//                }
+//            });
 
             Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         final User currentUser = new User(dataSnapshot);
-                        if (currentUser == null || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                            updateButton.setEnabled(false);
-                            updateButton.setVisibility(View.GONE);
-                            socialMediaInput.setEnabled(false);
+                        if (currentUser == null || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+//                            updateButton.setEnabled(false);
+//                            updateButton.setVisibility(View.GONE);
+//                            socialMediaInput.setEnabled(false);
                         }
                     }
                 }
@@ -206,11 +204,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                    final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
-                    if (elementItem.getContents().size() >= 1) {
-                        socialMediaInput.setText(elementItem.getContents().get(0));
-                    }
-                    recyclerView.setAdapter(new SocialMediaPlatformsAdapter(activity,elementItem));
+//                    final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
+//                    if (elementItem.getContents().size() >= 1) {
+//                        socialMediaInput.setText(elementItem.getContents().get(0));
+//                    }
+                    recyclerView.setAdapter(new SocialMediaNamesAdapter(activity,elementItem));
                 }
             }
 
@@ -235,30 +233,30 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 loadDomainNameData(activity,view,recyclerView);
             }
 
-            final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
-            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_domain_update_button);
+//            final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
+//            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_domain_update_button);
 
-            updateButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                                elementItem.getContents().set(0,domainNameInput.getText().toString());
-                                update(elementItem, activity);
-                                DeviceHelper.dismissKeyboard(view);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            });
+//            updateButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                            if (dataSnapshot.exists()) {
+//                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+//                                elementItem.getContents().set(0,domainNameInput.getText().toString());
+//                                update(elementItem, activity);
+//                                DeviceHelper.dismissKeyboard(view);
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {
+//
+//                        }
+//                    });
+//                }
+//            });
 
             Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -266,9 +264,9 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                     if (dataSnapshot.exists()) {
                         final User currentUser = new User(dataSnapshot);
                         if (currentUser == null || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                            updateButton.setEnabled(false);
-                            updateButton.setVisibility(View.GONE);
-                            domainNameInput.setEnabled(false);
+//                            updateButton.setEnabled(false);
+//                            updateButton.setVisibility(View.GONE);
+//                            domainNameInput.setEnabled(false);
 
                         }
                     }
@@ -293,11 +291,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
 
                     // Add Items that aren't there yet
-                    final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
-                    if (elementItem.getContents().size() >= 1) {
-                        domainNameInput.setText(elementItem.getContents().get(0));
-                    }
-                    recyclerView.setAdapter(new TLDAdapter(activity,elementItem));
+//                    final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
+//                    if (elementItem.getData().size() >= 1) {
+//                        domainNameInput.setText(elementItem.getContents().get(0));
+//                    }
+                    recyclerView.setAdapter(new DomainNamesAdapter(activity,elementItem));
                 }
             }
 

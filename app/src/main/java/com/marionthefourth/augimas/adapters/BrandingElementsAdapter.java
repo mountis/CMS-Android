@@ -103,12 +103,16 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public BrandingElement elementItem;
+//        public final AppCompatButton mBrandingAddItemButton;
+//        public final AppCompatButton getmBrandingCloseItemsButton;
         public final AppCompatTextView mBrandingElementNameLabel;
         public final AppCompatImageButton mBrandingElementStatus;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
+//            mBrandingAddItemButton = (AppCompatButton) view.findViewById(R.id.item_button_add_item);
+//            getmBrandingCloseItemsButton = (AppCompatButton) view.findViewById(R.id.item_button_close_list);
             mBrandingElementStatus = (AppCompatImageButton) view.findViewById(R.id.item_branding_element_status);
             mBrandingElementNameLabel = (AppCompatTextView) view.findViewById(R.id.item_label_branding_element_name);
         }

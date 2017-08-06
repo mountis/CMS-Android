@@ -26,6 +26,8 @@ public class BrandingElement extends FirebaseContent {
     private String header = ElementType.DEFAULT.toString();
     @Exclude
     private ArrayList<String> contents = new ArrayList<>();
+    @Exclude
+    private ArrayList<String> data = new ArrayList<>();
 //    Class Enums
     public enum ElementType {
         DOMAIN_NAME,SOCIAL_MEDIA_NAME,MISSION_STATEMENT,TARGET_AUDIENCE,STYLE_GUIDE,LOGO,PRODUCTS_SERVICES,DEFAULT;
@@ -297,8 +299,8 @@ public class BrandingElement extends FirebaseContent {
             setTeamUID(brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue().toString());
         }
 
-        initContents(type);
-        fillContents(brandingElementSnapshot);
+//        initContents(type);
+        fillContents(brandingElementSnapshot,false);
     }
     public BrandingElement(final ElementType type, final ElementStatus status) {
         this(type);
@@ -346,14 +348,26 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
-    private void fillContents(final DataSnapshot brandingElementSnapshot) {
+    private void fillContents(final DataSnapshot brandingElementSnapshot,boolean regularData) {
+        if (regularData) {
+            if (contents.size() == 0) {
+                return;
+            }
+        } else {
+
+        }
 
         int currentIndex = 0;
         switch (getType()) {
             case DOMAIN_NAME:
+
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
-                        getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
+                        if (regularData) {
+                            getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
+                        } else {
+                            data.add(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
+                        }
                     }
                     currentIndex++;
                 }
@@ -361,7 +375,11 @@ public class BrandingElement extends FirebaseContent {
             case SOCIAL_MEDIA_NAME:
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
-                        getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
+                        if (regularData) {
+                            getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
+                        } else {
+                            data.add(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
+                        }
                     }
                     currentIndex++;
 
@@ -396,7 +414,7 @@ public class BrandingElement extends FirebaseContent {
         if (getTeamUID() != null) {
             result.put(Constants.Strings.UIDs.TEAM_UID,getTeamUID());
         }
-        saveContents(result);
+        saveContents(result,false);
 
         return result;
     }
@@ -408,38 +426,79 @@ public class BrandingElement extends FirebaseContent {
     public String getField(int index) {
         return null;
     }
-    private void saveContents(HashMap<String, String> result) {
+    private void saveContents(HashMap<String, String> result,boolean regularData) {
         int currentIndex = 0;
-        while (!contents.get(currentIndex).equals("")) {
-            switch (getType()) {
-                case DOMAIN_NAME:
-                    result.put(Constants.Strings.BrandingTypes.DOMAIN_NAME+currentIndex,contents.get(currentIndex));
-                    break;
-                case SOCIAL_MEDIA_NAME:
-                    result.put(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME+currentIndex,contents.get(currentIndex));
-                    break;
-                case MISSION_STATEMENT:
-                    result.put(Constants.Strings.BrandingTypes.MISSION_STATEMENT+currentIndex,contents.get(currentIndex));
-                    break;
-                case TARGET_AUDIENCE:
-                    break;
-                case STYLE_GUIDE:
-                    break;
-                case LOGO:
-                    break;
-                case PRODUCTS_SERVICES:
-                    break;
-                case DEFAULT:
-                    break;
-            }
-            currentIndex++;
+        if (regularData) {
+            while (!contents.get(currentIndex).equals("")) {
+                switch (getType()) {
+                    case DOMAIN_NAME:
+                        result.put(Constants.Strings.BrandingTypes.DOMAIN_NAME+currentIndex,contents.get(currentIndex));
+                        break;
+                    case SOCIAL_MEDIA_NAME:
+                        result.put(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME+currentIndex,contents.get(currentIndex));
+                        break;
+                    case MISSION_STATEMENT:
+                        result.put(Constants.Strings.BrandingTypes.MISSION_STATEMENT+currentIndex,contents.get(currentIndex));
+                        break;
+                    case TARGET_AUDIENCE:
+                        break;
+                    case STYLE_GUIDE:
+                        break;
+                    case LOGO:
+                        break;
+                    case PRODUCTS_SERVICES:
+                        break;
+                    case DEFAULT:
+                        break;
+                }
+                currentIndex++;
 
-            if (currentIndex == contents.size()) {
-                return;
+                if (currentIndex == contents.size()) {
+                    return;
+                }
+            }
+        } else {
+            while (!data.get(currentIndex).equals("")) {
+                switch (getType()) {
+                    case DOMAIN_NAME:
+                        result.put(Constants.Strings.BrandingTypes.DOMAIN_NAME+currentIndex,data.get(currentIndex));
+                        break;
+                    case SOCIAL_MEDIA_NAME:
+                        result.put(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME+currentIndex,data.get(currentIndex));
+                        break;
+                    case MISSION_STATEMENT:
+                        result.put(Constants.Strings.BrandingTypes.MISSION_STATEMENT+currentIndex,data.get(currentIndex));
+                        break;
+                    case TARGET_AUDIENCE:
+                        break;
+                    case STYLE_GUIDE:
+                        break;
+                    case LOGO:
+                        break;
+                    case PRODUCTS_SERVICES:
+                        break;
+                    case DEFAULT:
+                        break;
+                }
+                currentIndex++;
+
+                if (currentIndex == data.size()) {
+                    return;
+                }
             }
         }
+
     }
 //    Class Getters & Setters
+
+    public ArrayList<String> getData() {
+        return data;
+    }
+
+    public void setData(ArrayList<String> data) {
+        this.data = data;
+    }
+
     public String getHeader() {
         return header;
     }

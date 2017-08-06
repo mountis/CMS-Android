@@ -10,6 +10,7 @@
         android:id="@+id/item_linear_layout"
         android:orientation="horizontal"
         android:layout_width="match_parent"
+        android:backgroundTint="#2a97d1"
         android:background="@drawable/their_circle"
         android:layout_height="wrap_content">
 
@@ -19,7 +20,7 @@
             android:enabled="false"
             android:textSize="15sp"
             android:gravity="left"
-            android:textColor="#252525"
+            android:textColor="#fff"
             android:text="@string/team_member_name"
             android:layout_marginLeft="8dp"
             android:layout_gravity="bottom"
@@ -30,6 +31,7 @@
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/list_item_team_member_role"
             android:layout_width="match_parent"
+            android:backgroundTint="#fff"
             android:paddingTop="3.5dp"
             android:gravity="right|center_vertical"
             android:layout_gravity="right|center_vertical"

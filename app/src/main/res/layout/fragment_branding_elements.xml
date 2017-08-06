@@ -22,7 +22,7 @@
             android:fitsSystemWindows="true"
             android:padding="10dp"
             app:layoutManager="LinearLayoutManager"
-            tools:listitem="@layout/list_item_branding_element"/>
+            tools:listitem="@layout/list_item_packed_branding_element"/>
 
     </android.support.v7.widget.LinearLayoutCompat>
 

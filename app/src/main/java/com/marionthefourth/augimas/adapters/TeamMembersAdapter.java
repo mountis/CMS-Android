@@ -139,8 +139,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                             final User modifyingUserItem = new User(dataSnapshot);
                             final FirebaseEntity.EntityRole selectedRole = (FirebaseEntity.EntityRole)parent.getSelectedItem();
 
-
-
                             if (!currentUser.hasInclusiveAccess(modifyingUserItem.getRole()) || modifyingUserItem.getUID().equals(currentUser.getUID())) {
                                 parent.setEnabled(false);
                                 view.setEnabled(false);
@@ -148,13 +146,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                 parent.setEnabled(true);
                                 view.setEnabled(true);
 
-                                final FirebaseEntity.EntityRole role = (FirebaseEntity.EntityRole) holder.mTeamMemberRoleSpinner.getItemAtPosition(position);
-
-                                if (currentUser.hasExclusiveAccess(role)) {
-                                    modifyingUserItem.setRole(selectedRole);
-                                } else {
-                                    modifyingUserItem.setRole((FirebaseEntity.EntityRole) holder.mTeamMemberRoleSpinner.getItemAtPosition(position+1));
-                                }
+                                modifyingUserItem.setRole(selectedRole);
 
                                 switch (selectedRole) {
                                     case OWNER:
@@ -204,7 +196,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                 if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                                     holder.mTeamMemberRoleSpinner.setEnabled(false);
                                 }
-
                                 if (holder.userItem.getUID().equals(currentUser.getUID())) {
                                     holder.mTeamMemberRoleSpinner.setEnabled(false);
                                 }
@@ -220,12 +211,10 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                         holder.mTeamMemberRoleSpinner.setEnabled(false);
                                     }
                                 }
-
                                 if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                                     holder.mTeamMemberRoleSpinner.setEnabled(false);
                                 }
                             }
-
                         }
                     }
 
