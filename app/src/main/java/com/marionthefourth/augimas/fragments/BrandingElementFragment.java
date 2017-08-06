@@ -28,6 +28,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.helpers.DeviceHelper;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
@@ -167,6 +168,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                                 elementItem.getContents().set(0,socialMediaInput.getText().toString());
                                 update(elementItem, activity);
                                 // TODO - Send Notification to Both Teams
+                                DeviceHelper.dismissKeyboard(view);
                             }
                         }
 
@@ -246,6 +248,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                                 elementItem.getContents().set(0,domainNameInput.getText().toString());
                                 update(elementItem, activity);
+                                DeviceHelper.dismissKeyboard(view);
                             }
                         }
 

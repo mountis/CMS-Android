@@ -182,7 +182,6 @@ public final class User extends FirebaseEntity {
     result.put(Constants.Strings.Fields.ENTITY_STATUS, String.valueOf(getStatus().toInt(true)));
     result.put(Constants.Strings.Fields.ENTITY_TYPE, String.valueOf(getType().toInt(true)));
 
-
     return result;
 }
     public boolean isInChat(Chat chat) {
