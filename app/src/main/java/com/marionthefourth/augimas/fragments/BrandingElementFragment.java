@@ -19,8 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.adapters.DomainNamesAdapter;
-import com.marionthefourth.augimas.adapters.SocialMediaNamesAdapter;
+import com.marionthefourth.augimas.adapters.BrandingNamesAdapter;
 import com.marionthefourth.augimas.adapters.SocialMediaPlatformsAdapter;
 import com.marionthefourth.augimas.adapters.TLDAdapter;
 import com.marionthefourth.augimas.backend.Backend;
@@ -54,44 +53,29 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             }
         }
 
+        if (view != null) {
+            view.setFocusableInTouchMode(true);
+            view.requestFocus();
+            view.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+                        final FragmentManager manager = activity.getSupportFragmentManager();
+
+                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
         return view;
     }
 
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
         final Activity activity = getActivity();
-
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User userItem = new User(dataSnapshot);
-                    if (userItem != null) {
-//                        ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                        if (view != null) {
-                            view.setFocusableInTouchMode(true);
-                            view.requestFocus();
-                            view.setOnKeyListener(new View.OnKeyListener() {
-                                @Override
-                                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                                        final AppCompatActivity activity = (AppCompatActivity) getActivity();
-                                        final FragmentManager manager = activity.getSupportFragmentManager();
-
-                                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
-                                        return true;
-                                    }
-                                    return false;
-                                }
-                            });
-                        }
-
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
 
         switch (elementType) {
             case DOMAIN_NAME:
@@ -167,32 +151,6 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 loadSocialMediaNameData(activity, view, recyclerView);
             }
 
-//            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_social_media_update_button);
-//            final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
-
-//            updateButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            if (dataSnapshot.exists()) {
-//                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-//                                elementItem.getContents().set(0,socialMediaInput.getText().toString());
-//                                update(elementItem, activity);
-//                                // TODO - Send Notification to Both Teams
-//                                DeviceHelper.dismissKeyboard(view);
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(DatabaseError databaseError) {
-//
-//                        }
-//                    });
-//                }
-//            });
-
             Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -223,7 +181,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 //                    if (elementItem.getContents().size() >= 1) {
 //                        socialMediaInput.setText(elementItem.getContents().get(0));
 //                    }
-                    recyclerView.setAdapter(new SocialMediaNamesAdapter(activity,elementItem));
+                    recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
                     recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                         @Override
                         public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
@@ -268,50 +226,6 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 loadDomainNameData(activity,view,recyclerView);
             }
 
-//            final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
-//            final AppCompatButton updateButton = (AppCompatButton)view.findViewById(R.id.branding_domain_update_button);
-
-//            updateButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            if (dataSnapshot.exists()) {
-//                                final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-//                                elementItem.getContents().set(0,domainNameInput.getText().toString());
-//                                update(elementItem, activity);
-//                                DeviceHelper.dismissKeyboard(view);
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(DatabaseError databaseError) {
-//
-//                        }
-//                    });
-//                }
-//            });
-
-            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        final User currentUser = new User(dataSnapshot);
-                        if (currentUser == null || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-//                            updateButton.setEnabled(false);
-//                            updateButton.setVisibility(View.GONE);
-//                            domainNameInput.setEnabled(false);
-
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
         }
 
 
@@ -324,7 +238,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                    recyclerView.setAdapter(new DomainNamesAdapter(activity,elementItem));
+                    recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
                     recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                         @Override
                         public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {

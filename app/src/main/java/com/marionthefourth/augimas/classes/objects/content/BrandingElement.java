@@ -407,7 +407,7 @@ public class BrandingElement extends FirebaseContent {
                 }
                 break;
             case SOCIAL_MEDIA_NAME:
-                break;
+                return true;
             case MISSION_STATEMENT:
                 break;
             case TARGET_AUDIENCE:

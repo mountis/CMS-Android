@@ -29,19 +29,19 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
  * Created on 8/6/17.
  */
 
-public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.ViewHolder> {
+public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdapter.ViewHolder> {
     private Activity activity;
-    private BrandingElement domainName;
-    private ArrayList<String> domainNameExtensions = new ArrayList<>();
+    private BrandingElement name;
+    private ArrayList<String> nameExtensions = new ArrayList<>();
     private Animation open,close,rotate_forward,rotate_back;
 
     //    Adapter Constructor
-    public DomainNamesAdapter(final Activity activity, BrandingElement domainName) {
+    public BrandingNamesAdapter(final Activity activity, BrandingElement brandingName) {
         this.activity = activity;
-        this.domainName = domainName;
-        this.domainNameExtensions = domainName.getContents();
-        if (domainNameExtensions.size() >= 1) {
-            this.domainNameExtensions.remove(0);
+        this.name = brandingName;
+        this.nameExtensions = brandingName.getContents();
+        if (nameExtensions.size() >= 1) {
+            this.nameExtensions.remove(0);
         }
         open = AnimationUtils.loadAnimation(activity, R.anim.open);
         close = AnimationUtils.loadAnimation(activity,R.anim.close);
@@ -51,21 +51,31 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
     //    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_domain_name_single, parent, false);
-        return new DomainNamesAdapter.ViewHolder(view);
+        View view;
+        switch (name.getType()) {
+
+            case DOMAIN_NAME: view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_domain_name_single, parent, false);
+                break;
+            case SOCIAL_MEDIA_NAME: view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_social_media_name_single, parent, false);
+                break;
+            default: return null;
+        }
+
+        return new BrandingNamesAdapter.ViewHolder(view);
     }
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        if (position > domainName.getData().size()-1) {
+        if (position > name.getData().size()-1) {
             holder.hideInputLayout();
         } else {
             holder.revealAndTurnOn();
-            holder.mDomainEditText.setText(domainName.getData().get(position));
-            holder.mDomainEditText.setHint("");
+            holder.mNameEditText.setText(name.getData().get(position));
+            holder.mNameEditText.setHint("");
         }
 
-        holder.mDomainEditText.addTextChangedListener(new TextWatcher() {
+        holder.mNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -84,36 +94,26 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
             public void afterTextChanged(Editable s) {}
         });
 
-        holder.mDomainEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        holder.mNameEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (BrandingElement.checkInput(holder.mDomainEditText.getText().toString(), BrandingElement.ElementType.DOMAIN_NAME)) {
-                        if (position == domainName.getData().size()) {
-                            domainName.getData().add(holder.mDomainEditText.getText().toString());
-                        }
-                        Backend.update(domainName, activity);
-                    } else {
-                        // Inproper Input
-                        holder.mDomainEditText.setText("");
-                        FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
-                    }
+                    handleInput(holder,position,activity);
                 }
                 return false;
             }
         });
 
-        holder.mDomainEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        holder.mNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     if (holder.rotated) {
-//                        holder.turnOffDeleteButton();
-                        if (position == domainName.getData().size()+1) {
+                        if (position == name.getData().size()+1) {
 
                         } else {
-                            if (holder.mDomainEditText.getText().toString().equals("") && holder.rotated) {
-//                                holder.turnOffDeleteButton();
+                            if (holder.mNameEditText.getText().toString().equals("") && holder.rotated) {
+
                             }
                         }
                     } else {
@@ -127,28 +127,15 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
                         if (position < getItemCount() && !holder.rotated) {
                             holder.turnOnDeleteButton();
                         }
-                    }
-
-                    if (!holder.mDomainEditText.getText().toString().equals("")) {
-                        if (BrandingElement.checkInput(holder.mDomainEditText.getText().toString(), BrandingElement.ElementType.DOMAIN_NAME)) {
-                            if (position == domainName.getData().size()+1) {
-                                domainName.getData().add(holder.mDomainEditText.getText().toString());
-                            } else {
-                                domainName.getData().set(position, holder.mDomainEditText.getText().toString());
-                            }
-
-                            Backend.update(domainName, activity);
-                        } else {
-                            // Inproper Input
-                            holder.mDomainEditText.setText("");
-                            FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
-                        }
-
                     } else {
-                        if (domainName.getData().size() >= position+1) {
-                            domainName.getData().remove(position);
-                            holder.hideAndTurnOff();
-                            Backend.update(domainName, activity);
+                        if (!holder.mNameEditText.getText().toString().equals("")) {
+                            handleInput(holder,position,activity);
+                        } else {
+                            if (name.getData().size() >= position+1) {
+                                name.getData().remove(position);
+                                holder.hideAndTurnOff();
+                                Backend.update(name, activity);
+                            }
                         }
                     }
                 }
@@ -158,38 +145,28 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create New Domain Name
                 if (holder.hidden) {
                     holder.revealAndTurnOn();
                     holder.creating = true;
                 } else {
                     // delete data if there
                     if (holder.creating) {
-                        if (!holder.mDomainEditText.getText().toString().equals("")) {
-                            if (BrandingElement.checkInput(holder.mDomainEditText.getText().toString(), BrandingElement.ElementType.DOMAIN_NAME)) {
-                                if (position == domainName.getData().size()) {
-                                    domainName.getData().add(holder.mDomainEditText.getText().toString());
-                                }
-                                Backend.update(domainName, activity);
-                            } else {
-                                // Inproper Input
-                                holder.mDomainEditText.setText("");
-                                FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
-                            }
+                        if (!holder.mNameEditText.getText().toString().equals("")) {
+                            handleInput(holder,position,activity);
                         } else {
                             holder.creating = false;
                             holder.hideAndTurnOff();
                         }
                     } else {
                         if (holder.rotated) {
-                            if (!holder.mDomainEditText.getText().toString().equals("")) {
-                                if (position == domainName.getData().size()) {
-                                    domainName.getData().remove(holder.mDomainEditText.getText().toString());
+                            if (!holder.mNameEditText.getText().toString().equals("")) {
+                                if (position == name.getData().size()) {
+                                    name.getData().remove(holder.mNameEditText.getText().toString());
                                 } else {
-                                    domainName.getData().remove(position);
+                                    name.getData().remove(position);
                                 }
 
-                                Backend.update(domainName, activity);
+                                Backend.update(name, activity);
                             }
 
                             holder.hideAndTurnOff();
@@ -199,34 +176,78 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
             }
         });
     }
+
+    private void handleInput(ViewHolder holder, int position, Activity activity) {
+        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), name.getType())) {
+            if (position == name.getData().size()) {
+                name.getData().add(holder.mNameEditText.getText().toString());
+            }
+            Backend.update(name, activity);
+        } else {
+            // Inproper Input
+            holder.mNameEditText.setText("");
+            switch (name.getType()) {
+                case DOMAIN_NAME:
+                    FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
+                    break;
+                case SOCIAL_MEDIA_NAME:
+                    break;
+                case MISSION_STATEMENT:
+                    break;
+                case TARGET_AUDIENCE:
+                    break;
+                case STYLE_GUIDE:
+                    break;
+                case LOGO:
+                    break;
+                case PRODUCTS_SERVICES:
+                    break;
+                case DEFAULT:
+                    break;
+            }
+        }
+    }
+
     @Override
     public int getItemCount() {
-        return domainName.getData().size()+1;
+        return name.getData().size()+1;
     }
     //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public AppCompatEditText mDomainEditText;
+        public AppCompatEditText mNameEditText;
         public AppCompatButton mCreateButton;
         public LinearLayoutCompat layout;
         public LinearLayoutCompat content;
         public boolean rotated = false;
         public boolean hidden = true;
         public boolean creating = false;
-        public boolean hasText = false;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            content = (LinearLayoutCompat) view.findViewById(R.id.domain_name_content);
-            mDomainEditText = (AppCompatEditText) view.findViewById(R.id.input_domain_name);
-            mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
-            layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_domain_name);
+            switch (name.getType()) {
+                case DOMAIN_NAME:
+                    content = (LinearLayoutCompat) view.findViewById(R.id.domain_name_content);
+                    mNameEditText = (AppCompatEditText) view.findViewById(R.id.input_domain_name);
+                    mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
+                    layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_domain_name);
+                    break;
+                case SOCIAL_MEDIA_NAME:
+                    content = (LinearLayoutCompat) view.findViewById(R.id.social_media_name_content);
+                    mNameEditText = (AppCompatEditText) view.findViewById(R.id.input_social_media_name);
+                    mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
+                    layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_social_media_name);
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mDomainEditText.getText() + "'";
+            return super.toString() + " '" + mNameEditText.getText() + "'";
         }
 
         public void hideAndTurnOff() {
@@ -243,7 +264,7 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
             if (!hidden) {
                 layout.setVisibility(View.GONE);
                 layout.startAnimation(close);
-                mDomainEditText.clearFocus();
+                mNameEditText.clearFocus();
                 hidden = true;
             }
         }
@@ -252,6 +273,8 @@ public class DomainNamesAdapter extends RecyclerView.Adapter<DomainNamesAdapter.
             if (hidden) {
                 layout.setVisibility(View.VISIBLE);
                 layout.startAnimation(open);
+                mNameEditText.requestFocus();
+
                 hidden = false;
             }
         }
