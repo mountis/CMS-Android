@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.LinearLayoutCompat
-    android:layout_height="75dp"
+<android.support.v7.widget.LinearLayoutCompat android:layout_height="75dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_marginBottom="20dp"
     android:layout_marginLeft="10dp"

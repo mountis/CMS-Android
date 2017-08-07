@@ -33,6 +33,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <android.support.design.widget.TextInputLayout
@@ -48,7 +49,7 @@
                 android:maxLines="1"
                 android:maxLength="23"
                 app:backgroundTint="#ec3f26"
-                android:textSize="15sp"
+                android:textSize="20sp"
                 android:textColor="#ec3f26"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

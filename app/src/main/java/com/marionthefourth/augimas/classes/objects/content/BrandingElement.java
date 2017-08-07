@@ -399,6 +399,31 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
+    public static boolean checkInput(String input, ElementType type) {
+        switch (type){
+            case DOMAIN_NAME:
+                for (Branding.TLD tld:Branding.TLD.getAllTLDs()) {
+                    if (input.endsWith(tld.toString())) return true;
+                }
+                break;
+            case SOCIAL_MEDIA_NAME:
+                break;
+            case MISSION_STATEMENT:
+                break;
+            case TARGET_AUDIENCE:
+                break;
+            case STYLE_GUIDE:
+                break;
+            case LOGO:
+                break;
+            case PRODUCTS_SERVICES:
+                break;
+            case DEFAULT:
+                break;
+        }
+
+        return false;
+    }
     @Override
     public Map<String, String> toMap() {
         final HashMap<String, String> result = new HashMap<>();
