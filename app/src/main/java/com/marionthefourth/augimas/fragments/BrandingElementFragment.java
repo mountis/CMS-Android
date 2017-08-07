@@ -144,6 +144,21 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
             final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.social_media_name_recycler_view);
+
+            recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, int oldBottom) {
+                    if ( bottom < oldBottom) {
+                        recyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.smoothScrollToPosition(oldTop);
+                            }
+                        }, 100);
+                    }
+                }
+            });
+
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (PROTOTYPE_MODE) {
@@ -209,6 +224,12 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 //                        socialMediaInput.setText(elementItem.getContents().get(0));
 //                    }
                     recyclerView.setAdapter(new SocialMediaNamesAdapter(activity,elementItem));
+                    recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                        @Override
+                        public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                            recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                        }
+                    });
                 }
             }
 
@@ -225,6 +246,20 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
             final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.domain_name_recycler_view);
+
+            recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, int oldBottom) {
+                    if ( bottom < oldBottom) {
+                        recyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.smoothScrollToPosition(oldTop);
+                            }
+                        }, 100);
+                    }
+                }
+            });
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (PROTOTYPE_MODE) {
@@ -289,13 +324,13 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-
-                    // Add Items that aren't there yet
-//                    final TextInputEditText domainNameInput = (TextInputEditText) view.findViewById(R.id.input_domain_name);
-//                    if (elementItem.getData().size() >= 1) {
-//                        domainNameInput.setText(elementItem.getContents().get(0));
-//                    }
                     recyclerView.setAdapter(new DomainNamesAdapter(activity,elementItem));
+                    recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                        @Override
+                        public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                            recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                        }
+                    });
                 }
             }
 

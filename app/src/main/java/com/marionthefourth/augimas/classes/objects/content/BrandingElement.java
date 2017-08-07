@@ -458,7 +458,7 @@ public class BrandingElement extends FirebaseContent {
                 }
             }
         } else {
-            while (!data.get(currentIndex).equals("")) {
+            while (data.size() > currentIndex) {
                 switch (getType()) {
                     case DOMAIN_NAME:
                         result.put(Constants.Strings.BrandingTypes.DOMAIN_NAME+currentIndex,data.get(currentIndex));

@@ -57,6 +57,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.message_list_recycler_view);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
         final TextInputEditText inputField = (TextInputEditText)view.findViewById(R.id.input_message_text);
@@ -320,6 +321,12 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
 
                                                         recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers, ChatFragment.this));
+                                                        recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                                                            @Override
+                                                            public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                                                                recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                                                            }
+                                                        });
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
@@ -411,6 +418,12 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                             }                                                        }
                                                     }
                                                     recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1), ChatFragment.this));
+                                                    recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                                                        @Override
+                                                        public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                                                            recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                                                        }
+                                                    });
                                                     return;
                                                 } else {
                                                     recyclerView.setAdapter(null);

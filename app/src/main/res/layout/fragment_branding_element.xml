@@ -19,10 +19,8 @@
             android:layout_weight="1"
             android:id="@+id/domain_name_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
+            android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            android:orientation="horizontal"
             tools:listitem="@layout/list_item_domain_name_single"
             android:layout_marginBottom="30dp"/>
 
@@ -38,10 +36,8 @@
             android:layout_weight="1"
             android:id="@+id/social_media_name_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
+            android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            android:orientation="horizontal"
             tools:listitem="@layout/list_item_social_media_name_single"
             android:layout_marginBottom="30dp"/>
     </android.support.v7.widget.LinearLayoutCompat>

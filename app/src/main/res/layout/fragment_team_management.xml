@@ -86,7 +86,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layoutManager="LinearLayoutManager"
-            android:fitsSystemWindows="true"
             tools:context="com.marionthefourth.augimas.fragments.TeamManagementFragment"
             tools:listitem="@layout/list_item_team_member" />
 

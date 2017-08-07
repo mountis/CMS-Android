@@ -14,12 +14,12 @@
         android:layout_height="match_parent">
 
         <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
             android:id="@+id/message_list_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#fff"
-            android:fitsSystemWindows="true"
             android:layout_margin="5dp"
             app:layoutManager="LinearLayoutManager"
             tools:listitem="@layout/list_item_message"/>
