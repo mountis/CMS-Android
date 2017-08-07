@@ -17,7 +17,7 @@
         android:textColor="#ec3f26"
         android:backgroundTint="#fff"
         android:gravity="center"
-        android:layout_weight="4"
+        android:layout_weight="4.3"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="10dp"
@@ -27,12 +27,12 @@
 
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_weight="1"
-        android:background="@drawable/your_circle"
+        android:background="@drawable/team_item_circle"
         android:id="@+id/input_layout_domain_name"
         android:backgroundTint="#fff"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <android.support.design.widget.TextInputLayout

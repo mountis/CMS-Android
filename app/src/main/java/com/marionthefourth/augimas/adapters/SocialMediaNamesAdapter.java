@@ -3,10 +3,13 @@ package com.marionthefourth.augimas.adapters;
 import android.app.Activity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
@@ -20,16 +23,22 @@ import java.util.ArrayList;
 
 public class SocialMediaNamesAdapter extends RecyclerView.Adapter<SocialMediaNamesAdapter.ViewHolder> {
     private Activity activity;
-    private BrandingElement social;
-    private ArrayList<String> domainNameExtensions = new ArrayList<>();
+    private BrandingElement socialMediaNames;
+    private ArrayList<String> socialMediaNamesExtensions = new ArrayList<>();
+    private Animation open,close,rotate_forward,rotate_back;
+
     //    Adapter Constructor
-    public SocialMediaNamesAdapter(final Activity activity, BrandingElement social) {
+    public SocialMediaNamesAdapter(final Activity activity, BrandingElement socialMediaNames) {
         this.activity = activity;
-        this.social = social;
-        this.domainNameExtensions = social.getContents();
-        if (domainNameExtensions.size() >= 1) {
-            this.domainNameExtensions.remove(0);
+        this.socialMediaNames = socialMediaNames;
+        this.socialMediaNamesExtensions = socialMediaNames.getContents();
+        if (socialMediaNamesExtensions.size() >= 1) {
+            this.socialMediaNamesExtensions.remove(0);
         }
+        open = AnimationUtils.loadAnimation(activity, R.anim.open);
+        close = AnimationUtils.loadAnimation(activity,R.anim.close);
+        rotate_forward = AnimationUtils.loadAnimation(activity,R.anim.rotate_forward);
+        rotate_back = AnimationUtils.loadAnimation(activity,R.anim.rotate_back);
     }
     //    Adapter Methods
     @Override
@@ -40,30 +49,99 @@ public class SocialMediaNamesAdapter extends RecyclerView.Adapter<SocialMediaNam
     }
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        if (position > social.getData().size()-1) {
-            holder.mSocialMediaName.setVisibility(View.GONE);
+        if (position > socialMediaNames.getData().size()-1) {
+            holder.hidden = true;
+            holder.layout.startAnimation(close);
         } else {
-            holder.mSocialMediaName.setVisibility(View.VISIBLE);
-            holder.mSocialMediaName.setText(social.getData().get(position));
-
+            holder.rotated = true;
+            holder.mCreateButton.startAnimation(rotate_forward);
+            holder.hidden = false;
+            holder.layout.startAnimation(open);
+            holder.mSocialMediaEditText.setText(socialMediaNames.getData().get(position));
+            holder.mSocialMediaEditText.setHint("");
         }
+
+        holder.mSocialMediaEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    if (position == socialMediaNames.getData().size()+1) {
+
+                    } else {
+                        if (holder.mSocialMediaEditText.getText().toString().equals("") && holder.rotated) {
+                            holder.mCreateButton.startAnimation(rotate_back);
+                            holder.rotated = false;
+                        }
+                    }
+
+                } else {
+                    holder.creating = false;
+                    if (holder.hidden) {
+                        holder.layout.startAnimation(open);
+                        if (position < getItemCount() && !holder.rotated) {
+                            holder.mCreateButton.startAnimation(rotate_forward);
+                            holder.rotated = true;
+                        }
+                    }
+
+                    if (!holder.mSocialMediaEditText.getText().toString().equals("")) {
+                        if (position == socialMediaNames.getData().size()+1) {
+                            socialMediaNames.getData().add(holder.mSocialMediaEditText.getText().toString());
+                        } else {
+                            socialMediaNames.getData().set(position, holder.mSocialMediaEditText.getText().toString());
+                        }
+
+                        Backend.update(socialMediaNames, activity);
+                    } else {
+                        if (socialMediaNames.getData().size() >= position+1) {
+                            socialMediaNames.getData().remove(position);
+                            holder.layout.startAnimation(close);
+                            holder.hidden = false;
+                            holder.mCreateButton.startAnimation(rotate_back);
+                            holder.rotated = false;
+                            Backend.update(socialMediaNames, activity);
+                        }
+                    }
+                }
+            }
+        });
+
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create New Domain Name
-                if (holder.mSocialMediaName.getVisibility() != View.VISIBLE) {
-                    holder.mSocialMediaName.setVisibility(View.VISIBLE);
+                // Create New SocialMedia Name
+                if (holder.hidden) {
+                    holder.layout.startAnimation(open);
+                    holder.hidden = false;
+                    holder.mCreateButton.startAnimation(rotate_forward);
+                    holder.rotated = true;
+                    holder.creating = true;
                 } else {
-                    // save data
-                    if (!holder.mSocialMediaName.getText().toString().equals("")) {
-                        if (position == social.getData().size()) {
-                            social.getData().add(holder.mSocialMediaName.getText().toString());
-                        } else {
-                            social.getData().set(position, holder.mSocialMediaName.getText().toString());
+                    // delete data if there
+                    if (holder.creating) {
+                        if (!holder.mSocialMediaEditText.getText().toString().equals("")) {
+                            if (position == socialMediaNames.getData().size()) {
+                                socialMediaNames.getData().add(holder.mSocialMediaEditText.getText().toString());
+                            }
+                            Backend.update(socialMediaNames, activity);
                         }
+                    } else {
+                        if (holder.rotated) {
+                            if (!holder.mSocialMediaEditText.getText().toString().equals("")) {
+                                if (position == socialMediaNames.getData().size()) {
+                                    socialMediaNames.getData().remove(holder.mSocialMediaEditText.getText().toString());
+                                } else {
+                                    socialMediaNames.getData().remove(position);
+                                }
 
-                        Backend.update(social, activity);
-//                        notifyDataSetChanged();
+                                Backend.update(socialMediaNames, activity);
+                            }
+
+                            holder.layout.startAnimation(close);
+                            holder.hidden = true;
+                            holder.mCreateButton.startAnimation(rotate_back);
+                            holder.rotated = false;
+                        }
                     }
                 }
             }
@@ -71,24 +149,31 @@ public class SocialMediaNamesAdapter extends RecyclerView.Adapter<SocialMediaNam
     }
     @Override
     public int getItemCount() {
-        return social.getData().size()+1;
+        return socialMediaNames.getData().size()+1;
     }
     //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public AppCompatEditText mSocialMediaName;
+        public AppCompatEditText mSocialMediaEditText;
         public AppCompatButton mCreateButton;
+        public LinearLayoutCompat layout;
+        public LinearLayoutCompat content;
+        public boolean rotated = false;
+        public boolean hidden = true;
+        public boolean creating = false;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mSocialMediaName = (AppCompatEditText) view.findViewById(R.id.input_social_media_name);
+            content = (LinearLayoutCompat) view.findViewById(R.id.social_media_name_content);
+            mSocialMediaEditText = (AppCompatEditText) view.findViewById(R.id.input_social_media_name);
             mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
+            layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_social_media_name);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mSocialMediaName.getText() + "'";
+            return super.toString() + " '" + mSocialMediaEditText.getText() + "'";
         }
     }
 }
