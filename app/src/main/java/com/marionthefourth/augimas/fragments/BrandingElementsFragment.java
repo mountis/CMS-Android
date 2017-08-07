@@ -21,18 +21,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.BrandingElementsAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
-import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
-import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.create;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public final class BrandingElementsFragment extends Fragment implements BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener {
 
@@ -63,44 +60,29 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             loadPrototypeBrandingElements(activity,recyclerView,team);
         } else {
             if (getArguments() != null) {
-                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                view.setFocusableInTouchMode(true);
+                view.requestFocus();
+                view.setOnKeyListener(new View.OnKeyListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final User currentUser = new User(dataSnapshot);
-                            if (currentUser != null && currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-//                                ((AppCompatActivity)activity).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                                if (view != null) {
-                                    view.setFocusableInTouchMode(true);
-                                    view.requestFocus();
-                                    view.setOnKeyListener(new View.OnKeyListener() {
-                                        @Override
-                                        public boolean onKey(View v, int keyCode, KeyEvent event) {
-                                            if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                                                final Activity activity = getActivity();
-                                                final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                                                activity.startActivity(homeIntent);
-                                                return true;
-                                            }
-                                            return false;
-                                        }
-                                    });
-                                }
-                            }
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                            final Activity activity = getActivity();
+                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                            activity.startActivity(homeIntent);
+                            return true;
                         }
+                        return false;
                     }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
                 });
 
                 // Load Branding Elements && Setup Action Bar Name
-                Backend.getReference(R.string.firebase_teams_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final Team teamItem = new Team(dataSnapshot);
-
-                            if (teamItem != null) {
+                final String teamUID = getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
+                if (teamUID != null) {
+                    Backend.getReference(R.string.firebase_teams_directory, activity).child(teamUID).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                final Team teamItem = new Team(dataSnapshot);
                                 final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
                                 if (actionBar != null) {
                                     actionBar.setTitle(teamItem.getName());
@@ -108,11 +90,12 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                                 loadBrandingElements(activity,recyclerView,teamItem);
                             }
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {}
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+                }
+
             }
         }
         return view;
@@ -176,7 +159,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 final Activity activity = getActivity();
                 final Intent homeIntent = new Intent(activity,HomeActivity.class);
                 activity.startActivity(homeIntent);
-//                NavUtils.navigateUpFromSameTask(getActivity());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -199,6 +181,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
         brandingElementBundle.putSerializable(Constants.Strings.BRANDING_ELEMENT, elementItem);
         brandingElementBundle.putString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,elementItem.getUID());
         brandingElementBundle.putString(Constants.Strings.Fields.BRANDING_ELEMENT_HEADER,elementItem.getHeader());
-        getFragmentManager().beginTransaction().replace(R.id.container, new BrandingElementFragment().newInstance(brandingElementBundle)).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, BrandingElementFragment.newInstance(brandingElementBundle)).commit();
     }
 }

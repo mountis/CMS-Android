@@ -66,8 +66,9 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         return new BrandingNamesAdapter.ViewHolder(view);
     }
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
-        if (position > name.getData().size()-1) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
+        final int POSITION = holder.getAdapterPosition();
+        if (POSITION > name.getData().size()-1) {
             holder.hideInputLayout();
         } else {
             holder.revealAndTurnOn();
@@ -98,7 +99,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    handleInput(holder,position,activity);
+                    handleInput(holder,POSITION,activity);
                 }
                 return false;
             }
@@ -107,32 +108,20 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         holder.mNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    if (holder.rotated) {
-                        if (position == name.getData().size()+1) {
-
-                        } else {
-                            if (holder.mNameEditText.getText().toString().equals("") && holder.rotated) {
-
-                            }
-                        }
-                    } else {
-
-                    }
-                } else {
+                if (!hasFocus) {
                     holder.creating = false;
                     if (holder.hidden) {
                         holder.layout.startAnimation(open);
                         holder.hidden = false;
-                        if (position < getItemCount() && !holder.rotated) {
+                        if (POSITION < getItemCount() && !holder.rotated) {
                             holder.turnOnDeleteButton();
                         }
                     } else {
                         if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,position,activity);
+                            handleInput(holder,POSITION,activity);
                         } else {
-                            if (name.getData().size() >= position+1) {
-                                name.getData().remove(position);
+                            if (name.getData().size() >= POSITION+1) {
+                                name.getData().remove(POSITION);
                                 holder.hideAndTurnOff();
                                 Backend.update(name, activity);
                             }
@@ -152,7 +141,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     // delete data if there
                     if (holder.creating) {
                         if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,position,activity);
+                            handleInput(holder,POSITION,activity);
                         } else {
                             holder.creating = false;
                             holder.hideAndTurnOff();
@@ -160,10 +149,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     } else {
                         if (holder.rotated) {
                             if (!holder.mNameEditText.getText().toString().equals("")) {
-                                if (position == name.getData().size()) {
+                                if (POSITION == name.getData().size()) {
                                     name.getData().remove(holder.mNameEditText.getText().toString());
                                 } else {
-                                    name.getData().remove(position);
+                                    name.getData().remove(POSITION);
                                 }
 
                                 Backend.update(name, activity);
@@ -215,13 +204,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public AppCompatEditText mNameEditText;
-        public AppCompatButton mCreateButton;
+        AppCompatEditText mNameEditText;
+        AppCompatButton mCreateButton;
         public LinearLayoutCompat layout;
         public LinearLayoutCompat content;
-        public boolean rotated = false;
-        public boolean hidden = true;
-        public boolean creating = false;
+        boolean rotated = false;
+        boolean hidden = true;
+        boolean creating = false;
 
         public ViewHolder(View view) {
             super(view);
@@ -250,17 +239,17 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             return super.toString() + " '" + mNameEditText.getText() + "'";
         }
 
-        public void hideAndTurnOff() {
+        private void hideAndTurnOff() {
             hideInputLayout();
             turnOffDeleteButton();
         }
 
-        public void revealAndTurnOn() {
+        void revealAndTurnOn() {
             revealInputLayout();
             turnOnDeleteButton();
         }
 
-        public void hideInputLayout() {
+        void hideInputLayout() {
             if (!hidden) {
                 layout.setVisibility(View.GONE);
                 layout.startAnimation(close);
@@ -269,7 +258,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             }
         }
 
-        public void revealInputLayout() {
+        void revealInputLayout() {
             if (hidden) {
                 layout.setVisibility(View.VISIBLE);
                 layout.startAnimation(open);
@@ -279,14 +268,14 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             }
         }
 
-        public void turnOnDeleteButton() {
+        void turnOnDeleteButton() {
             if (!rotated) {
                 mCreateButton.startAnimation(rotate_forward);
                 rotated = true;
             }
         }
 
-        public void turnOffDeleteButton() {
+        void turnOffDeleteButton() {
             if (rotated) {
                 mCreateButton.startAnimation(rotate_back);
                 rotated = false;

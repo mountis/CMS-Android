@@ -11,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -24,11 +23,8 @@ import com.marionthefourth.augimas.adapters.SocialMediaPlatformsAdapter;
 import com.marionthefourth.augimas.adapters.TLDAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
-import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
-import com.marionthefourth.augimas.classes.objects.entities.User;
 
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class BrandingElementFragment extends android.support.v4.app.Fragment {
@@ -53,23 +49,21 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             }
         }
 
-        if (view != null) {
-            view.setFocusableInTouchMode(true);
-            view.requestFocus();
-            view.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                        final AppCompatActivity activity = (AppCompatActivity) getActivity();
-                        final FragmentManager manager = activity.getSupportFragmentManager();
+        view.setFocusableInTouchMode(true);
+        view.requestFocus();
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                    final AppCompatActivity activity = (AppCompatActivity) getActivity();
+                    final FragmentManager manager = activity.getSupportFragmentManager();
 
-                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment().newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID))).commit();
-                        return true;
-                    }
-                    return false;
+                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, BrandingElementsFragment.newInstance(getArguments().getString(Constants.Strings.UIDs.TEAM_UID)),Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                    return true;
                 }
-            });
-        }
+                return false;
+            }
+        });
 
         return view;
     }
@@ -79,25 +73,25 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
         switch (elementType) {
             case DOMAIN_NAME:
-                loadDomainNameView(activity,view);
+                loadDomainNameView(view, activity);
                 break;
             case SOCIAL_MEDIA_NAME:
-                loadSocialMediaNameView(activity,view);
+                loadSocialMediaNameView(view, activity);
                 break;
             case MISSION_STATEMENT:
-                loadMissionStatementView(activity,view);
+                loadMissionStatementView(view);
                 break;
             case TARGET_AUDIENCE:
-                loadTargetAudienceView(activity,view);
+//                loadTargetAudienceView(activity,view);
                 break;
             case STYLE_GUIDE:
-                loadStyleGuideView(activity,view);
+//                loadStyleGuideView(activity,view);
                 break;
             case LOGO:
-                loadLogoView(activity,view);
+//                loadLogoView(activity,view);
                 break;
             case PRODUCTS_SERVICES:
-                loadProductsAndServicesView(activity,view);
+//                loadProductsAndServicesView(activity,view);
                 break;
             case DEFAULT:
                 break;
@@ -106,24 +100,12 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    private void loadProductsAndServicesView(final Activity activity, final View view) {
-    }
-
-    private void loadLogoView(final Activity activity, final View view) {
-    }
-
-    private void loadStyleGuideView(final Activity activity, final View view) {
-    }
-
-    private void loadTargetAudienceView(final Activity activity, final View view) {
-    }
-
-    private void loadMissionStatementView(final Activity activity, final View view) {
+    private void loadMissionStatementView(final View view) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_mission_statement_layout);
         layout.setVisibility(View.VISIBLE);
     }
 
-    private void loadSocialMediaNameView(final Activity activity, final View view) {
+    private void loadSocialMediaNameView(final View view, final Activity activity) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_social_media_name_layout);
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
@@ -148,19 +130,27 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             if (PROTOTYPE_MODE) {
                 loadPrototypeSocialMediaName(activity, recyclerView);
             } else {
-                loadSocialMediaNameData(activity, view, recyclerView);
+                loadSocialMediaNameData(activity, recyclerView);
             }
+        }
+    }
 
-            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+    private void loadSocialMediaNameData(final Activity activity, final RecyclerView recyclerView) {
+        // Load Available Services
+        final String brandingElementUID = getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID);
+        if (brandingElementUID != null) {
+            Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(brandingElementUID).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
-                        final User currentUser = new User(dataSnapshot);
-                        if (currentUser == null || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-//                            updateButton.setEnabled(false);
-//                            updateButton.setVisibility(View.GONE);
-//                            socialMediaInput.setEnabled(false);
-                        }
+                        final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+                        recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
+                        recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                            @Override
+                            public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                                recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                            }
+                        });
                     }
                 }
 
@@ -168,38 +158,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 public void onCancelled(DatabaseError databaseError) {}
             });
         }
-    }
 
-    private void loadSocialMediaNameData(final Activity activity,final View view, final RecyclerView recyclerView) {
-        // Load Available Services
-        Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-//                    final TextInputEditText socialMediaInput = (TextInputEditText) view.findViewById(R.id.input_social_media_name);
-//                    if (elementItem.getContents().size() >= 1) {
-//                        socialMediaInput.setText(elementItem.getContents().get(0));
-//                    }
-                    recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
-                    recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                        @Override
-                        public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
-                            recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
 
     }
 
-    private void loadDomainNameView(final Activity activity, final View view) {
+    private void loadDomainNameView(final View view, final Activity activity) {
         final LinearLayoutCompat layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_domain_name_layout);
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
@@ -221,56 +184,44 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (PROTOTYPE_MODE) {
-                loadPrototypeDomainName(activity,recyclerView);
+                loadPrototypeDomainName(recyclerView, activity);
             } else {
-                loadDomainNameData(activity,view,recyclerView);
+                loadDomainNameData(recyclerView, activity);
             }
-
         }
-
-
     }
 
-    private void loadDomainNameData(final Activity activity, final View view, final RecyclerView recyclerView) {
+    private void loadDomainNameData(final RecyclerView recyclerView, final Activity activity) {
         // Load Domain Name
-        Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID)).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                    recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
-                    recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                        @Override
-                        public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
-                            recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
-                        }
-                    });
+        final String brandingElementUID = getArguments().getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID);
+        if (brandingElementUID != null) {
+            Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(brandingElementUID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final BrandingElement elementItem = new BrandingElement(dataSnapshot);
+                        recyclerView.setAdapter(new BrandingNamesAdapter(activity,elementItem));
+                        recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                            @Override
+                            public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {
+                                recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+                            }
+                        });
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+
     }
 
     private void loadPrototypeSocialMediaName(final Activity activity, final RecyclerView recyclerView) {
         recyclerView.setAdapter(new SocialMediaPlatformsAdapter(activity,new BrandingElement(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)));
     }
 
-    private void loadPrototypeDomainName(final Activity activity, final RecyclerView recyclerView) {
+    private void loadPrototypeDomainName(final RecyclerView recyclerView, final Activity activity) {
         recyclerView.setAdapter(new TLDAdapter(activity,new BrandingElement(BrandingElement.ElementType.DOMAIN_NAME)));
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch(item.getItemId()) {
-//            case android.R.id.home:
-//
-////                NavUtils.navigateUpFromSameTask(getActivity());
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-
-        return true;
     }
 }

@@ -36,7 +36,7 @@ public class BrandingElement extends FirebaseContent {
         public String toString() {
             String elementName = super.toString();
 
-            if (elementName.indexOf("_") == -1) {
+            if (!elementName.contains("_")) {
                 return elementName.substring(0,1) + elementName.substring(1).toLowerCase();
             } else {
                 final ArrayList<String> words = new ArrayList<>();
@@ -286,17 +286,35 @@ public class BrandingElement extends FirebaseContent {
     public BrandingElement(final DataSnapshot brandingElementSnapshot) {
         this();
         if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE)) {
-            setType(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()));
-            setHeader(ElementType.getType(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue().toString()).toString());
+            final Object elementType =  brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE).getValue();
+            if ((elementType != null ? elementType.toString() : null) != null) {
+                final ElementType type = ElementType.getType(elementType.toString());
+                if (type != null) {
+                    setType(type);
+                    setHeader(type.toString());
+                }
+            }
         }
         if (brandingElementSnapshot.hasChild(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS)) {
-            setStatus(ElementStatus.getStatus(brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS).getValue().toString()));
+            final Object elementStatus = brandingElementSnapshot.child(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS).getValue();
+            if ((elementStatus != null ? elementStatus.toString() : null) != null) {
+                final ElementStatus status = ElementStatus.getStatus(elementStatus.toString());
+                if (status != null) {
+                    setStatus(status);
+                }
+            }
         }
         if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.UID)) {
-            setUID(brandingElementSnapshot.child(Constants.Strings.UIDs.UID).getValue().toString());
+            final Object uid = brandingElementSnapshot.child(Constants.Strings.UIDs.UID).getValue();
+            if ((uid != null ? uid.toString() : null) != null) {
+                setUID(uid.toString());
+            }
         }
         if (brandingElementSnapshot.hasChild(Constants.Strings.UIDs.TEAM_UID)) {
-            setTeamUID(brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue().toString());
+            final Object teamUID = brandingElementSnapshot.child(Constants.Strings.UIDs.TEAM_UID).getValue();
+            if ((teamUID != null ? teamUID.toString() : null) != null) {
+                setTeamUID(teamUID.toString());
+            }
         }
 
 //        initContents(type);
@@ -353,20 +371,20 @@ public class BrandingElement extends FirebaseContent {
             if (contents.size() == 0) {
                 return;
             }
-        } else {
-
         }
 
         int currentIndex = 0;
         switch (getType()) {
             case DOMAIN_NAME:
-
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
-                        if (regularData) {
-                            getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
-                        } else {
-                            data.add(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue().toString());
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (regularData) {
+                                getContents().set(currentIndex,contentObject.toString());
+                            } else {
+                                getData().add(contentObject.toString());
+                            }
                         }
                     }
                     currentIndex++;
@@ -375,14 +393,17 @@ public class BrandingElement extends FirebaseContent {
             case SOCIAL_MEDIA_NAME:
                 while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
-                        if (regularData) {
-                            getContents().set(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
-                        } else {
-                            data.add(currentIndex,brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue().toString());
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (regularData) {
+                                getContents().set(currentIndex,contentObject.toString());
+                            } else {
+                                getData().add(contentObject.toString());
+                            }
                         }
+
                     }
                     currentIndex++;
-
                 }
                 break;
             case MISSION_STATEMENT:
@@ -430,10 +451,10 @@ public class BrandingElement extends FirebaseContent {
         if (getUID() != null) {
             result.put(Constants.Strings.UIDs.UID, getUID());
         }
-        if (!getType().equals(null)) {
+        if (getType() != null) {
             result.put(Constants.Strings.Fields.BRANDING_ELEMENT_TYPE,getType().toMapStyleString());
         }
-        if (!getStatus().equals(null)) {
+        if (getStatus() != null) {
             result.put(Constants.Strings.Fields.BRANDING_ELEMENT_STATUS,getStatus().toMapStyleString());
         }
         if (getTeamUID() != null) {
@@ -527,7 +548,7 @@ public class BrandingElement extends FirebaseContent {
     public String getHeader() {
         return header;
     }
-    public void setHeader(final String header) {
+    private void setHeader(final String header) {
         this.header = header;
     }
     public ElementType getType() {
