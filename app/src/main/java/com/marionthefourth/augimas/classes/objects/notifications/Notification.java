@@ -32,7 +32,7 @@ public final class Notification extends FirebaseContent {
     private FirebaseObject object;
     private String objectUID;
     private String subjectUID;
-    private String receiverUID;
+    private String messageText;
     private ArrayList<String> receiverUIDs = new ArrayList<>();
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
     private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
@@ -347,6 +347,9 @@ public final class Notification extends FirebaseContent {
         if (nRef.hasChild(Constants.Strings.UIDs.OBJECT_UID)) {
             setObjectUID(nRef.child(Constants.Strings.UIDs.OBJECT_UID).getValue().toString());
         }
+        if (nRef.hasChild(Constants.Strings.Fields.MESSAGE)) {
+            setMessageText(nRef.child(Constants.Strings.Fields.MESSAGE).getValue().toString());
+        }
 
         int index = 0;
         while (nRef.hasChild(Constants.Strings.UIDs.RECEIVER_UID + index)) {
@@ -466,19 +469,22 @@ public final class Notification extends FirebaseContent {
         if (getSubject() != null) {
             result.put(Constants.Strings.UIDs.SUBJECT_UID, getSubjectUID());
         }
-        if (!getObjectType().equals(null)) {
+        if (getObjectType() != null) {
             result.put(Constants.Strings.Fields.OBJECT_TYPE, getObjectType().toMapStyleString());
         }
-        if (!getSubjectType().equals(null)) {
+        if (getSubjectType() != null) {
             result.put(Constants.Strings.Fields.SUBJECT_TYPE, getSubjectType().toMapStyleString());
         }
-        if (!getVerbType().equals(null)) {
+        if (getVerbType() != null) {
             result.put(Constants.Strings.Fields.VERB_TYPE, getVerbType().toMapStyleString());
         }
-        if (!getReceiverUIDs().equals(null)) {
+        if (getReceiverUIDs() != null) {
             for (int i = 0; i < getReceiverUIDs().size(); i++) {
                 result.put(Constants.Strings.UIDs.RECEIVER_UID+i, getReceiverUIDs().get(i).toString());
             }
+        }
+        if (getMessageText() != null) {
+            result.put(Constants.Strings.Fields.MESSAGE,getMessageText());
         }
         return result;
     }
@@ -613,9 +619,11 @@ public final class Notification extends FirebaseContent {
                     objectPart = "[objectPart]";
             }
 
-            return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
+            setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
+            return getMessageText();
         } else {
-            return subjectPart.toString() + " " + verbPart.toString() + " " + objectPart.toString() + ".";
+            setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
+            return getMessageText();
         }
 
     }
@@ -693,6 +701,13 @@ public final class Notification extends FirebaseContent {
         }
 
         return getSubjectType();
+    }
+
+    public String getMessageText() {
+        return messageText;
+    }
+    public void setMessageText(String messageText) {
+        this.messageText = messageText;
     }
     public NotificationVerbType getVerbType() { return verbType; }
     public void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }

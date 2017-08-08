@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,20 +60,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
             loadPrototypeBrandingElements(activity,recyclerView,team);
         } else {
             if (getArguments() != null) {
-                view.setFocusableInTouchMode(true);
-                view.requestFocus();
-                view.setOnKeyListener(new View.OnKeyListener() {
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                            final Activity activity = getActivity();
-                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                            activity.startActivity(homeIntent);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
 
                 // Load Branding Elements && Setup Action Bar Name
                 final String teamUID = getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
@@ -181,6 +167,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
         brandingElementBundle.putSerializable(Constants.Strings.BRANDING_ELEMENT, elementItem);
         brandingElementBundle.putString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,elementItem.getUID());
         brandingElementBundle.putString(Constants.Strings.Fields.BRANDING_ELEMENT_HEADER,elementItem.getHeader());
-        getFragmentManager().beginTransaction().replace(R.id.container, BrandingElementFragment.newInstance(brandingElementBundle)).commit();
+        getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementFragment.newInstance(brandingElementBundle),Constants.Strings.Fragments.BRANDING_ELEMENT).addToBackStack(Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
     }
 }

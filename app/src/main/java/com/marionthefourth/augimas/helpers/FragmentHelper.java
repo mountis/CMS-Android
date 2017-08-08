@@ -88,7 +88,7 @@ public final class FragmentHelper {
 //    Fragment Transition Methods
     public final static void handleNonSupportFragmentRemoval(final FragmentManager rManager) {
         if (rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS) != null) {
-            rManager.beginTransaction().remove(rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS)).commit();
+            rManager.beginTransaction().setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).remove(rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS)).commit();
         }
     }
 }

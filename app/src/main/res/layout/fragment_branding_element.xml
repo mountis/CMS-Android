@@ -8,6 +8,12 @@
     android:name="com.marionthefourth.augimas.fragments.BrandingElementFragment"
     tools:context="com.marionthefourth.augimas.fragments.BrandingElementFragment">
 
+    <include android:id="@+id/no_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        layout="@layout/layout_no_content_general"/>
+
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -23,7 +29,6 @@
             app:layoutManager="LinearLayoutManager"
             tools:listitem="@layout/list_item_domain_name_single"
             android:layout_marginBottom="30dp"/>
-
     </android.support.v7.widget.LinearLayoutCompat>
 
     <android.support.v7.widget.LinearLayoutCompat

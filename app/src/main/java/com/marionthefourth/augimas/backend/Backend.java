@@ -47,8 +47,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.Scanner;
 
 import static android.content.ContentValues.TAG;
@@ -284,66 +282,38 @@ public final class Backend {
     }
     public static void create(final Context context, final FirebaseObject firebaseObject) {
         String key;
-        DatabaseReference myRef;
+        DatabaseReference myRef = null;
         DatabaseReference itemRef;
 
         if (firebaseObject instanceof User) {
             myRef = getReference(R.string.firebase_users_directory, context);
             itemRef = myRef.child(firebaseObject.getUID());
-//            key = itemRef.getKey();
-//            userItem.setUID(key);
             itemRef.setValue(firebaseObject.toMap());
+            return;
         } else if (firebaseObject instanceof Chat) {
             myRef = getReference(R.string.firebase_chats_directory, context);
-            itemRef = myRef.push();
-            final Chat chatItem = (Chat)firebaseObject;
-            key = itemRef.getKey();
-            chatItem.setUID(key);
-            itemRef.setValue(chatItem.toMap());
         } else if (firebaseObject instanceof BrandingElement) {
             myRef = getReference(R.string.firebase_branding_elements_directory, context);
-            itemRef = myRef.push();
-            final BrandingElement brandingElementItem = (BrandingElement)firebaseObject;
-            key = itemRef.getKey();
-            brandingElementItem.setUID(key);
-            itemRef.setValue(brandingElementItem.toMap());
         } else if (firebaseObject instanceof Team) {
             myRef = getReference(R.string.firebase_teams_directory, context);
-            itemRef = myRef.push();
-            final Team teamItem = (Team)firebaseObject;
-            key = itemRef.getKey();
-            teamItem.setUID(key);
-            itemRef.setValue(teamItem.toMap());
         } else if (firebaseObject instanceof Message) {
             myRef = getReference(R.string.firebase_messages_directory, context);
-            itemRef = myRef.push();
-            final Message messageItem = (Message)firebaseObject;
-            key = itemRef.getKey();
-            messageItem.setUID(key);
-            messageItem.setTimestamp(DateFormat.getDateTimeInstance().format(new Date()));
-            itemRef.setValue(messageItem.toMap());
         } else if (firebaseObject instanceof Notification) {
             myRef = getReference(R.string.firebase_notifications_directory, context);
-            itemRef = myRef.push();
-            final Notification notificationItem = (Notification)firebaseObject;
-            key = itemRef.getKey();
-            notificationItem.setUID(key);
-            itemRef.setValue(notificationItem.toMap());
+            ((Notification) firebaseObject).getMessageText();
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, context);
-            itemRef = myRef.push();
-            final Channel channelItem = (Channel)firebaseObject;
-            key = itemRef.getKey();
-            channelItem.setUID(key);
-            itemRef.setValue(channelItem.toMap());
         } else if (firebaseObject instanceof Device) {
             myRef = getReference(R.string.firebase_devices_directory, context);
-            itemRef = myRef.push();
-            final Device deviceItem = (Device) firebaseObject;
-            key = itemRef.getKey();
-            deviceItem.setUID(key);
-            itemRef.setValue(deviceItem.toMap());
         }
+
+        if (myRef != null) {
+            itemRef = myRef.push();
+            key = itemRef.getKey();
+            firebaseObject.setUID(key);
+            itemRef.setValue(firebaseObject.toMap());
+        }
+
 
     }
 //    Notification Methods

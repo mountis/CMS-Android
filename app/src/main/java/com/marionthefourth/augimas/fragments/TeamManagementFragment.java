@@ -3,8 +3,10 @@ package com.marionthefourth.augimas.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -70,27 +72,48 @@ public class TeamManagementFragment extends Fragment {
 
             final Activity activity = getActivity();
 
-            if (view != null) {
-                view.setFocusableInTouchMode(true);
-                view.requestFocus();
-                view.setOnKeyListener(new View.OnKeyListener() {
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                            final Activity activity = getActivity();
-                            final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                            activity.startActivity(homeIntent);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-            }
             Team teamItem = null;
 
             if (getArguments() != null) {
                 teamItem = (Team) getArguments().getSerializable(Constants.Strings.TEAM);
             }
+
+            view.setFocusableInTouchMode(true);
+            view.requestFocus();
+            final Team finalTeamItem = teamItem;
+            view.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
+                            // Check if User is in Team
+                            if (finalTeamItem != null) {
+                                if (getCurrentUser().isInTeam(finalTeamItem)) {
+                                    getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
+                                    final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
+                                    navigation.setSelectedItemId(R.id.navigation_settings);
+                                } else {
+                                    getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
+                                    final Activity activity = getActivity();
+                                    final Intent homeIntent = new Intent(activity,HomeActivity.class);
+                                    activity.startActivity(homeIntent);
+                                }
+                                return true;
+                            }
+
+                            getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
+                            final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
+                            navigation.setSelectedItemId(R.id.navigation_settings);
+
+                        }
+
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+
 
             if (PROTOTYPE_MODE) {
                 loadPrototypeTeamMembers(activity,view, recyclerView);
@@ -201,90 +224,93 @@ public class TeamManagementFragment extends Fragment {
             }
         });
 
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (currentUser.isInTeam(team)) {
-                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                            updateButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            if (dataSnapshot.exists()) {
-                                                final Team currentTeam = new Team(dataSnapshot);
-                                                currentTeam.setUsername(usernameEditText.getText().toString());
-                                                currentTeam.setName(nameEditText.getText().toString());
-                                                update(currentTeam, activity);
+        if ((getCurrentUser() != null ? getCurrentUser().toString(): null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User currentUser = new User(dataSnapshot);
+                        if (currentUser.isInTeam(team)) {
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+                                updateButton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                if (dataSnapshot.exists()) {
+                                                    final Team currentTeam = new Team(dataSnapshot);
+                                                    currentTeam.setUsername(usernameEditText.getText().toString());
+                                                    currentTeam.setName(nameEditText.getText().toString());
+                                                    update(currentTeam, activity);
+                                                }
                                             }
-                                        }
 
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {}
-                                    });
-                                    // Get Text From Fields
-                                }
-                            });
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {}
+                                        });
+                                        // Get Text From Fields
+                                    }
+                                });
+                            } else {
+                                nameEditText.setEnabled(false);
+                                usernameEditText.setEnabled(false);
+                                updateButton.setVisibility(View.GONE);
+                            }
+
+                            if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                inviteMembers.setEnabled(false);
+                                inviteMembers.setVisibility(View.GONE);
+                            }
+
+                            loadTeamMembers(activity, recyclerView,team,currentUser);
                         } else {
-                            nameEditText.setEnabled(false);
-                            usernameEditText.setEnabled(false);
-                            updateButton.setVisibility(View.GONE);
-                        }
-
-                        if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                            inviteMembers.setEnabled(false);
-                            inviteMembers.setVisibility(View.GONE);
-                        }
-
-                        loadTeamMembers(activity, recyclerView,team,currentUser);
-                    } else {
-                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                            updateButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            if (dataSnapshot.exists()) {
-                                                final Team currentTeam = new Team(dataSnapshot);
-                                                currentTeam.setUsername(usernameEditText.getText().toString());
-                                                currentTeam.setName(nameEditText.getText().toString());
-                                                update(currentTeam, activity);
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                updateButton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                if (dataSnapshot.exists()) {
+                                                    final Team currentTeam = new Team(dataSnapshot);
+                                                    currentTeam.setUsername(usernameEditText.getText().toString());
+                                                    currentTeam.setName(nameEditText.getText().toString());
+                                                    update(currentTeam, activity);
+                                                }
                                             }
-                                        }
 
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {}
-                                    });
-                                }
-                            });
-                        } else {
-                            nameEditText.setEnabled(false);
-                            usernameEditText.setEnabled(false);
-                            updateButton.setVisibility(View.GONE);
-                            inviteMembers.setEnabled(false);
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {}
+                                        });
+                                    }
+                                });
+                            } else {
+                                nameEditText.setEnabled(false);
+                                usernameEditText.setEnabled(false);
+                                updateButton.setVisibility(View.GONE);
+                                inviteMembers.setEnabled(false);
 
+                            }
+
+                            leaveTeam.setEnabled(false);
+                            leaveTeam.setVisibility(View.GONE);
+
+                            LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
+                            lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
+
+                            inviteMembers.setLayoutParams(lp);
+
+                            loadTeamMembers(activity, recyclerView,team,currentUser);
                         }
-
-                        leaveTeam.setEnabled(false);
-                        leaveTeam.setVisibility(View.GONE);
-
-                        LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
-
-                        inviteMembers.setLayoutParams(lp);
-
-                        loadTeamMembers(activity, recyclerView,team,currentUser);
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+
     }
     private void loadTeamMembers(final Activity activity, final RecyclerView recyclerView, final Team team, final User user) {
         if (team != null) {

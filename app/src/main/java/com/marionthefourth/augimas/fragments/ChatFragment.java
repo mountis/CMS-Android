@@ -1,6 +1,7 @@
 package com.marionthefourth.augimas.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -17,6 +18,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.SignInActivity;
 import com.marionthefourth.augimas.adapters.MessageListAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
@@ -86,7 +88,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User (dataSnapshot);
-                    if (currentUser != null && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                    if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
                         chatInputSection.setVisibility(View.VISIBLE);
                     } else {
                         chatInputSection.setVisibility(View.GONE);
@@ -280,6 +282,29 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                     });
                 } else {
                     recyclerView.setAdapter(null);
+                    if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                        Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                                    getView().findViewById(R.id.no_content).setVisibility(View.GONE);
+                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                } else {
+                                    getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    } else {
+                        startActivity(new Intent(activity, SignInActivity.class));
+                    }
+
+
                     return;
                 }
             }
@@ -296,7 +321,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
+                    if (!currentUser.getTeamUID().equals("")) {
                         Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -317,9 +342,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     }
 
                                                     if (messages.size() > 0) {
-                                                        final ArrayList<Team> sortedTeams = new ArrayList<>();
-                                                        final ArrayList<ArrayList<User>> sortedTeamUsers = new ArrayList<>();
-
+                                                        getView().findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                         recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers, ChatFragment.this));
                                                         recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                                                             @Override
@@ -330,15 +354,22 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
+                                                        getView().findViewById(R.id.chat_layout).setVisibility(View.GONE);
+                                                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                                                            getView().findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                            getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                                        } else {
+                                                            getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                                            getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                        }
+
                                                         return;
                                                     }
                                                 }
                                             }
 
                                             @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
+                                            public void onCancelled(DatabaseError databaseError) {}
                                         });
                                     }
                                 }
@@ -417,6 +448,9 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                 sortedTeamUsers.add(teamUsers.get(i));
                                                             }                                                        }
                                                     }
+
+                                                    getView().findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                     recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1), ChatFragment.this));
                                                     recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                                                         @Override
@@ -427,6 +461,13 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     return;
                                                 } else {
                                                     recyclerView.setAdapter(null);
+                                                    if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                                                        getView().findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                                    } else {
+                                                        getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                    }
                                                     return;
                                                 }
                                             }

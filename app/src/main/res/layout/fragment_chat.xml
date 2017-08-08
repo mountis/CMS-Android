@@ -10,8 +10,21 @@
 
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
+        android:id="@+id/chat_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <include android:id="@+id/no_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            layout="@layout/layout_no_content_general"/>
+
+        <include android:id="@+id/no_content_chat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            layout="@layout/layout_no_content_chat"/>
 
         <android.support.v7.widget.RecyclerView
             android:layout_gravity="top"

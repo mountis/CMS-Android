@@ -62,12 +62,13 @@ public final class Constants {
         }
         public static final class EntityRoles {
             public static final class Indices {
-                public static final int OWNER            = 0;
-                public static final int ADMIN            = 1;
-                public static final int EDITOR           = 2;
+                public static final int OWNER            = 6;
+                public static final int ADMIN            = 5;
+                public static final int EDITOR           = 4;
                 public static final int CHATTER          = 3;
-                public static final int VIEWER           = 4;
-                public static final int NONE             = 5;
+                public static final int VIEWER           = 2;
+                public static final int NONE             = 1;
+                public static final int DEFAULT          = 0;
             }
             public static final class IDs {
                 public static final int OWNER = 0x3B2F8;
@@ -76,6 +77,7 @@ public final class Constants {
                 public static final int CHATTER = 0x9E9C5;
                 public static final int VIEWER = 0x8D8B4;
                 public static final int NONE = 0x7C7A3;
+                public static final int DEFAULT = 0xABD9123;
             }
         }
         public static final class EntityStatii {

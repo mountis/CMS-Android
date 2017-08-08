@@ -3,12 +3,15 @@ package com.marionthefourth.augimas.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
@@ -25,6 +28,7 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
+import static com.marionthefourth.augimas.classes.objects.FirebaseEntity.EntityType.HOST;
 
 public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.ViewHolder> {
     private User currentUser;
@@ -44,32 +48,13 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         return new TeamMembersAdapter.ViewHolder(view);
     }
     @Override
-    public void onBindViewHolder(final TeamMembersAdapter.ViewHolder holder, final int index) {
-        holder.userItem = members.get(index);
+    public void onBindViewHolder(final TeamMembersAdapter.ViewHolder holder, int index) {
+        final int POSITION = holder.getAdapterPosition();
+        holder.userItem = members.get(POSITION);
         holder.mTeamMemberNameLabel.setText(holder.userItem.getName());
 
-
-        Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final User currentUser = new User(dataSnapshot);
-
-
-//                for(FirebaseEntity.EntityRole role: FirebaseEntity.EntityRole.getAllRoles()) {
-//                    if (!currentUser.hasInclusiveAccess(role)) {
-//                        roles.remove(role);
-//                    }
-//                }
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
+        final Animation bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
+        holder.mView.startAnimation(bounceFasterAnimation);
         final ArrayList<FirebaseEntity.EntityRole> roles = FirebaseEntity.EntityRole.getAllRoles();
 
         roles.remove(FirebaseEntity.EntityRole.DEFAULT);
@@ -79,7 +64,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
             }
 
             @Override
-            public View getDropDownView(final int position, final View convertView, ViewGroup parent){
+            public View getDropDownView(final int position, final View convertView, @NonNull ViewGroup parent){
                 View v = convertView;
                 if (v == null) {
                     Context mContext = this.getContext();
@@ -97,24 +82,16 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User currentUserItem = new User(dataSnapshot);
-                            if (currentUserItem != null) {
 
-                                if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                                    if (position == FirebaseEntity.EntityRole.OWNER.toInt(false)) {
-                                        tv.setTextColor(Color.GRAY);
+                            for(FirebaseEntity.EntityRole role: FirebaseEntity.EntityRole.getAllRoles()) {
+                                if (!currentUserItem.hasInclusiveAccess(role)) {
+                                    if (position == role.toInt(false)) {
+                                        tv.setTextColor(Color.RED);
                                         finalV.setEnabled(false);
+                                        finalV.setClickable(false);
                                     }
                                 }
-
-                                if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    if (position == FirebaseEntity.EntityRole.ADMIN.toInt(false)) {
-                                        tv.setTextColor(Color.GRAY);
-                                        finalV.setEnabled(false);
-                                    }
-                                }
-
                             }
-
                         }
                     }
 
@@ -139,10 +116,28 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                             final User modifyingUserItem = new User(dataSnapshot);
                             final FirebaseEntity.EntityRole selectedRole = (FirebaseEntity.EntityRole)parent.getSelectedItem();
 
-                            if (!currentUser.hasInclusiveAccess(modifyingUserItem.getRole()) || modifyingUserItem.getUID().equals(currentUser.getUID())) {
-                                parent.setEnabled(false);
-                                view.setEnabled(false);
+                            final boolean userIsQualified;
+                            final boolean userIsModifyingProperTeam;
+                            final boolean userIsAtLeastAnEditor = currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR);
+                            final boolean userIsNotModifyingSelf = !modifyingUserItem.getUID().equals(currentUser.getUID());
+                            final boolean userNotIsRestricted = !modifyingUserItem.getUsername().equals("marionthefourth");
+                            final boolean userHasExclusiveAccess = currentUser.hasExclusiveAccess(modifyingUserItem.getRole());
+                            final boolean userHasRank = currentUser.getUsername().equals("marionthefourth");
+
+                            if (currentUser.getType() == HOST) {
+                                if (modifyingUserItem.getType() == HOST) {
+                                    userIsQualified = userIsAtLeastAnEditor && userHasExclusiveAccess;
+                                } else {
+                                    userIsQualified = userIsAtLeastAnEditor;
+                                }
+
+                                userIsModifyingProperTeam = true;
                             } else {
+                                userIsModifyingProperTeam = modifyingUserItem.getType() != HOST;
+                                userIsQualified = userIsAtLeastAnEditor && userHasExclusiveAccess;
+                            }
+
+                            if ((userIsNotModifyingSelf && userNotIsRestricted && userIsQualified && userIsModifyingProperTeam) || userHasRank) {
                                 parent.setEnabled(true);
                                 view.setEnabled(true);
 
@@ -164,9 +159,10 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                 }
 
                                 update(modifyingUserItem, activity);
+                            } else {
+                                parent.setEnabled(false);
+                                view.setEnabled(false);
                             }
-
-
                         }
                     }
 
@@ -179,55 +175,44 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        for (int i = 0; i < FirebaseEntity.EntityRole.getAllRoles().size(); i++) {
-            if (holder.userItem.getRole().equals(FirebaseEntity.EntityRole.getRole(i))) {
-                holder.mTeamMemberRoleSpinner.setSelection(i);
+        holder.mTeamMemberRoleSpinner.setSelection(holder.userItem.getRole().toInt(false)-1);
 
-                if (i == FirebaseEntity.EntityRole.OWNER.toInt(false)) {
-                } else if (i == FirebaseEntity.EntityRole.ADMIN.toInt(false)) {
-                }
-
-                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final User currentUserItem = new User(dataSnapshot);
-                            if (currentUserItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
-                                if (holder.userItem.getUID().equals(currentUser.getUID())) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
-                            } else {
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                        holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                    }
-                                } else if (currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                } else if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                        holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                    }
-                                }
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUserItem = new User(dataSnapshot);
+                    if (currentUserItem.getType().equals(HOST)) {
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
+                        if (holder.userItem.getUID().equals(currentUser.getUID())) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
+                    } else {
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+                            if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                holder.mTeamMemberRoleSpinner.setEnabled(false);
+                            }
+                        } else if (currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        } else if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                holder.mTeamMemberRoleSpinner.setEnabled(false);
                             }
                         }
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
                     }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-
-                break;
+                }
             }
-        }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
     }
     @Override
@@ -237,9 +222,9 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public User userItem;
-        public final AppCompatTextView mTeamMemberNameLabel;
-        public final AppCompatSpinner mTeamMemberRoleSpinner;
+        User userItem;
+        final AppCompatTextView mTeamMemberNameLabel;
+        final AppCompatSpinner mTeamMemberRoleSpinner;
 
         public ViewHolder(View view) {
             super(view);

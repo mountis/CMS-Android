@@ -2,6 +2,7 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
@@ -78,7 +79,7 @@ public final class TeamAccessDialog extends Builder {
                             break;
                         case 1:
                             // Setup Dashboard Button
-                            activity.getSupportFragmentManager().beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(teamItem.getUID())).commit();
+                            activity.getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(teamItem.getUID()),Constants.Strings.Fragments.BRANDING_ELEMENTS).addToBackStack(Constants.Strings.Fragments.TEAMS).commit();
                             break;
                         case 2:
                             // Setup Chat Button
@@ -86,7 +87,7 @@ public final class TeamAccessDialog extends Builder {
                             break;
                         case 3:
                             // Setup Team Management Button
-                            activity.getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(teamItem)).commit();
+                            activity.getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,TeamManagementFragment.newInstance(teamItem),Constants.Strings.Fragments.TEAM_MANAGEMENT).addToBackStack(Constants.Strings.Fragments.TEAMS).commit();
                             break;
                     }
 

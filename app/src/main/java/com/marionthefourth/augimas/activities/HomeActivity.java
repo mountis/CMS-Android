@@ -93,15 +93,14 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                         final Team currentTeam = new Team(dataSnapshot);
                                         if (currentTeam.getType().equals(FirebaseEntity.EntityType.HOST)) {
                                             removeNavigationItem();
-                                            manager.beginTransaction().replace(R.id.container, new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
+                                            manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_ENTER_MASK).replace(R.id.container,new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
                                         } else {
                                             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                                                manager.beginTransaction().replace(R.id.container, BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
+                                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_ENTER_MASK).replace(R.id.container,BrandingElementsFragment.newInstance(currentUser.getTeamUID()),Constants.Strings.Fragments.SIGN_IN).addToBackStack(Constants.Strings.Fragments.DASHBOARD).commit();
                                             } else {
                                                 final android.app.FragmentManager rManager = getFragmentManager();
                                                 rManager.beginTransaction().setTransition(
-                                                        android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                                                        R.id.container,
+                                                        android.app.FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).replace(R.id.container,
                                                         new SettingsFragment(),
                                                         Constants.Strings.Fragments.SETTINGS).commit();
                                                 selectedTopFragment = Constants.Ints.Fragments.SETTINGS;
@@ -117,8 +116,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         } else {
                             final android.app.FragmentManager rManager = getFragmentManager();
                             rManager.beginTransaction().setTransition(
-                                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                                    R.id.container,
+                                    android.app.FragmentTransaction.TRANSIT_NONE).replace(R.id.container,
                                     new SettingsFragment(),
                                     Constants.Strings.Fragments.SETTINGS).commit();
                             selectedTopFragment = Constants.Ints.Fragments.SETTINGS;
@@ -244,7 +242,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                 if (selectedTopFragment != Constants.Ints.Fragments.NOTIFICATION) {
                     selectedTopFragment = Constants.Ints.Fragments.NOTIFICATION;
-                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new NotificationsFragment(),Constants.Strings.Fragments.NOTIFICATIONS).commitAllowingStateLoss();
+                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new NotificationsFragment(),Constants.Strings.Fragments.NOTIFICATIONS).commitAllowingStateLoss();
                 }
             } else {
                 FragmentHelper.display(TOAST,R.string.you_dont_have_access,findViewById(R.id.container));
@@ -265,7 +263,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             Backend.getReference(R.string.firebase_teams_directory, this).child(teamUID).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.container, TeamManagementFragment.newInstance(new Team(dataSnapshot)), Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
+                                    getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,TeamManagementFragment.newInstance(new Team(dataSnapshot)), Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
                                 }
 
                                 @Override
@@ -276,24 +274,21 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     }
                 } else {
                     rManager.beginTransaction().setTransition(
-                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                            R.id.container,
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
                             new SettingsFragment(),
                             Constants.Strings.Fragments.SETTINGS).commit();
                 }
             } else {
                 if (selectedTopFragment != Constants.Ints.Fragments.SETTINGS) {
                     rManager.beginTransaction().setTransition(
-                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                            R.id.container,
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
                             new SettingsFragment(),
                             Constants.Strings.Fragments.SETTINGS).commit();
                 } else {
                     SettingsFragment settingsFragment = (SettingsFragment) rManager.findFragmentByTag(Constants.Strings.Fragments.TEAMS);
                     if (settingsFragment == null || !settingsFragment.isVisible()) {
                         rManager.beginTransaction().setTransition(
-                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(
-                                R.id.container,
+                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
                                 new SettingsFragment(),
                                 Constants.Strings.Fragments.SETTINGS).commit();
                     }
@@ -315,7 +310,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         selectedTopFragment = Constants.Ints.Fragments.CHAT;
                         if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                             if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                                manager.beginTransaction().replace(R.id.container, new ChatListFragment(),Constants.Strings.Fragments.CHAT_LIST).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new ChatListFragment(),Constants.Strings.Fragments.CHAT_LIST).commit();
                             } else {
                                 // Get Channel UIDs & Team UIDs
                                 final ArrayList<String> teamUIDs = new ArrayList<>();
@@ -417,46 +412,46 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     if (nav != null && teamUID != null) {
                         switch (nav) {
                             case BRANDING_ELEMENTS:
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, BrandingElementsFragment.newInstance(teamUID), BRANDING_ELEMENTS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(teamUID), BRANDING_ELEMENTS).commit();
                                 break;
                             case Constants.Strings.Fragments.DASHBOARD:
                                 if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
+                                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
                                 } else {
                                     if (!currentUser.getTeamUID().equals("")) {
-                                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
+                                        manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
                                     }
                                 }
                         }
                     } else {
                         if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                            manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
+                            manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
                         } else {
                             if (!currentUser.getTeamUID().equals("")) {
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
                             }
                         }
                     }
                 } else {
                     if (selectedTopFragment != Constants.Ints.Fragments.DASHBOARD) {
                         if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                            manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
+                            manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
                         } else {
                             if (!currentUser.getTeamUID().equals("")) {
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
                             }
                         }
                     } else {
                         if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
                             TeamsFragment teamsFragment = (TeamsFragment) getSupportFragmentManager().findFragmentByTag(Constants.Strings.Fragments.TEAMS);
                             if (teamsFragment == null || !teamsFragment.isVisible()) {
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamsFragment(),Constants.Strings.Fragments.TEAMS).commit();
                             }
                         } else {
                             BrandingElementsFragment brandingElementsFragment = (BrandingElementsFragment) getSupportFragmentManager().findFragmentByTag(BRANDING_ELEMENTS);
                             if (brandingElementsFragment == null || !brandingElementsFragment.isVisible()) {
 //                                TODO - Check if this works
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container, new BrandingElementsFragment(), BRANDING_ELEMENTS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new BrandingElementsFragment(), BRANDING_ELEMENTS).commit();
                             }
                         }
                     }

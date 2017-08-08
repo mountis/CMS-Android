@@ -86,27 +86,22 @@ public abstract class FirebaseEntity extends FirebaseObject {
 
         public int toInt(boolean mapStyle) {
             if (mapStyle) {
-                switch (this) {
-                    case OWNER: return Constants.Ints.EntityRoles.IDs.OWNER;
-                    case ADMIN: return Constants.Ints.EntityRoles.IDs.ADMIN;
-                    case EDITOR: return Constants.Ints.EntityRoles.IDs.EDITOR;
-                    case CHATTER: return Constants.Ints.EntityRoles.IDs.CHATTER;
-                    case VIEWER: return Constants.Ints.EntityRoles.IDs.VIEWER;
-                    case NONE: return Constants.Ints.EntityRoles.IDs.NONE;
-                    default: return DEFAULT_ID;
-                }
+                if (this == OWNER) return Constants.Ints.EntityRoles.IDs.OWNER;
+                if (this == ADMIN) return Constants.Ints.EntityRoles.IDs.ADMIN;
+                if (this == EDITOR) return Constants.Ints.EntityRoles.IDs.EDITOR;
+                if (this == CHATTER) return Constants.Ints.EntityRoles.IDs.CHATTER;
+                if (this == VIEWER) return Constants.Ints.EntityRoles.IDs.VIEWER;
+                if (this == NONE) return Constants.Ints.EntityRoles.IDs.NONE;
+                return Constants.Ints.EntityRoles.IDs.DEFAULT;
             } else {
-                switch (this) {
-                    case OWNER: return Constants.Ints.EntityRoles.Indices.OWNER;
-                    case ADMIN: return Constants.Ints.EntityRoles.Indices.ADMIN;
-                    case EDITOR: return Constants.Ints.EntityRoles.Indices.EDITOR;
-                    case CHATTER: return Constants.Ints.EntityRoles.Indices.CHATTER;
-                    case VIEWER: return Constants.Ints.EntityRoles.IDs.VIEWER;
-                    case NONE: return Constants.Ints.EntityRoles.Indices.NONE;
-                    default: return DEFAULT_ID;
-                }
+                if (this == OWNER) return Constants.Ints.EntityRoles.Indices.OWNER;
+                if (this == ADMIN) return Constants.Ints.EntityRoles.Indices.ADMIN;
+                if (this == EDITOR) return Constants.Ints.EntityRoles.Indices.EDITOR;
+                if (this == CHATTER) return Constants.Ints.EntityRoles.Indices.CHATTER;
+                if (this == VIEWER) return Constants.Ints.EntityRoles.Indices.VIEWER;
+                if (this == NONE) return Constants.Ints.EntityRoles.Indices.NONE;
+                return Constants.Ints.EntityRoles.Indices.DEFAULT;
             }
-
         }
 
         public static EntityRole getRole(final String role) {
@@ -246,39 +241,15 @@ public abstract class FirebaseEntity extends FirebaseObject {
     }
 //    Functional Methods
     public final boolean hasInclusiveAccess(EntityRole accessRole) {
-        int accessLevel = 0;
-        int userAccessLevel = 0;
-
         if (getRole() != null) {
-            for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
-                if (accessRole.equals(EntityRole.getRole(i))) {
-                    accessLevel = i;
-                }
-                if (getRole().equals(EntityRole.getRole(i))) {
-                    userAccessLevel = i;
-                }
-            }
-
-            return userAccessLevel <= accessLevel;
+            return getRole().toInt(false) >= accessRole.toInt(false);
         } else {
             return false;
         }
     }
     public final boolean hasExclusiveAccess(EntityRole accessRole) {
-        int accessLevel = 0;
-        int userAccessLevel = 0;
-
         if (getRole() != null) {
-            for (int i = 0; i < EntityRole.getNumberOfRoles(); i++) {
-                if (accessRole.equals(EntityRole.getRole(i))) {
-                    accessLevel = i;
-                }
-                if (getRole().equals(EntityRole.getRole(i))) {
-                    userAccessLevel = i;
-                }
-            }
-
-            return userAccessLevel < accessLevel;
+            return getRole().toInt(false) > accessRole.toInt(false);
         } else {
             return false;
         }

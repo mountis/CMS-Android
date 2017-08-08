@@ -19,17 +19,17 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.NotificationsAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public final class NotificationsFragment extends Fragment {
 
@@ -54,70 +54,53 @@ public final class NotificationsFragment extends Fragment {
         if (PROTOTYPE_MODE) {
             loadPrototypeNotifications(activity,recyclerView);
         } else {
-            loadNotificationData(activity,recyclerView);
+            loadNotificationData(view,activity,recyclerView);
         }
         recyclerView.setVisibility(View.VISIBLE);
 
         return view;
     }
 
-    private void loadNotificationData(final Activity activity, final RecyclerView recyclerView) {
-
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                        Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.hasChildren()) {
-                                    final ArrayList<Notification> notifications = new ArrayList<>();
-                                    for (DataSnapshot notificationReference:dataSnapshot.getChildren()) {
-                                        final Notification notificationItem = new Notification(notificationReference);
-                                        if (notificationItem.goesToUID(currentUser.getTeamUID())) {
-                                            if (!notificationItem.getSubjectUID().equals(currentUser.getUID())) {
-                                                notifications.add(notificationItem);
-                                            }
-                                        }
-                                    }
-
-                                    if (notifications.size() > 0) {
-                                        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
-                                    } else {
-                                        recyclerView.setAdapter(null);
-                                    }
-
-                                } else {
-                                    recyclerView.setAdapter(null);
-                                }
-
-                                ContentLoadingProgressBar contentLoadingProgressBar = (ContentLoadingProgressBar) activity.findViewById(R.id.notification_progressbar);
-                                if (contentLoadingProgressBar != null) {
-                                    contentLoadingProgressBar.hide();
-                                    contentLoadingProgressBar.setVisibility(View.GONE);
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    } else {
-                        if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                            Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+    private void loadNotificationData(final View view, final Activity activity, final RecyclerView recyclerView) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User currentUser = new User(dataSnapshot);
+                        if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                            Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        final Team teamItem = new Team(dataSnapshot);
-                                        if (teamItem != null) {
-                                            final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
-                                            if (actionBar != null) {
-                                                actionBar.setTitle(teamItem.getName());
+                                    if (dataSnapshot.hasChildren()) {
+                                        final ArrayList<Notification> notifications = new ArrayList<>();
+                                        for (DataSnapshot notificationReference:dataSnapshot.getChildren()) {
+                                            final Notification notificationItem = new Notification(notificationReference);
+                                            if (notificationItem.goesToUID(currentUser.getTeamUID())) {
+                                                if (!notificationItem.getSubjectUID().equals(currentUser.getUID())) {
+                                                    notifications.add(notificationItem);
+                                                }
                                             }
                                         }
+
+                                        if (notifications.size() > 0) {
+
+                                            view.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                            recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
+                                        } else {
+                                            recyclerView.setAdapter(null);
+                                            view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                        }
+
+                                    } else {
+                                        recyclerView.setAdapter(null);
+                                        view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                    }
+
+                                    ContentLoadingProgressBar contentLoadingProgressBar = (ContentLoadingProgressBar) activity.findViewById(R.id.notification_progressbar);
+                                    if (contentLoadingProgressBar != null) {
+                                        contentLoadingProgressBar.hide();
+                                        contentLoadingProgressBar.setVisibility(View.GONE);
                                     }
                                 }
 
@@ -126,21 +109,42 @@ public final class NotificationsFragment extends Fragment {
 
                                 }
                             });
+                        } else {
+                            if (!currentUser.getTeamUID().equals("")) {
+                                Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            final Team teamItem = new Team(dataSnapshot);
+                                            final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                                            if (actionBar != null) {
+                                                actionBar.setTitle(teamItem.getName());
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+                            recyclerView.setAdapter(null);
+                            view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+
                         }
-                        recyclerView.setAdapter(null);
                     }
+
+
                 }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
+                }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-
-        });
-
+            });
+        }
     }
 
     private void loadPrototypeNotifications(final Activity activity, RecyclerView recyclerView) {

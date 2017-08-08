@@ -16,13 +16,19 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 /**
@@ -31,18 +37,20 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 
 public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdapter.ViewHolder> {
     private Activity activity;
-    private BrandingElement name;
+    private BrandingElement brandingName;
     private ArrayList<String> nameExtensions = new ArrayList<>();
     private Animation open,close,rotate_forward,rotate_back;
+    private View containingView;
 
     //    Adapter Constructor
-    public BrandingNamesAdapter(final Activity activity, BrandingElement brandingName) {
+    public BrandingNamesAdapter(final Activity activity, final BrandingElement brandingName, final View containingView) {
         this.activity = activity;
-        this.name = brandingName;
+        this.brandingName = brandingName;
         this.nameExtensions = brandingName.getContents();
         if (nameExtensions.size() >= 1) {
             this.nameExtensions.remove(0);
         }
+        this.containingView = containingView;
         open = AnimationUtils.loadAnimation(activity, R.anim.open);
         close = AnimationUtils.loadAnimation(activity,R.anim.close);
         rotate_forward = AnimationUtils.loadAnimation(activity,R.anim.rotate_forward);
@@ -52,7 +60,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-        switch (name.getType()) {
+        switch (brandingName.getType()) {
 
             case DOMAIN_NAME: view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.list_item_domain_name_single, parent, false);
@@ -67,14 +75,54 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     }
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
+        if (getItemCount() == 1) {
+            if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
+                Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            holder.mView.setVisibility(View.GONE);
+
+                            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
+                                containingView.findViewById(R.id.branding_element_domain_name_layout).setVisibility(View.GONE);
+                            } else {
+                                containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.GONE);
+
+                            }
+
+                            containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                            // Set alternative View for display when there is no data.
+                        } else {
+                            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
+                                containingView.findViewById(R.id.branding_element_domain_name_layout).setVisibility(View.VISIBLE);
+                            } else {
+                                containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.VISIBLE);
+
+                            }
+
+                            containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }
+
         final int POSITION = holder.getAdapterPosition();
-        if (POSITION > name.getData().size()-1) {
+        if (POSITION > brandingName.getData().size()-1) {
             holder.hideInputLayout();
         } else {
             holder.revealAndTurnOn();
-            holder.mNameEditText.setText(name.getData().get(position));
+            holder.mNameEditText.setText(brandingName.getData().get(position));
             holder.mNameEditText.setHint("");
         }
+
+        final Animation bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
+        holder.mView.startAnimation(bounceFasterAnimation);
 
         holder.mNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -120,10 +168,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         if (!holder.mNameEditText.getText().toString().equals("")) {
                             handleInput(holder,POSITION,activity);
                         } else {
-                            if (name.getData().size() >= POSITION+1) {
-                                name.getData().remove(POSITION);
+                            if (brandingName.getData().size() >= POSITION+1) {
+                                brandingName.getData().remove(POSITION);
                                 holder.hideAndTurnOff();
-                                Backend.update(name, activity);
+                                Backend.update(brandingName, activity);
                             }
                         }
                     }
@@ -149,13 +197,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     } else {
                         if (holder.rotated) {
                             if (!holder.mNameEditText.getText().toString().equals("")) {
-                                if (POSITION == name.getData().size()) {
-                                    name.getData().remove(holder.mNameEditText.getText().toString());
+                                if (POSITION == brandingName.getData().size()) {
+                                    brandingName.getData().remove(holder.mNameEditText.getText().toString());
                                 } else {
-                                    name.getData().remove(POSITION);
+                                    brandingName.getData().remove(POSITION);
                                 }
 
-                                Backend.update(name, activity);
+                                Backend.update(brandingName, activity);
                             }
 
                             holder.hideAndTurnOff();
@@ -167,15 +215,15 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     }
 
     private void handleInput(ViewHolder holder, int position, Activity activity) {
-        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), name.getType())) {
-            if (position == name.getData().size()) {
-                name.getData().add(holder.mNameEditText.getText().toString());
+        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), brandingName.getType())) {
+            if (position == brandingName.getData().size()) {
+                brandingName.getData().add(holder.mNameEditText.getText().toString());
             }
-            Backend.update(name, activity);
+            Backend.update(brandingName, activity);
         } else {
             // Inproper Input
             holder.mNameEditText.setText("");
-            switch (name.getType()) {
+            switch (brandingName.getType()) {
                 case DOMAIN_NAME:
                     FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
                     break;
@@ -199,13 +247,14 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
     @Override
     public int getItemCount() {
-        return name.getData().size()+1;
+        return brandingName.getData().size()+1;
     }
     //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         AppCompatEditText mNameEditText;
         AppCompatButton mCreateButton;
+        LinearLayoutCompat altLayout;
         public LinearLayoutCompat layout;
         public LinearLayoutCompat content;
         boolean rotated = false;
@@ -215,22 +264,17 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            switch (name.getType()) {
+            switch (brandingName.getType()) {
                 case DOMAIN_NAME:
-                    content = (LinearLayoutCompat) view.findViewById(R.id.domain_name_content);
-                    mNameEditText = (AppCompatEditText) view.findViewById(R.id.input_domain_name);
-                    mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
-                    layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_domain_name);
-                    break;
+                    content = (LinearLayoutCompat) view.findViewById(R.id.brand_name_content); break;
                 case SOCIAL_MEDIA_NAME:
-                    content = (LinearLayoutCompat) view.findViewById(R.id.social_media_name_content);
-                    mNameEditText = (AppCompatEditText) view.findViewById(R.id.input_social_media_name);
-                    mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
-                    layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_social_media_name);
-                    break;
-                default:
-                    break;
+                    content = (LinearLayoutCompat) view.findViewById(R.id.social_media_name_content); break;
+                default: break;
             }
+
+            mNameEditText = (AppCompatEditText) view.findViewById(R.id.input_brand_name);
+            mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
+            layout = (LinearLayoutCompat) view.findViewById(R.id.input_layout_brand_name);
 
         }
 

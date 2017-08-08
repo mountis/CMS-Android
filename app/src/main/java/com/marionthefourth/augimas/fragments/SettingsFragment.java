@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,15 +18,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.dialogs.HostRequestDialog;
 import com.marionthefourth.augimas.dialogs.ChangePasswordDialog;
-import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.dialogs.HostRequestDialog;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
@@ -149,8 +150,9 @@ public final class SettingsFragment extends PreferenceFragment {
     }
 
     private void transitionToTeamManagementScreen(final Activity activity) {
+        ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamManagementFragment(),Constants.Strings.Fragments.TEAM_MANAGEMENT).addToBackStack(Constants.Strings.Fragments.SETTINGS).commit();
         handleNonSupportFragmentRemoval(getFragmentManager());
-        ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.container, new TeamManagementFragment()).commit();
+
     }
 
 }

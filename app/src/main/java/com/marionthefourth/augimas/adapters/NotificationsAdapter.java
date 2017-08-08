@@ -42,6 +42,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     @Override
     public void onBindViewHolder(final NotificationsAdapter.ViewHolder holder, int position) {
         holder.notificationItem = notifications.get(position);
+        holder.mIconLetterMoniker.setText(holder.notificationItem.getMessageText().substring(0,1));
+        holder.mNotificationText.setText(holder.notificationItem.getMessageText());
+
         pullItemsData(holder);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -106,7 +109,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                         if (dataSnapshot.exists()) {
                             final User teamMember = new User(dataSnapshot);
                             if (teamMember != null) {
-                                holder.mIconLetterMoniker.setText(teamMember.getName().substring(0,1));
                                 holder.notificationItem.setSubject(teamMember);
                                 pullObjectItemData(holder);
                             }
@@ -126,7 +128,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                         if (dataSnapshot.exists()) {
                             final Team teamItem = new Team(dataSnapshot);
                             if (teamItem != null) {
-                                holder.mIconLetterMoniker.setText(teamItem.getName().substring(0,1));
                                 holder.notificationItem.setSubject(teamItem);
 
                                 pullObjectItemData(holder);
@@ -155,10 +156,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             final BrandingElement elementItem = new BrandingElement(dataSnapshot);
                             if (elementItem != null) {
                                 holder.notificationItem.setObject(elementItem);
-                                holder.mNotificationText.setText(holder.notificationItem.getMessage());
-                                if (holder.mNotificationText.getText().equals("notification text")) {
-                                    holder.itemView.setVisibility(View.INVISIBLE);
-                                }
                             }
                         }
                     }
@@ -175,10 +172,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             final Chat chatItem = new Chat(dataSnapshot);
                             if (chatItem != null) {
                                 holder.notificationItem.setObject(chatItem);
-                                holder.mNotificationText.setText(holder.notificationItem.getMessage());
-                                if (holder.mNotificationText.getText().equals("notification text")) {
-                                    holder.itemView.setVisibility(View.INVISIBLE);
-                                }
                             }
                         }
                     }
@@ -195,10 +188,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             final User userItem = new User(dataSnapshot);
                             if (userItem != null) {
                                 holder.notificationItem.setObject(userItem);
-                                holder.mNotificationText.setText(holder.notificationItem.getMessage());
-                                if (holder.mNotificationText.getText().equals("notification text")) {
-                                    holder.itemView.setVisibility(View.INVISIBLE);
-                                }
                             }
                         }
                     }
@@ -215,11 +204,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                             final Team teamItem = new Team(dataSnapshot);
                             if (teamItem != null) {
                                 holder.notificationItem.setObject(teamItem);
-                                holder.mNotificationText.setText(holder.notificationItem.getMessage());
-
-                                if (holder.mNotificationText.getText().equals("notification text")) {
-                                    holder.itemView.setVisibility(View.INVISIBLE);
-                                }
                             }
                         }
                     }
