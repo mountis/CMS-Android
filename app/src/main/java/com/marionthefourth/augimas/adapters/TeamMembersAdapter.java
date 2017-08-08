@@ -35,7 +35,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
     private Activity activity;
     private ArrayList<User> members = new ArrayList<>();
 //    Adapter Constructor
-    public TeamMembersAdapter(Activity activity, ArrayList<User> members, User currentUser) {
+    public TeamMembersAdapter(final Activity activity, final ArrayList<User> members, final User currentUser) {
         this.members = members;
         this.activity = activity;
         this.currentUser = currentUser;
@@ -122,7 +122,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                             final boolean userIsNotModifyingSelf = !modifyingUserItem.getUID().equals(currentUser.getUID());
                             final boolean userNotIsRestricted = !modifyingUserItem.getUsername().equals("marionthefourth");
                             final boolean userHasExclusiveAccess = currentUser.hasExclusiveAccess(modifyingUserItem.getRole());
-                            final boolean userHasRank = currentUser.getUsername().equals("marionthefourth");
 
                             if (currentUser.getType() == HOST) {
                                 if (modifyingUserItem.getType() == HOST) {
@@ -133,11 +132,12 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 
                                 userIsModifyingProperTeam = true;
                             } else {
+                                final boolean userHasProperRank = currentUser.hasInclusiveAccess(selectedRole);
                                 userIsModifyingProperTeam = modifyingUserItem.getType() != HOST;
-                                userIsQualified = userIsAtLeastAnEditor && userHasExclusiveAccess;
+                                userIsQualified = userIsAtLeastAnEditor && userHasExclusiveAccess && userHasProperRank;
                             }
 
-                            if ((userIsNotModifyingSelf && userNotIsRestricted && userIsQualified && userIsModifyingProperTeam) || userHasRank) {
+                            if (userIsNotModifyingSelf && userNotIsRestricted && userIsQualified && userIsModifyingProperTeam) {
                                 parent.setEnabled(true);
                                 view.setEnabled(true);
 

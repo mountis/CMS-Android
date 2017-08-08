@@ -285,7 +285,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             new SettingsFragment(),
                             Constants.Strings.Fragments.SETTINGS).commit();
                 } else {
-                    SettingsFragment settingsFragment = (SettingsFragment) rManager.findFragmentByTag(Constants.Strings.Fragments.TEAMS);
+                    SettingsFragment settingsFragment = (SettingsFragment) rManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS);
                     if (settingsFragment == null || !settingsFragment.isVisible()) {
                         rManager.beginTransaction().setTransition(
                                 android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,

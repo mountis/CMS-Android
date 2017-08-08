@@ -80,11 +80,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         final LinearLayoutCompat layout;
         final RecyclerView recyclerView;
         if (elementType == BrandingElement.ElementType.DOMAIN_NAME) {
-            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_social_media_name_layout);
-            recyclerView = (RecyclerView)view.findViewById(R.id.domain_name_recycler_view);
-        } else {
             layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_domain_name_layout);
             recyclerView = (RecyclerView)view.findViewById(R.id.domain_name_recycler_view);
+        } else {
+            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_social_media_name_layout);
+            recyclerView = (RecyclerView)view.findViewById(R.id.social_media_name_recycler_view);
         }
 
         if (layout != null) {

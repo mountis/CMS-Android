@@ -28,7 +28,7 @@
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_weight="1"
         android:background="@drawable/team_item_circle"
-        android:id="@+id/input_layout_social_media_name"
+        android:id="@+id/input_layout_brand_name"
         android:backgroundTint="#fff"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"

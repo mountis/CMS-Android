@@ -254,7 +254,6 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         public final View mView;
         AppCompatEditText mNameEditText;
         AppCompatButton mCreateButton;
-        LinearLayoutCompat altLayout;
         public LinearLayoutCompat layout;
         public LinearLayoutCompat content;
         boolean rotated = false;
