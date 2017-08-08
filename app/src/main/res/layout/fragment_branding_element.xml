@@ -22,13 +22,13 @@
         android:layout_height="match_parent">
 
         <android.support.v7.widget.RecyclerView
-            android:layout_weight="1"
+            android:layout_gravity="top"
             android:id="@+id/domain_name_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
             tools:listitem="@layout/list_item_domain_name_single"
-            android:layout_marginBottom="30dp"/>
+            android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
 
     <android.support.v7.widget.LinearLayoutCompat
@@ -38,13 +38,13 @@
         android:id="@+id/branding_element_social_media_name_layout"
         android:layout_height="match_parent">
         <android.support.v7.widget.RecyclerView
-            android:layout_weight="1"
+            android:layout_gravity="top"
             android:id="@+id/social_media_name_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
             tools:listitem="@layout/list_item_social_media_name_single"
-            android:layout_marginBottom="30dp"/>
+            android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
 
     <android.support.v7.widget.LinearLayoutCompat

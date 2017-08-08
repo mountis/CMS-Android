@@ -112,6 +112,43 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         };
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         holder.mTeamMemberRoleSpinner.setAdapter(adapter);
+        holder.mTeamMemberRoleSpinner.setSelection(holder.userItem.getRole().toInt(false)-1);
+        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final User currentUserItem = new User(dataSnapshot);
+                    if (currentUserItem.getType().equals(HOST)) {
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
+                        if (holder.userItem.getUID().equals(currentUser.getUID())) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
+                    } else {
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+                            if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                holder.mTeamMemberRoleSpinner.setEnabled(false);
+                            }
+                        } else if (currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        } else if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
+                                holder.mTeamMemberRoleSpinner.setEnabled(false);
+                            }
+                        }
+                        if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            holder.mTeamMemberRoleSpinner.setEnabled(false);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         holder.mTeamMemberRoleSpinner.post(new Runnable() {
             public void run() {
@@ -182,43 +219,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {}
-                });
-                holder.mTeamMemberRoleSpinner.setSelection(holder.userItem.getRole().toInt(false)-1);
-                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final User currentUserItem = new User(dataSnapshot);
-                            if (currentUserItem.getType().equals(HOST)) {
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
-                                if (holder.userItem.getUID().equals(currentUser.getUID())) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
-                            } else {
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                        holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                    }
-                                } else if (currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                } else if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    if (!currentUserItem.hasExclusiveAccess(holder.userItem.getRole()) || currentUserItem.getUID().equals(holder.userItem.getUID())) {
-                                        holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                    }
-                                }
-                                if (!currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                    holder.mTeamMemberRoleSpinner.setEnabled(false);
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
                 });
             }
         });

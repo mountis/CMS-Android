@@ -90,19 +90,6 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
 
-            recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, int oldBottom) {
-                    if ( bottom < oldBottom) {
-                        recyclerView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                recyclerView.smoothScrollToPosition(oldTop);
-                            }
-                        }, 100);
-                    }
-                }
-            });
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
             if (!PROTOTYPE_MODE) {
