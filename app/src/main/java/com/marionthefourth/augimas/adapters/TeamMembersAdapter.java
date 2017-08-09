@@ -48,10 +48,11 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
         @Override
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
             if (!isDisabled) {
-                keyboard.
                 rv.findChildViewUnder(e.getX(), e.getY()).performClick();
                 return true;
             }
+
+            isDisabled = !isDisabled;
             return false;
         }
 

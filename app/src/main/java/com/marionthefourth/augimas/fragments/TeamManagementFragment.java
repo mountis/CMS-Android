@@ -9,6 +9,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.ArrayMap;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -80,6 +81,15 @@ public class TeamManagementFragment extends Fragment {
 
             if (getArguments() != null) {
                 teamItem = (Team) getArguments().getSerializable(Constants.Strings.TEAM);
+
+                if (teamItem != null) {
+                    final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+
+                    if (actionBar != null) {
+                        actionBar.setTitle(Constants.Strings.Titles.TEAM + " " + teamItem.getName());
+                    }
+                }
+
             }
 
             view.setFocusableInTouchMode(true);
@@ -188,10 +198,15 @@ public class TeamManagementFragment extends Fragment {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
+                        final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+
                         final User currentUser = new User(dataSnapshot);
                         if (currentUser.getTeamUID().equals("")) {
                             // Display Join & Create Teams
                             populateNoTeamLayout(activity, view);
+
+
+
                             LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
                             layout.setVisibility(View.GONE);
                         } else {
@@ -199,7 +214,11 @@ public class TeamManagementFragment extends Fragment {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                        populateInTeamLayout(activity, view,recyclerView,new Team(dataSnapshot));
+                                        final Team teamItem = new Team(dataSnapshot);
+                                        if (actionBar != null) {
+                                            actionBar.setTitle(Constants.Strings.Titles.TEAM + " " + teamItem.getName());
+                                        }
+                                        populateInTeamLayout(activity, view,recyclerView,teamItem);
                                         LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
                                         layout.setVisibility(View.GONE);
                                     } else {

@@ -65,7 +65,6 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
         switch (brandingName.getType()) {
-
             case DOMAIN_NAME: view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.list_item_domain_name_single, parent, false);
                 break;
@@ -119,10 +118,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
 
         if (POSITION > brandingName.getData().size()-1) {
-            holder.hideInputLayout(false);
+            holder.hideInput(false);
         } else {
             holder.mNameEditText.setText(brandingName.getData().get(position));
-            holder.revealAndTurnOn(false);
+            holder.revealInputAndTurnButtonToDelete(false);
             holder.editing = false;
         }
 
@@ -131,17 +130,15 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
         holder.mNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (holder.editing) {
                     if (s.length() != 0) {
-                        holder.turnOffDeleteButton();
+                        holder.turnButtonToCreate();
                     } else {
-                        holder.turnOnDeleteButton();
+                        holder.turnButtonToDelete();
                     }
                 }
             }
@@ -166,10 +163,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                 if (!hasFocus) {
                     holder.creating = true;
                     holder.editing = true;
-                    if (holder.hidden) {
-                        holder.revealInputLayout(true);
-                        if (POSITION < getItemCount() && !holder.rotated) {
-                            holder.turnOnDeleteButton();
+                    if (holder.inputHidden) {
+                        holder.revealInput(true);
+                        if (POSITION < getItemCount() && !holder.buttonRotated) {
+                            holder.turnButtonToDelete();
                         }
                     } else {
                         if (holder.creating || holder.editing) {
@@ -177,8 +174,8 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                 handleInput(holder,POSITION,activity);
                             } else {
                                 if (brandingName.getData().size() >= POSITION+1) {
+                                    holder.hideView();
                                     brandingName.getData().remove(POSITION);
-                                    holder.hideAndTurnOff(true);
                                     Backend.update(brandingName, activity);
                                     updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString());
                                 }
@@ -192,8 +189,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.hidden) {
-                    holder.revealAndTurnOn(true);
+                if (holder.inputHidden) {
+                    holder.hideButton();
+                    holder.revealInputAndTurnButtonToDelete(true);
+                    holder.revealButton();
                     holder.creating = true;
                 } else {
                     // delete data if there
@@ -202,10 +201,16 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             handleInput(holder,POSITION,activity);
                         } else {
                             holder.creating = false;
-                            holder.hideAndTurnOff(true);
+                            holder.turnButtonToCreate();
+                            holder.hideButton();
+                            holder.hideInput(true);
+                            holder.revealButton();
                         }
                     } else {
-                        if (holder.rotated) {
+                        if (holder.buttonRotated) {
+                            holder.creating = false;
+                            holder.editing = false;
+                            holder.hideView();
 
                             if (!holder.mNameEditText.getText().toString().equals("")) {
                                 if (POSITION == brandingName.getData().size()) {
@@ -217,9 +222,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                 }
                             }
 
-                            holder.creating = false;
-                            holder.editing = false;
-                            holder.hideAndTurnOff(true);
+
                         }
                     }
                 }
@@ -322,8 +325,8 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         AppCompatButton mCreateButton;
         public LinearLayoutCompat layout;
         public LinearLayoutCompat content;
-        boolean rotated = false;
-        boolean hidden = true;
+        boolean buttonRotated = false;
+        boolean inputHidden = true;
         boolean creating = false;
         boolean editing = false;
 
@@ -349,50 +352,63 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             return super.toString() + " '" + mNameEditText.getText() + "'";
         }
 
-        private void hideAndTurnOff(boolean manual) {
-            hideInputLayout(manual);
-            turnOffDeleteButton();
+        void hideView() {
+            mView.startAnimation(close);
         }
 
-        void revealAndTurnOn(boolean manual) {
-            revealInputLayout(manual);
-            turnOnDeleteButton();
+        private void hideInputAndTurnButtonToCreate(final boolean manual) {
+            turnButtonToCreate();
+            hideInput(manual);
+
         }
 
-        void hideInputLayout(boolean manual) {
-            if (!hidden) {
+        void hideButton() {
+            mCreateButton.startAnimation(close);
+        }
+
+        void revealButton() {
+            mCreateButton.startAnimation(open);
+        }
+
+        void revealInputAndTurnButtonToDelete(final boolean manual) {
+            turnButtonToDelete();
+            revealInput(manual);
+        }
+
+        void hideInput(boolean manual) {
+            if (!inputHidden) {
                 layout.setVisibility(View.GONE);
                 layout.startAnimation(close);
                 if (manual) {
                     mNameEditText.clearFocus();
                 }
-                hidden = true;
+                inputHidden = true;
             }
         }
 
-        void revealInputLayout(boolean manual) {
-            if (hidden) {
+        void revealInput(boolean manual) {
+            if (inputHidden) {
                 layout.setVisibility(View.VISIBLE);
                 layout.startAnimation(open);
                 if (manual) {
                     mNameEditText.requestFocus();
                 }
                 editing = true;
-                hidden = false;
+                inputHidden = false;
             }
         }
 
-        void turnOnDeleteButton() {
-            if (!rotated) {
+        void turnButtonToDelete() {
+            if (!buttonRotated) {
                 mCreateButton.startAnimation(rotate_forward);
-                rotated = true;
+                buttonRotated = true;
             }
         }
 
-        void turnOffDeleteButton() {
-            if (rotated) {
+        void turnButtonToCreate() {
+            if (buttonRotated) {
                 mCreateButton.startAnimation(rotate_back);
-                rotated = false;
+                buttonRotated = false;
             }
         }
     }

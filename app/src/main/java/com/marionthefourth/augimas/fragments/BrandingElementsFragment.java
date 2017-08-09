@@ -71,7 +71,11 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                                 final Team teamItem = new Team(dataSnapshot);
                                 final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
                                 if (actionBar != null) {
-                                    actionBar.setTitle(teamItem.getName());
+                                    if (teamItem.getName().endsWith("s")) {
+                                        actionBar.setTitle(teamItem.getName() +"' " + Constants.Strings.Titles.BRANDING_ELEMENTS);
+                                    } else {
+                                        actionBar.setTitle(teamItem.getName() +"'s " + Constants.Strings.Titles.BRANDING_ELEMENTS);
+                                    }
                                 }
                                 loadBrandingElements(activity,recyclerView,teamItem);
                             }

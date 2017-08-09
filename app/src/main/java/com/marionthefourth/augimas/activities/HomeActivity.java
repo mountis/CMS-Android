@@ -25,7 +25,7 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
 import com.marionthefourth.augimas.fragments.ChatListFragment;
-import com.marionthefourth.augimas.fragments.NotificationsFragment;
+import com.marionthefourth.augimas.fragments.RecentActivitiesFragment;
 import com.marionthefourth.augimas.fragments.SettingsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
@@ -74,8 +74,8 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                         case Constants.Strings.Fragments.CHAT:
                                             navigation.setSelectedItemId(R.id.navigation_chat);
                                             break;
-                                        case Constants.Strings.Fragments.NOTIFICATIONS:
-                                            navigation.setSelectedItemId(R.id.navigation_notifications);
+                                        case Constants.Strings.Fragments.RECENT_ACTIVITIES:
+                                            navigation.setSelectedItemId(R.id.navigation_recent_activities);
                                             break;
                                         case Constants.Strings.Fragments.SETTINGS:
                                             navigation.setSelectedItemId(R.id.navigation_settings);
@@ -158,7 +158,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             final User currentUser = new User(dataSnapshot);
 
                             if (selectedTopFragment == Constants.Ints.Fragments.SETTINGS && item.getItemId() != R.id.navigation_settings) {
-                                if (item.getItemId() == R.id.navigation_notifications && Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
+                                if (item.getItemId() == R.id.navigation_recent_activities && Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
                                     handleNonSupportFragmentRemoval(rManager);
                                 } else if (item.getItemId() == R.id.navigation_chat && Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
                                     handleNonSupportFragmentRemoval(rManager);
@@ -174,8 +174,8 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                 case R.id.navigation_chat:
                                     handleChatNavigation(currentUser, manager);
                                     break;
-                                case R.id.navigation_notifications:
-                                    handleNotificationNavigation(currentUser,manager);
+                                case R.id.navigation_recent_activities:
+                                    handleRecentActivitiesNavigation(currentUser,manager);
                                     break;
                                 case R.id.navigation_settings:
                                     handleSettingsNavigation(currentUser,rManager);
@@ -207,14 +207,14 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     menu.removeItem(R.id.navigation_chat);
                     if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                         menu.removeItem(R.id.navigation_dashboard);
-                        menu.removeItem(R.id.navigation_notifications);
+                        menu.removeItem(R.id.navigation_recent_activities);
                     }
                 } else {
                     if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER) && currentUser.getTeamUID().equals("")) {
                         navigationView.setSelectedItemId(R.id.navigation_settings);
                         menu.removeItem(R.id.navigation_chat);
                         menu.removeItem(R.id.navigation_dashboard);
-                        menu.removeItem(R.id.navigation_notifications);
+                        menu.removeItem(R.id.navigation_recent_activities);
                         menu.removeItem(R.id.navigation_settings);
 
                         final android.app.FragmentManager manager = getFragmentManager();
@@ -223,7 +223,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         navigationView.setSelectedItemId(R.id.navigation_settings);
                         menu.removeItem(R.id.navigation_chat);
                         menu.removeItem(R.id.navigation_dashboard);
-                        menu.removeItem(R.id.navigation_notifications);
+                        menu.removeItem(R.id.navigation_recent_activities);
 
                         final android.app.FragmentManager manager = getFragmentManager();
                         handleSettingsNavigation(currentUser, manager);
@@ -236,12 +236,12 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
-    private void handleNotificationNavigation(final User currentUser, final FragmentManager manager) {
+    private void handleRecentActivitiesNavigation(final User currentUser, final FragmentManager manager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                 if (selectedTopFragment != Constants.Ints.Fragments.NOTIFICATION) {
                     selectedTopFragment = Constants.Ints.Fragments.NOTIFICATION;
-                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new NotificationsFragment(),Constants.Strings.Fragments.NOTIFICATIONS).commitAllowingStateLoss();
+                    manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new RecentActivitiesFragment(),Constants.Strings.Fragments.RECENT_ACTIVITIES).commitAllowingStateLoss();
                 }
             } else {
                 FragmentHelper.display(TOAST,R.string.you_dont_have_access,findViewById(R.id.container));

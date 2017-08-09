@@ -3,6 +3,8 @@ package com.marionthefourth.augimas.fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +20,7 @@ import com.marionthefourth.augimas.adapters.BrandingNamesAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
 
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
@@ -37,9 +40,29 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
         View view = inflater.inflate(R.layout.fragment_branding_element, container, false);
 
         if (getArguments() != null ) {
-            BrandingElement element = ((BrandingElement)getArguments().getSerializable(Constants.Strings.BRANDING_ELEMENT));
+            final BrandingElement element = ((BrandingElement)getArguments().getSerializable(Constants.Strings.BRANDING_ELEMENT));
             if (element != null) {
                 determineBrandingElementType(view,element.getType());
+                final AppCompatActivity activity = (AppCompatActivity)getActivity();
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(element.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final Team teamItem = new Team(dataSnapshot);
+                            final ActionBar actionBar = activity.getSupportActionBar();
+                            if (actionBar != null) {
+                                if (teamItem.getName().endsWith("s")) {
+                                    actionBar.setTitle(teamItem.getName() +"' " + element.getType().toString() + "s");
+                                } else {
+                                    actionBar.setTitle(teamItem.getName() +"'s " + element.getType().toString() + "s");
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                });
             }
         }
 
@@ -48,6 +71,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
 
     private void determineBrandingElementType(final View view, BrandingElement.ElementType elementType) {
         final Activity activity = getActivity();
+
 
         switch (elementType) {
             case DOMAIN_NAME:

@@ -347,6 +347,7 @@ public final class Constants {
     }
     public static final class Strings {
         public static final CharSequence QUESTIONNAIRE_KEY = "questionnaire";
+        public static final String TEAM_MANAGEMENT = "Team Management";
 
         public static final class UIDs {
             public static final String UID = "uid";
@@ -449,7 +450,7 @@ public final class Constants {
             public static final String CHAT_LIST = "Chat List";
             public static final String BRANDING_ELEMENT = "Branding Element";
             public static final String BRANDING_ELEMENTS = "Branding Elements";
-            public static final String NOTIFICATIONS = "Notifications";
+            public static final String RECENT_ACTIVITIES = "Notifications";
             public static final String TEAM_MANAGEMENT = "Team Management";
             public static final String TEAMS = "Teams";
             public static final String QUESTIONNAIRE = "Questionnaire";
@@ -535,6 +536,12 @@ public final class Constants {
             public static final String TEAM_USERNAME_UPDATED = "Team Username Updated";
             public static final String TEAM_NAME_UPDATED = "Team Name Updated";
 
+        }
+
+        public static class Titles {
+
+            public static final String BRANDING_ELEMENTS = "Branding Elements";
+            public static final String TEAM = "Team";
         }
     }
 }

@@ -630,8 +630,7 @@ public final class Notification extends FirebaseContent {
                     break;
                 case MEMBER:
                     if (roleObject != null) {
-                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString());
-                        break;
+                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString() + ".");
                     } else if (statusObject != null) {
                         switch(verbType) {
                             case APPROVE:
@@ -735,7 +734,7 @@ public final class Notification extends FirebaseContent {
                     objectPart = ((User) getObject()).getName();
 
                     if (roleObject != null) {
-                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString());
+                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString() + ".");
                         break;
                     } else if (statusObject != null) {
                         switch(verbType) {

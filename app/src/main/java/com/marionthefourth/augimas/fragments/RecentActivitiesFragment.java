@@ -31,14 +31,14 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
-public final class NotificationsFragment extends Fragment {
+public final class RecentActivitiesFragment extends Fragment {
 
-    public NotificationsFragment() {}
+    public RecentActivitiesFragment() {}
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_notifications, container, false);
+        View view = inflater.inflate(R.layout.fragment_recent_activities, container, false);
 
         final Activity activity = getActivity();
 
@@ -68,6 +68,24 @@ public final class NotificationsFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         final User currentUser = new User(dataSnapshot);
+
+                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    final Team teamItem = new Team(dataSnapshot);
+                                    final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                                    if (actionBar != null) {
+                                        actionBar.setTitle(teamItem.getName());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                         if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                             Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
                                 @Override
