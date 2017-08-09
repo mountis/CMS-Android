@@ -817,7 +817,7 @@ public final class Notification extends FirebaseContent {
         this.extraObjectType = extraObjectType;
     }
 
-    private void addReceiverUID(final FirebaseObject object) {
+    public void addReceiverUID(final FirebaseObject object) {
         if (getReceiverUIDs().size() > 0) {
             for(String uid:getReceiverUIDs()) {
                 if (object instanceof FirebaseEntity) {
@@ -841,7 +841,9 @@ public final class Notification extends FirebaseContent {
                 getReceiverUIDs().add(object.getUID());
             }
         } else if (object instanceof FirebaseContent) {
-            getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
+            if (object instanceof BrandingElement) {
+                getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
+            }
         }
     }
 

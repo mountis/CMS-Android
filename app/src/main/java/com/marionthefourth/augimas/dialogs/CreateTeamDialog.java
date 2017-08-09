@@ -150,11 +150,10 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                 for(final Team teamItem:Team.toArrayList(dataSnapshot)) {
                                     if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
                                         adminTeam = teamItem;
-                                        final Team newTeam = new Team(editTexts.get(0).getText().toString(),editTexts.get(1).getText().toString(),currentUser, FirebaseEntity.EntityRole.OWNER,FirebaseEntity.EntityStatus.AWAITING);
-                                        newTeam.setStatus(FirebaseEntity.EntityStatus.AWAITING);
-                                        newTeam.setType(FirebaseEntity.EntityType.CLIENT);
-
+                                        final Team newTeam = new Team(editTexts.get(0).getText().toString(),editTexts.get(1).getText().toString());
                                         Backend.create(newTeam, activity);
+
+                                        newTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.AWAITING);
                                         currentUser.setTeamUID(newTeam.getUID());
                                         update(currentUser, activity);
 
@@ -173,12 +172,12 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,newTeam.getUID());
-
                                                 // Send Client Notifications
                                                 final Notification clientTeamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
-                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
+                                                clientTeamCreatedNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
                                                 // Send Host Notifications
-                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
+                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
 
                                                 final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                                 activity.startActivity(homeIntent);
@@ -189,8 +188,6 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
 
                                             }
                                         });
-
-
                                     }
                                 }
                             }

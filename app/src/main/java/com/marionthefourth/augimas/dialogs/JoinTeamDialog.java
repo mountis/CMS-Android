@@ -101,7 +101,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
-            Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, Notification.NotificationVerbType.REQUEST, activity), teamItem.getUID(), getCurrentUser().getUID(),Constants.Strings.Headers.NEW_USER, activity);
+            Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, Notification.NotificationVerbType.REQUEST, activity), teamItem.getUID(), getCurrentUser().getUID(),Constants.Strings.Headers.NEW_USER, activity, true);
         }
 
         dialog.dismiss();

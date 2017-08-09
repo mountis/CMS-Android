@@ -181,7 +181,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         Backend.update(teamItem, activity);
 
         FragmentHelper.display(TOAST, R.string.you_added_to_the_team, activity.findViewById(R.id.container));
-        Backend.sendUpstreamNotification(sendNotification(teamItem, invitedUserItem, verb, activity), teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity);
+        Backend.sendUpstreamNotification(sendNotification(teamItem, invitedUserItem, verb, activity), teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
 
         dialog.dismiss();
     }

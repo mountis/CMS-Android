@@ -54,6 +54,9 @@ public final class Team extends FirebaseEntity {
         this();
         setName(name);
         setUsername(username);
+        setStatus(FirebaseEntity.EntityStatus.AWAITING);
+        setType(FirebaseEntity.EntityType.CLIENT);
+        setRole(EntityRole.NONE);
     }
     public Team(final User user) {
         user.setTeamUID(getUID());
@@ -88,10 +91,10 @@ public final class Team extends FirebaseEntity {
         final ArrayList<Team> teams = Team.toArrayList(teamReferences);
 
         for(final Team teamItem:teams) {
-            if (teamItem.getUID().equals(teamUID)) {
-                clientAndHostTeamMap.put(EntityType.CLIENT,teamItem);
+            if (teamItem.getUID().equals(teamUID) && teamItem.getType() != EntityType.HOST) {
+                clientAndHostTeamMap.put(teamItem.getType(),teamItem);
             } else if (teamItem.getType() == EntityType.HOST) {
-                clientAndHostTeamMap.put(EntityType.HOST,teamItem);
+                clientAndHostTeamMap.put(teamItem.getType(),teamItem);
             }
 
             if (clientAndHostTeamMap.size() == 2) {

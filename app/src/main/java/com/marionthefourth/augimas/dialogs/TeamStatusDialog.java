@@ -92,8 +92,8 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                                 final Notification hostNotification = new Notification(currentUser,teamItem, verbType);
                                 final Notification clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),teamItem, verbType);
 
-                                Backend.sendUpstreamNotification(hostNotification, currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.STATUS_UPDATED, activity);
-                                Backend.sendUpstreamNotification(clientNotification, teamItem.getUID(), currentUser.getUID(), Constants.Strings.Headers.STATUS_UPDATED, activity);
+                                Backend.sendUpstreamNotification(hostNotification, currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.STATUS_UPDATED, activity, true);
+                                Backend.sendUpstreamNotification(clientNotification, teamItem.getUID(), currentUser.getUID(), Constants.Strings.Headers.STATUS_UPDATED, activity, true);
                             }
 
                             @Override

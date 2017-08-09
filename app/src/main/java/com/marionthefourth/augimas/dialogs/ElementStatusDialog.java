@@ -129,12 +129,12 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                                         if (teamItem.getUID().equals(elementItem.getTeamUID()) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
                                             // The Client Team Modified It
                                             userUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity);
+                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
                                         } else if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
                                             // The Admin Team Modified It
                                             teamUpdatedStatusNotification.setSubject(currentUser);
                                             teamUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity);
+                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
                                         }
                                     }
                                     send(teamUpdatedStatusNotification, activity);

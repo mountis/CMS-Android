@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.delete;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
@@ -58,25 +57,35 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         final User currentUserItem = new User(dataSnapshot);
                         if (!currentUserItem.getTeamUID().equals("")) {
-                            Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUserItem.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
-                                        final Team teamItem = new Team(dataSnapshot);
-                                        teamItem.removeUser(currentUserItem);
+                                        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUserItem.getTeamUID());
+                                        final FirebaseEntity.EntityType teamType = currentUserItem.getType();
 
+                                        final Notification leftNotification = new Notification(currentUserItem,teamArrayMap.get(teamType),Notification.NotificationVerbType.LEFT);
+                                        if (teamArrayMap.size() == 2) {
+                                            if (teamType == FirebaseEntity.EntityType.HOST) {
+                                                leftNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
+                                                Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                            } else {
+                                                leftNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                                                Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                            }
+                                        }
+                                        Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
+
+                                        teamArrayMap.get(teamType).removeUser(currentUserItem);
                                         update(currentUserItem, activity);
-                                        Backend.unSubscribeFrom(teamItem.getUID());
-
-
-                                        Backend.sendUpstreamNotification(sendNotification(teamItem, currentUserItem, Notification.NotificationVerbType.LEFT, activity),teamItem.getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity);
+                                        Backend.unSubscribeFrom(teamArrayMap.get(teamType).getUID());
                                         FragmentHelper.display(TOAST, R.string.left_team, activity.findViewById(R.id.container));
 
                                         Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.hasChildren()) {
-                                                    final ArrayList<User> usersInTeam = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+                                                    final ArrayList<User> usersInTeam = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamArrayMap.get(teamType).getUID());
 
                                                     if (usersInTeam.size() > 0) {
                                                         // Elevate Highest Tier Group to Owner Status to Ensure Continuity of Team
@@ -98,10 +107,10 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                                             }
                                                         }
                                                     } else {
-                                                        delete(teamItem, activity);
+                                                        delete(teamArrayMap.get(teamType), activity);
                                                     }
                                                 } else {
-                                                    delete(teamItem, activity);
+                                                    delete(teamArrayMap.get(teamType), activity);
                                                 }
                                             }
 

@@ -320,8 +320,11 @@ public final class Backend {
         create(notification, activity);
 //        sendPushNotification(activity,notification);
     }
-    public static void sendUpstreamNotification(final Notification notification, final String toTeamUID, final String senderUID, final String header, Activity activity) {
-        create(notification, activity);
+    public static void sendUpstreamNotification(final Notification notification, final String toTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
+
+        if (shouldSave) {
+            create(notification, activity);
+        }
 
         AsyncTask.execute(new Runnable() {
             @Override

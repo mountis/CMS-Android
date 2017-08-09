@@ -192,12 +192,12 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                                 // Client And Host Notification
                                                                                 hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
                                                                                 clientNotification = new Notification(otherTeam,message, Notification.NotificationVerbType.CHAT);
-                                                                                Backend.sendUpstreamNotification(hostNotification,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
-                                                                                Backend.sendUpstreamNotification(clientNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
+                                                                                Backend.sendUpstreamNotification(hostNotification,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+                                                                                Backend.sendUpstreamNotification(clientNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
                                                                             } else {
                                                                                 // Your Team Notification
                                                                                 hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
-                                                                                Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
+                                                                                Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
                                                                             }
 
                                                                             DeviceHelper.dismissKeyboard(containingView);
@@ -361,7 +361,6 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
-                                                        containingView.findViewById(R.id.chat_layout).setVisibility(View.GONE);
                                                         if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
                                                             containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
                                                             containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
@@ -468,13 +467,28 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     return;
                                                 } else {
                                                     recyclerView.setAdapter(null);
-                                                    if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
-                                                        containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
-                                                        containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
-                                                    } else {
-                                                        containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
-                                                        containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+
+                                                    if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                                                        Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                                                                    containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                                    containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                                                } else {
+                                                                    containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                                                    containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(DatabaseError databaseError) {
+
+                                                            }
+                                                        });
                                                     }
+
+
                                                     return;
                                                 }
                                             }

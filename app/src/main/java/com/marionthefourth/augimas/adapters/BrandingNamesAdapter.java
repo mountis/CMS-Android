@@ -253,8 +253,8 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                     clientNotification = new Notification(currentUser,brandingName, verbType, extraString);
                                 }
 
-                                Backend.sendUpstreamNotification(hostNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity);
-                                Backend.sendUpstreamNotification(clientNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity);
+                                Backend.sendUpstreamNotification(hostNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+                                Backend.sendUpstreamNotification(clientNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
                             }
 
                         }

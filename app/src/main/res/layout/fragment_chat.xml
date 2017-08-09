@@ -39,9 +39,10 @@
         <android.support.v7.widget.LinearLayoutCompat
             android:id="@+id/chat_input_section"
             android:orientation="horizontal"
-            android:layout_gravity="bottom"
             android:padding="2dp"
+            android:layout_alignParentBottom="true"
             android:gravity="bottom"
+            android:layout_gravity="bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
