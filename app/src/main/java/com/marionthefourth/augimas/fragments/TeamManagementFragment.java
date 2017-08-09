@@ -7,6 +7,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.dialogs.CreateTeamDialog;
 import com.marionthefourth.augimas.dialogs.InviteMemberDialog;
 import com.marionthefourth.augimas.dialogs.JoinTeamDialog;
@@ -235,14 +237,72 @@ public class TeamManagementFragment extends Fragment {
                                 updateButton.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
                                                     final Team currentTeam = new Team(dataSnapshot);
-                                                    currentTeam.setUsername(usernameEditText.getText().toString());
-                                                    currentTeam.setName(nameEditText.getText().toString());
-                                                    update(currentTeam, activity);
+
+                                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
+
+                                                            if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
+                                                                final Notification hostNotification;
+                                                                final Notification clientNotification;
+                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                        hostNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    } else {
+                                                                        hostNotification   = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                        clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                        Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                    }
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                } else {
+                                                                    hostNotification   = new Notification(currentTeam,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                    Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+
+                                                                }
+                                                                currentTeam.setUsername(usernameEditText.getText().toString());
+                                                            }
+
+                                                            if (!currentTeam.getName().equals(nameEditText.getText().toString())) {
+                                                                final Notification hostNotification;
+                                                                final Notification clientNotification;
+                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                        hostNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    } else {
+                                                                        hostNotification   = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                        clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                        Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                    }
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                } else {
+                                                                    hostNotification   = new Notification(currentTeam,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                    Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                }
+                                                                currentTeam.setName(nameEditText.getText().toString());
+
+                                                            }
+
+                                                            update(currentTeam, activity);
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+
+
                                                 }
                                             }
 
@@ -274,9 +334,67 @@ public class TeamManagementFragment extends Fragment {
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
                                                     final Team currentTeam = new Team(dataSnapshot);
-                                                    currentTeam.setUsername(usernameEditText.getText().toString());
-                                                    currentTeam.setName(nameEditText.getText().toString());
-                                                    update(currentTeam, activity);
+
+                                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
+
+                                                            if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
+                                                                final Notification hostNotification;
+                                                                final Notification clientNotification;
+                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                        hostNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    } else {
+                                                                        hostNotification   = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                        clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                        Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                    }
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                } else {
+                                                                    hostNotification   = new Notification(currentTeam,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+                                                                    Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity);
+
+                                                                }
+                                                                currentTeam.setUsername(usernameEditText.getText().toString());
+                                                            }
+
+                                                            if (!currentTeam.getName().equals(nameEditText.getText().toString())) {
+                                                                final Notification hostNotification;
+                                                                final Notification clientNotification;
+                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                                                                        hostNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    } else {
+                                                                        hostNotification   = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                        clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                        Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                    }
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                } else {
+                                                                    hostNotification   = new Notification(currentTeam,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    clientNotification = new Notification(currentUser,currentTeam, Notification.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
+                                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                    Backend.sendUpstreamNotification(clientNotification,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity);
+                                                                }
+                                                                currentTeam.setName(nameEditText.getText().toString());
+
+                                                            }
+
+                                                            update(currentTeam, activity);
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+
+
                                                 }
                                             }
 
@@ -329,7 +447,7 @@ public class TeamManagementFragment extends Fragment {
                                 if (dataSnapshot.hasChildren()) {
                                     final ArrayList<User> teamMembers = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
-                                    if (teamMembers.size() == 0 || teamItem == null) {
+                                    if (teamMembers.size() == 0) {
                                         recyclerView.setAdapter(null);
                                     } else {
                                         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {

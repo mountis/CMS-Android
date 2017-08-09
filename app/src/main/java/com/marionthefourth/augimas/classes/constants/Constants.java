@@ -113,6 +113,10 @@ public final class Constants {
                     public static final int REQUEST_JOIN        = 0x194BEF93;
                     public static final int UPDATE              = 0x214ABF51;
                     public static final int BLOCK               = 0x40437374;
+                    public static final int UPDATE_ROLE         = 0x20515901;
+                    public static final int UPDATE_USERNAME     = 0x01235012;
+                    public static final int UPDATE_TEAM_NAME    = 0x01A39512;
+                    public static final int REMOVE              = 0x10239412;
                 }
                 public static final class Indices {
                     public static final int ADD                 =  0;
@@ -131,6 +135,11 @@ public final class Constants {
                     public static final int UPDATE              = 13;
                     public static final int BLOCK               = 14;
                     public static final int CHAT                = 15;
+                    public static final int UPDATE_ROLE         = 16;
+                    public static final int UPDATE_USERNAME     = 17;
+                    public static final int UPDATE_TEAM_NAME    = 18;
+                    public static final int REMOVE              = 19;
+
                 }
             }
             public static final class Subjects {
@@ -146,13 +155,13 @@ public final class Constants {
             public static final class Objects {
                 public static final class IDs{
                     public static final int BRANDING_ELEMENT    = 0x51AB5F84;
-                    public static final int CHAT                = 0x63BBA783;
+                    public static final int MESSAGE = 0x63BBA783;
                     public static final int MEMBER              = 0x73BBF713;
                     public static final int TEAM                = 0x263B6F8A;
                 }
                 public static final class Indices {
                     public static final int BRANDING_ELEMENT    = 0;
-                    public static final int CHAT                = 1;
+                    public static final int MESSAGE = 1;
                     public static final int MEMBER              = 2;
                     public static final int TEAM                = 3;
                 }
@@ -383,6 +392,7 @@ public final class Constants {
             public static final String TOKEN = "token";
 
             public static final String MESSAGE = "message";
+            public static final String HEADER = "header";
         }
 
         public static final class Server {
@@ -513,5 +523,18 @@ public final class Constants {
         public static final String YES_VALUE = "0xA4BEF";
 
 
+        public static class Headers {
+            public static final String NEW_TEAM = "New Team";
+            public static final String NEW_USER = "New User";
+            public static final String USER_REQUEST = "User Request";
+            public static final String USER_INVITATION = "User Invitation";
+            public static final String USER_LEFT = "User Left";
+            public static final String STATUS_UPDATED = "Status Updated";
+            public static final String NEW_MESSAGE = "New Message";
+            public static final String USER_ROLE_CHANGED = "User Role Changed";
+            public static final String TEAM_USERNAME_UPDATED = "Team Username Updated";
+            public static final String TEAM_NAME_UPDATED = "Team Name Updated";
+
+        }
     }
 }

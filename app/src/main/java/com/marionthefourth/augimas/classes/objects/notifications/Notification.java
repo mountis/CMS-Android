@@ -9,7 +9,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseContent;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
-import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -30,6 +30,11 @@ public final class Notification extends FirebaseContent {
     private FirebaseObject subject;
     @Exclude
     private FirebaseObject object;
+    @Exclude
+    private FirebaseEntity.EntityRole roleObject;
+    @Exclude
+    private FirebaseEntity.EntityStatus statusObject;
+    private String extraString = "";
     private String objectUID;
     private String subjectUID;
     private String messageText;
@@ -37,7 +42,17 @@ public final class Notification extends FirebaseContent {
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
     private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
     private NotificationSubjectType subjectType = NotificationSubjectType.DEFAULT;
-//    Class Enums
+    private NotificationObjectType extraObjectType = NotificationObjectType.DEFAULT;
+
+    public Notification(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String extraString) {
+        this(subject,object,verbType);
+        this.extraString = extraString;
+        addReceiverUID(subject);
+        addReceiverUID(object);
+        setMessage();
+    }
+
+    //    Class Enums
     public enum NotificationSubjectType {
         MEMBER, TEAM, DEFAULT;
 
@@ -104,7 +119,8 @@ public final class Notification extends FirebaseContent {
     }
     public enum NotificationVerbType {
         ADD, APPROVE, AWAIT, CREATE , CHAT, DISAPPROVE, INVITE, JOIN, LEFT, RECEIVE,
-        REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, DEFAULT, BLOCK;
+        REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, UPDATE_ROLE, UPDATE_USERNAME,
+        UPDATE_TEAM_NAME, DEFAULT, BLOCK, REMOVE;
 
         @Override
         public String toString() {
@@ -150,6 +166,10 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.IDs.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE;
+                    case UPDATE_ROLE:       return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE_ROLE;
+                    case UPDATE_USERNAME:   return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE_USERNAME;
+                    case UPDATE_TEAM_NAME:  return Constants.Ints.NotificationTypes.Verbs.IDs.UPDATE_TEAM_NAME;
+                    case REMOVE:            return Constants.Ints.NotificationTypes.Verbs.IDs.REMOVE;
                     default:                return DEFAULT_ID;
                 }
             } else {
@@ -170,6 +190,10 @@ public final class Notification extends FirebaseContent {
                     case REQUEST_APPROVAL:  return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_APPROVAL;
                     case REQUEST_JOIN:      return Constants.Ints.NotificationTypes.Verbs.Indices.REQUEST_JOIN;
                     case UPDATE:            return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE;
+                    case UPDATE_ROLE:       return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE_ROLE;
+                    case UPDATE_USERNAME:   return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE_USERNAME;
+                    case UPDATE_TEAM_NAME:  return Constants.Ints.NotificationTypes.Verbs.Indices.UPDATE_TEAM_NAME;
+                    case REMOVE:            return Constants.Ints.NotificationTypes.Verbs.Indices.REMOVE;
                     default:                return DEFAULT_ID;
                 }
             }
@@ -245,7 +269,7 @@ public final class Notification extends FirebaseContent {
 
     }
     public enum NotificationObjectType {
-        BRANDING_ELEMENT, CHAT, MEMBER, TEAM, DEFAULT;
+        BRANDING_ELEMENT, MESSAGE, MEMBER, TEAM, DEFAULT;
 
         @Override
         public String toString() {
@@ -260,7 +284,7 @@ public final class Notification extends FirebaseContent {
             if (mapStyle) {
                 switch (this){
                     case BRANDING_ELEMENT:  return Constants.Ints.NotificationTypes.Objects.IDs.BRANDING_ELEMENT;
-                    case CHAT:              return Constants.Ints.NotificationTypes.Objects.IDs.CHAT;
+                    case MESSAGE:              return Constants.Ints.NotificationTypes.Objects.IDs.MESSAGE;
                     case MEMBER:            return Constants.Ints.NotificationTypes.Objects.IDs.MEMBER;
                     case TEAM:              return Constants.Ints.NotificationTypes.Objects.IDs.TEAM;
                     default:                return DEFAULT_ID;
@@ -268,7 +292,7 @@ public final class Notification extends FirebaseContent {
             } else {
                 switch (this){
                     case BRANDING_ELEMENT:  return Constants.Ints.NotificationTypes.Objects.Indices.BRANDING_ELEMENT;
-                    case CHAT:              return Constants.Ints.NotificationTypes.Objects.Indices.CHAT;
+                    case MESSAGE:              return Constants.Ints.NotificationTypes.Objects.Indices.MESSAGE;
                     case MEMBER:            return Constants.Ints.NotificationTypes.Objects.Indices.MEMBER;
                     case TEAM:              return Constants.Ints.NotificationTypes.Objects.Indices.TEAM;
                     default:                return DEFAULT_ID;
@@ -281,9 +305,9 @@ public final class Notification extends FirebaseContent {
                 case Constants.Ints.NotificationTypes.Objects.IDs.BRANDING_ELEMENT:
                 case Constants.Ints.NotificationTypes.Objects.Indices.BRANDING_ELEMENT:
                     return BRANDING_ELEMENT;
-                case Constants.Ints.NotificationTypes.Objects.IDs.CHAT:
-                case Constants.Ints.NotificationTypes.Objects.Indices.CHAT:
-                    return CHAT;
+                case Constants.Ints.NotificationTypes.Objects.IDs.MESSAGE:
+                case Constants.Ints.NotificationTypes.Objects.Indices.MESSAGE:
+                    return MESSAGE;
                 case Constants.Ints.NotificationTypes.Objects.IDs.MEMBER:
                 case Constants.Ints.NotificationTypes.Objects.Indices.MEMBER:
                     return MEMBER;
@@ -371,8 +395,23 @@ public final class Notification extends FirebaseContent {
     public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
         this(subject,vType);
         setObject(object);
-        setReceiverUIDs(subject,object,vType);
+        addReceiverUID(subject);
+        addReceiverUID(object);
+        setMessage();
     }
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String extraString) {
+        this(subject,object,vType);
+        this.roleObject = roleObject;
+        this.extraString = extraString;
+        setMessage();
+    }
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
+        this(subject,object,vType);
+        this.statusObject = statusObject;
+        this.extraString = extraString;
+        setMessage();
+    }
+
     public Notification(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
         setVerbType(vType);
         setObjectType(oType);
@@ -399,7 +438,7 @@ public final class Notification extends FirebaseContent {
         case BRANDING_ELEMENT:
             navigationDirection = Constants.Strings.Fragments.BRANDING_ELEMENTS;
             break;
-        case CHAT:
+        case MESSAGE:
             navigationDirection = Constants.Strings.Fragments.CHAT;
             break;
         case MEMBER:
@@ -410,13 +449,13 @@ public final class Notification extends FirebaseContent {
 
     }
 
-    bundle.putString(Constants.Strings.Fields.MESSAGE,getMessage());
+    bundle.putString(Constants.Strings.Fields.MESSAGE, setMessage());
     bundle.putString(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
     bundle.putString(Constants.Strings.Fields.FRAGMENT,navigationDirection);
 
     return bundle;
 }
-    public JSONObject toUpstreamJSON(final String toTeamUID) {
+    public JSONObject toUpstreamJSON(final String toTeamUID, final String senderUID, String header) {
         JSONObject upstreamJSON = new JSONObject();
         try {
             upstreamJSON.put(Constants.Strings.Server.Fields.APP_ID,Constants.Strings.Server.OneSignal.APP_ID);
@@ -431,9 +470,10 @@ public final class Notification extends FirebaseContent {
             upstreamJSON.put(Constants.Strings.Server.Fields.FILTERS,filters);
 //            Add Data
             JSONObject data = new JSONObject();
-            data.put(Constants.Strings.Server.Fields.MESSAGE,getMessage());
+            data.put(Constants.Strings.Server.Fields.MESSAGE, setMessage());
             data.put(Constants.Strings.Fields.FRAGMENT,getObjectTypeString());
-            data.put(Constants.Strings.UIDs.SENDER_UID,getSubject().getUID());
+            data.put(Constants.Strings.UIDs.SENDER_UID,senderUID);
+            data.put(Constants.Strings.Fields.HEADER,"");
             upstreamJSON.put(Constants.Strings.Server.Fields.DATA,data);
 //            Add Language
             JSONObject englishMessage = new JSONObject();
@@ -480,7 +520,7 @@ public final class Notification extends FirebaseContent {
         }
         if (getReceiverUIDs() != null) {
             for (int i = 0; i < getReceiverUIDs().size(); i++) {
-                result.put(Constants.Strings.UIDs.RECEIVER_UID+i, getReceiverUIDs().get(i).toString());
+                result.put(Constants.Strings.UIDs.RECEIVER_UID+i, getReceiverUIDs().get(i));
             }
         }
         if (getMessageText() != null) {
@@ -524,7 +564,7 @@ public final class Notification extends FirebaseContent {
         switch (getObjectType()) {
             case BRANDING_ELEMENT:
                 return Constants.Strings.Fragments.BRANDING_ELEMENTS;
-            case CHAT:
+            case MESSAGE:
                 return Constants.Strings.Fragments.CHAT;
             case MEMBER:
                 return Constants.Strings.Fragments.TEAM_MANAGEMENT;
@@ -534,7 +574,120 @@ public final class Notification extends FirebaseContent {
                 return null;
         }
     }
-    public String getMessage() {
+
+    public String getRelativeMessage(final String relativeUID) {
+        String subjectPart = "";
+        String verbPart = "";
+        String objectPart = "";
+        String extraObjectPart = "";
+
+        if (getSubject() != null && getObject() != null) {
+            switch (subjectType) {
+                case MEMBER:
+                case TEAM:
+                    if (subjectUID.equals(relativeUID)) {
+                        subjectPart = "You ";
+                    } else {
+                        subjectPart = ((FirebaseEntity)getSubject()).getName() + " ";
+                    }
+                    break;
+                default:
+                    subjectPart = "[subjectPart] ";
+            }
+
+            switch (objectType) {
+                case BRANDING_ELEMENT:
+                    String objectType = ((BrandingElement) getObject()).getType().toString() + ".";
+                    switch (verbType) {
+                        case ADD:
+                            setMessageText(subjectPart + "added a new item to " + objectType);
+                            break;
+                        case APPROVE:
+                            setMessageText(subjectPart + "approved the " + objectType);
+                            break;
+                        case UPDATE:
+                            setMessageText(subjectPart + "updated a " + objectType + " item.");
+                            break;
+                        case AWAIT:
+                            if (subjectUID.equals(relativeUID)) {
+                                setMessageText(subjectPart + "are awaiting approval of the " + objectType);
+                            } else {
+                                setMessageText(subjectPart + "is awaiting approval of the " + objectType);
+                            }
+                            break;
+                        case DISAPPROVE:
+                            setMessageText(subjectPart + "disapproved the current " + objectType);
+                            break;
+                        case REMOVE:
+                            setMessageText(subjectPart + "removed an item from the " + objectType);
+                            break;
+                        default:
+                            return "missing [objectType]";
+                    }
+                    break;
+                case MESSAGE:
+                    setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
+                    break;
+                case MEMBER:
+                    if (roleObject != null) {
+                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString());
+                        break;
+                    } else if (statusObject != null) {
+                        switch(verbType) {
+                            case APPROVE:
+                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                break;
+                            case INVITE:
+                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                break;
+                            case BLOCK:
+                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                                break;
+                            default:
+                                return "missing [objectType]";
+                        }
+
+                    }
+                    break;
+                case TEAM:
+                    objectPart = ((FirebaseEntity)getObject()).getName();
+                    if (statusObject != null) {
+                        switch(verbType) {
+                            case APPROVE:
+                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                break;
+                            case INVITE:
+                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                break;
+                            case BLOCK:
+                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                                break;
+                        }
+                    } else {
+                        if (extraString != null) {
+                            switch(verbType) {
+                                case UPDATE_USERNAME:
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s username to " + extraString);
+                                    break;
+                                case UPDATE_TEAM_NAME:
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s name to " + extraString);
+                                    break;
+                            }
+                        }
+                    }
+
+                    break;
+                default:
+                    return " missing [objectPart]";
+            }
+
+            return getMessageText();
+        } else {
+            setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
+            return getMessageText();
+        }
+    }
+    public String setMessage() {
         String subjectPart = "";
         String verbPart = "";
         String objectPart = "";
@@ -543,83 +696,96 @@ public final class Notification extends FirebaseContent {
             switch (subjectType) {
                 case MEMBER:
                 case TEAM:
-                    subjectPart = ((FirebaseEntity)getSubject()).getName();
+                    subjectPart = ((FirebaseEntity)getSubject()).getName() + " ";
                     break;
                 default:
-                    subjectPart = "[subjectPart]";
-            }
-
-            switch (verbType) {
-                case ADD:
-                    verbPart = "added";
-                    break;
-                case APPROVE:
-                    verbPart = "approved";
-                    break;
-                case AWAIT:
-                    verbPart = "is waiting for access to";
-                    break;
-                case CREATE:
-                    verbPart = "created";
-                    break;
-                case CHAT:
-                    verbPart = "sent a message to";
-                    break;
-                case DISAPPROVE:
-                    verbPart = "disapproved";
-                    break;
-                case INVITE:
-                    verbPart = "invited";
-                    break;
-                case JOIN:
-                    verbPart = "joined";
-                    break;
-                case LEFT:
-                    verbPart = verbType.toString();
-                    break;
-                case RECEIVE:
-                    verbPart = "received";
-                    break;
-                case REQUEST:
-                    verbPart = "is requesting";
-                    break;
-                case REQUEST_ACCESS:
-                    verbPart = "is requesting access to";
-                    break;
-                case REQUEST_APPROVAL:
-                    verbPart = "is requesting to approval of";
-                    break;
-                case REQUEST_JOIN:
-                    verbPart = "is requesting to join";
-                    break;
-                case UPDATE:
-                    verbPart = "updated";
-                    break;
-                case DEFAULT:
-                    break;
-                case BLOCK:
-                    verbPart = "blocked";
-                    break;
-                default:
-                    verbPart = "[verbPart]";
+                    subjectPart = "[subjectPart] ";
             }
 
             switch (objectType) {
                 case BRANDING_ELEMENT:
-                    objectPart = ((BrandingElement)getObject()).getType().toString();
+                    String objectType = ((BrandingElement) getObject()).getType().toString() + " Section.";
+                    switch (verbType) {
+                        case ADD:
+                            setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
+                            break;
+                        case APPROVE:
+                            setMessageText(subjectPart + "approved the " + objectType);
+                            break;
+                        case UPDATE:
+                            setMessageText(subjectPart + "updated a " + objectType + " item.");
+                            break;
+                        case AWAIT:
+                            setMessageText(subjectPart + "is awaiting approval of the " + objectType);
+                            break;
+                        case DISAPPROVE:
+                            setMessageText(subjectPart + "disapproved the current " + objectType);
+                            break;
+                        case REMOVE:
+                            setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
+                            break;
+                        default:
+                            return "missing [objectType]";
+                    }
                     break;
-                case CHAT:
-                    objectPart = "Chat";
+                case MESSAGE:
+                    setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
                     break;
                 case MEMBER:
+                    objectPart = ((User) getObject()).getName();
+
+                    if (roleObject != null) {
+                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString());
+                        break;
+                    } else if (statusObject != null) {
+                        switch(verbType) {
+                            case APPROVE:
+                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                break;
+                            case INVITE:
+                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                break;
+                            case BLOCK:
+                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                                break;
+                            default:
+                                return "missing [objectType]";
+                        }
+
+                    }
+                    break;
                 case TEAM:
                     objectPart = ((FirebaseEntity)getObject()).getName();
+                    if (statusObject != null) {
+                        switch(verbType) {
+                            case APPROVE:
+                                setMessageText(subjectPart + " accepted " + objectPart + " into the team!");
+                                break;
+                            case INVITE:
+                                setMessageText(subjectPart + " invited " + objectPart + " to the team!");
+                                break;
+                            case BLOCK:
+                                setMessageText(subjectPart + " blocked " + objectPart + " from the team!");
+                                break;
+                        }
+                    } else {
+                        if (extraString != null) {
+                            switch(verbType) {
+                                case UPDATE_USERNAME:
+                                    setMessageText(subjectPart + " changed " + objectPart + "'s username to " + extraString);
+                                    break;
+                                case UPDATE_TEAM_NAME:
+                                    setMessageText(subjectPart + " changed " + objectPart + "'s name to " + extraString);
+                                    break;
+                            }
+                        }
+                    }
+
                     break;
                 default:
-                    objectPart = "[objectPart]";
+                    return " missing [objectPart]";
             }
 
-            setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
             return getMessageText();
         } else {
             setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
@@ -627,28 +793,71 @@ public final class Notification extends FirebaseContent {
         }
 
     }
+
+    public NotificationObjectType getExtraObjectType() {
+        return extraObjectType;
+    }
+
+    public void setExtraObjectType(NotificationObjectType extraObjectType) {
+        this.extraObjectType = extraObjectType;
+    }
+
+    private void addReceiverUID(final FirebaseObject object) {
+        if (getReceiverUIDs().size() > 0) {
+            for(String uid:getReceiverUIDs()) {
+                if (object instanceof FirebaseEntity) {
+                    if (object instanceof User) {
+                        if (uid.equals(((User) object).getTeamUID())) return;
+                    } else if (object instanceof Team) {
+                        if (uid.equals(object.getUID())) return;
+                    }
+                } else if (object instanceof FirebaseContent) {
+                    if (object instanceof BrandingElement) {
+                        if (uid.equals(((BrandingElement) object).getTeamUID())) return;
+                    }
+                }
+            }
+        }
+
+        if (object instanceof FirebaseEntity) {
+            if (object instanceof User) {
+                getReceiverUIDs().add(((User) object).getTeamUID());
+            } else if (object instanceof Team) {
+                getReceiverUIDs().add(object.getUID());
+            }
+        } else if (object instanceof FirebaseContent) {
+            getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
+        }
+    }
+
     private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, NotificationVerbType vType) {
         if (subject instanceof FirebaseEntity) {
             if (subject instanceof User) {
+                getReceiverUIDs().add(((User) subject).getTeamUID());
                 if (object instanceof FirebaseEntity) {
                     if (object instanceof User) {
+                        getReceiverUIDs().add(((User) object).getTeamUID());
                     } else if (object instanceof Team) {
                         getReceiverUIDs().add(object.getUID());
+                    } else if (object instanceof BrandingElement) {
+                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
                     }
                 } else if (object instanceof FirebaseContent) {
                     if (object instanceof BrandingElement) {
-
+                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
                     }
                 }
-            } else  if (subject instanceof Team){
+            } else if (subject instanceof Team){
+                getReceiverUIDs().add(object.getUID());
                 if (object instanceof FirebaseEntity) {
                     if (object instanceof User) {
+                        getReceiverUIDs().add(((User) object).getTeamUID());
                     } else if (object instanceof Team) {
                         getReceiverUIDs().add(object.getUID());
                     }
                 } else if (object instanceof FirebaseContent) {
                     if (object instanceof BrandingElement) {
-
+                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
                     }
                 }
             }
@@ -672,8 +881,8 @@ public final class Notification extends FirebaseContent {
         if (object != null) {
             setObjectUID(object.getUID());
         }
-        if (object instanceof Chat) {
-            setObjectType(NotificationObjectType.CHAT);
+        if (object instanceof Message) {
+            setObjectType(NotificationObjectType.MESSAGE);
         } else if (object instanceof BrandingElement) {
             setObjectType(BRANDING_ELEMENT);
         } else if (object instanceof User) {

@@ -77,7 +77,7 @@ public abstract class FirebaseEntity extends FirebaseObject {
 
         @Override
         public String toString() {
-            return super.toString();
+            return super.toString().substring(0,1) + super.toString().substring(1).toLowerCase();
         }
 
         public String toMapStyleString() {

@@ -1,7 +1,10 @@
 package com.marionthefourth.augimas.adapters;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.os.Bundle;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -14,15 +17,22 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
-import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.fragments.BrandingElementFragment;
+import com.marionthefourth.augimas.fragments.ChatFragment;
+import com.marionthefourth.augimas.fragments.TeamManagementFragment;
 
 import java.util.ArrayList;
+
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
     private Activity activity;
@@ -43,6 +53,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public void onBindViewHolder(final NotificationsAdapter.ViewHolder holder, int position) {
         holder.notificationItem = notifications.get(position);
         holder.mIconLetterMoniker.setText(holder.notificationItem.getMessageText().substring(0,1));
+
         holder.mNotificationText.setText(holder.notificationItem.getMessageText());
 
         pullItemsData(holder);
@@ -50,48 +61,167 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 String entityTeamUID;
-                final Intent intent = new Intent(activity, HomeActivity.class);
-                switch(holder.notificationItem.getSubjectType()) {
-                    case MEMBER:
-                        entityTeamUID = ((User) holder.notificationItem.getSubject()).getTeamUID();
-                        break;
-                    case TEAM:
-                    default:
-                        entityTeamUID = (holder.notificationItem.getSubject()).getUID();
-                        break;
+                if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                    Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            final User currentUser = new User(dataSnapshot);
 
-                }
-                switch (holder.notificationItem.getObjectType()) {
-                    case BRANDING_ELEMENT:
-                        intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.BRANDING_ELEMENTS);
-                        break;
-                    case CHAT:
-                        intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.CHAT);
-                        break;
-                    case MEMBER:
-                    case TEAM:
-                        if (holder.notificationItem.getVerbType() == Notification.NotificationVerbType.CHAT) {
-                            intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.CHAT);
-                            if (holder.notificationItem.getObject() != null) {
-                                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
+                            final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
+                            final String entityTeamUID;
+                            switch(holder.notificationItem.getSubjectType()) {
+                                case MEMBER:
+                                    entityTeamUID = ((User) holder.notificationItem.getSubject()).getTeamUID();
+                                    break;
+                                case TEAM:
+                                default:
+                                    entityTeamUID = (holder.notificationItem.getSubject()).getUID();
+                                    break;
+
                             }
-                        } else {
-                            intent.putExtra(Constants.Strings.Fields.FRAGMENT,Constants.Strings.Fragments.TEAM_MANAGEMENT);
-                            if (holder.notificationItem.getObject() != null) {
-                                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
+                            switch (holder.notificationItem.getObjectType()) {
+                                case BRANDING_ELEMENT:
+                                    Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
+                                            navigation.setSelectedItemId(R.id.navigation_dashboard);
+
+                                            navigation.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Bundle bundle = new Bundle();
+                                                    bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
+                                                    bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
+                                                    ((HomeActivity)activity)
+                                                            .getSupportFragmentManager()
+                                                            .beginTransaction()
+                                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                            .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
+                                                            .commitAllowingStateLoss();
+                                                }
+                                            });
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                    break;
+                                case MESSAGE:
+                                    Backend.getReference(R.string.firebase_messages_directory,activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final Message messageItem = new Message(dataSnapshot);
+
+                                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                navigation.setSelectedItemId(R.id.navigation_dashboard);
+
+                                            } else {
+                                                navigation.setSelectedItemId(R.id.navigation_chat);
+
+                                            }
+
+                                            navigation.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((AppCompatActivity)activity)
+                                                            .getSupportFragmentManager()
+                                                            .beginTransaction()
+                                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                            .replace(R.id.container, ChatFragment.newInstance(messageItem.getChannelUID()))
+                                                            .commit();
+                                                }
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {}
+                                    });
+                                    break;
+                                case MEMBER:
+                                    Backend.getReference(R.string.firebase_users_directory,activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final User userElement = new User(dataSnapshot);
+
+                                            Backend.getReference(R.string.firebase_teams_directory,activity).child(userElement.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                    final Team teamElement = new Team(dataSnapshot);
+                                                    if (currentUser.getTeamUID().equals(entityTeamUID)) {
+                                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                                    } else {
+                                                        navigation.setSelectedItemId(R.id.navigation_settings);
+                                                    }
+
+                                                    navigation.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            ((AppCompatActivity)activity)
+                                                                    .getSupportFragmentManager()
+                                                                    .beginTransaction()
+                                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                                    .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
+                                                                    .commit();
+                                                        }
+                                                    });
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {}
+                                    });
+                                    break;
+                                case TEAM:
+                                    Backend.getReference(R.string.firebase_teams_directory,activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final Team teamElement = new Team(dataSnapshot);
+
+                                            if (currentUser.getTeamUID().equals(entityTeamUID)) {
+                                                navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                            } else {
+                                                navigation.setSelectedItemId(R.id.navigation_settings);
+                                            }
+
+                                            navigation.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((AppCompatActivity)activity)
+                                                            .getSupportFragmentManager()
+                                                            .beginTransaction()
+                                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                            .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
+                                                            .commit();
+                                                }
+                                            });
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {}
+                                    });
+                                    break;
                             }
+
                         }
 
-                        break;
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
-
-                if (entityTeamUID == null || entityTeamUID.equals("")) {
-                    intent.putExtra(Constants.Strings.UIDs.TEAM_UID,entityTeamUID);
-                    activity.startActivity(intent);
-                }
-
-
             }
         });
     }
@@ -147,7 +277,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
     private void pullObjectItemData(final ViewHolder holder) {
         switch (holder.notificationItem.getObjectType()) {
-
             case BRANDING_ELEMENT:
                 Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -164,7 +293,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                     public void onCancelled(DatabaseError databaseError) {}
                 });
                 break;
-            case CHAT:
+            case MESSAGE:
                 Backend.getReference(R.string.firebase_chats_directory, activity).child(holder.notificationItem.getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -186,9 +315,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User userItem = new User(dataSnapshot);
-                            if (userItem != null) {
-                                holder.notificationItem.setObject(userItem);
-                            }
+                            holder.notificationItem.setObject(userItem);
                         }
                     }
 

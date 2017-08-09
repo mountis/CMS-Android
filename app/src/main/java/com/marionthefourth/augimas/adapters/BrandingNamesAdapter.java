@@ -1,6 +1,7 @@
 package com.marionthefourth.augimas.adapters;
 
 import android.app.Activity;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -23,12 +24,15 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 /**
@@ -75,6 +79,8 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     }
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
+        final int POSITION = holder.getAdapterPosition();
+
         if (getItemCount() == 1) {
             if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
                 Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -112,13 +118,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             }
         }
 
-        final int POSITION = holder.getAdapterPosition();
         if (POSITION > brandingName.getData().size()-1) {
-            holder.hideInputLayout();
+            holder.hideInputLayout(false);
         } else {
-            holder.revealAndTurnOn();
             holder.mNameEditText.setText(brandingName.getData().get(position));
-            holder.mNameEditText.setHint("");
+            holder.revealAndTurnOn(false);
+            holder.editing = false;
         }
 
         final Animation bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
@@ -132,10 +137,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() != 0) {
-                    holder.turnOffDeleteButton();
-                } else {
-                    holder.turnOnDeleteButton();
+                if (holder.editing) {
+                    if (s.length() != 0) {
+                        holder.turnOffDeleteButton();
+                    } else {
+                        holder.turnOnDeleteButton();
+                    }
                 }
             }
 
@@ -157,21 +164,24 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    holder.creating = false;
+                    holder.creating = true;
+                    holder.editing = true;
                     if (holder.hidden) {
-                        holder.layout.startAnimation(open);
-                        holder.hidden = false;
+                        holder.revealInputLayout(true);
                         if (POSITION < getItemCount() && !holder.rotated) {
                             holder.turnOnDeleteButton();
                         }
                     } else {
-                        if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,POSITION,activity);
-                        } else {
-                            if (brandingName.getData().size() >= POSITION+1) {
-                                brandingName.getData().remove(POSITION);
-                                holder.hideAndTurnOff();
-                                Backend.update(brandingName, activity);
+                        if (holder.creating || holder.editing) {
+                            if (!holder.mNameEditText.getText().toString().equals("")) {
+                                handleInput(holder,POSITION,activity);
+                            } else {
+                                if (brandingName.getData().size() >= POSITION+1) {
+                                    brandingName.getData().remove(POSITION);
+                                    holder.hideAndTurnOff(true);
+                                    Backend.update(brandingName, activity);
+                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString());
+                                }
                             }
                         }
                     }
@@ -183,7 +193,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             @Override
             public void onClick(View v) {
                 if (holder.hidden) {
-                    holder.revealAndTurnOn();
+                    holder.revealAndTurnOn(true);
                     holder.creating = true;
                 } else {
                     // delete data if there
@@ -192,21 +202,24 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             handleInput(holder,POSITION,activity);
                         } else {
                             holder.creating = false;
-                            holder.hideAndTurnOff();
+                            holder.hideAndTurnOff(true);
                         }
                     } else {
                         if (holder.rotated) {
+
                             if (!holder.mNameEditText.getText().toString().equals("")) {
                                 if (POSITION == brandingName.getData().size()) {
+                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString());
                                     brandingName.getData().remove(holder.mNameEditText.getText().toString());
                                 } else {
+                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE,brandingName.getData().get(POSITION));
                                     brandingName.getData().remove(POSITION);
                                 }
-
-                                Backend.update(brandingName, activity);
                             }
 
-                            holder.hideAndTurnOff();
+                            holder.creating = false;
+                            holder.editing = false;
+                            holder.hideAndTurnOff(true);
                         }
                     }
                 }
@@ -214,12 +227,65 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         });
     }
 
-    private void handleInput(ViewHolder holder, int position, Activity activity) {
+    private void updateBrandingElement(final BrandingElement brandingName, final Notification.NotificationVerbType verbType, final String extraString) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,brandingName.getTeamUID());
+
+                    Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            final User currentUser = new User(dataSnapshot);
+
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                update(brandingName,activity);
+
+                                final Notification hostNotification;
+                                final Notification clientNotification;
+
+                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                    hostNotification = new Notification(currentUser,brandingName, verbType, extraString);
+                                    clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, extraString);
+                                } else {
+                                    hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, extraString);
+                                    clientNotification = new Notification(currentUser,brandingName, verbType, extraString);
+                                }
+
+                                Backend.sendUpstreamNotification(hostNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity);
+                                Backend.sendUpstreamNotification(clientNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity);
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    private void handleInput(final ViewHolder holder, final int position, final Activity activity) {
         if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), brandingName.getType())) {
             if (position == brandingName.getData().size()) {
                 brandingName.getData().add(holder.mNameEditText.getText().toString());
+            } else if (position < brandingName.getData().size()){
+                brandingName.getData().set(position,holder.mNameEditText.getText().toString());
             }
+            holder.creating = false;
+            holder.editing = false;
             Backend.update(brandingName, activity);
+            updateBrandingElement(brandingName, Notification.NotificationVerbType.ADD,holder.mNameEditText.getText().toString());
+
         } else {
             // Inproper Input
             holder.mNameEditText.setText("");
@@ -259,6 +325,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         boolean rotated = false;
         boolean hidden = true;
         boolean creating = false;
+        boolean editing = false;
 
         public ViewHolder(View view) {
             super(view);
@@ -282,31 +349,35 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             return super.toString() + " '" + mNameEditText.getText() + "'";
         }
 
-        private void hideAndTurnOff() {
-            hideInputLayout();
+        private void hideAndTurnOff(boolean manual) {
+            hideInputLayout(manual);
             turnOffDeleteButton();
         }
 
-        void revealAndTurnOn() {
-            revealInputLayout();
+        void revealAndTurnOn(boolean manual) {
+            revealInputLayout(manual);
             turnOnDeleteButton();
         }
 
-        void hideInputLayout() {
+        void hideInputLayout(boolean manual) {
             if (!hidden) {
                 layout.setVisibility(View.GONE);
                 layout.startAnimation(close);
-                mNameEditText.clearFocus();
+                if (manual) {
+                    mNameEditText.clearFocus();
+                }
                 hidden = true;
             }
         }
 
-        void revealInputLayout() {
+        void revealInputLayout(boolean manual) {
             if (hidden) {
                 layout.setVisibility(View.VISIBLE);
                 layout.startAnimation(open);
-                mNameEditText.requestFocus();
-
+                if (manual) {
+                    mNameEditText.requestFocus();
+                }
+                editing = true;
                 hidden = false;
             }
         }

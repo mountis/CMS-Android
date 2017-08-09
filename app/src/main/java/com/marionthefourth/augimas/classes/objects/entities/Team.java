@@ -76,18 +76,37 @@ public final class Team extends FirebaseEntity {
         setUsername(username);
         addUser(user, memberRole, memberStatus);
     }
-    public static ArrayList<Team> toArrayList(DataSnapshot teamReferences) {
+    public static ArrayList<Team> toArrayList(final DataSnapshot teamReferences) {
         final ArrayList<Team> teams = new ArrayList<>();
         for(DataSnapshot teamReference:teamReferences.getChildren()) {
             teams.add(new Team(teamReference));
         }
         return teams;
     }
+    public static android.support.v4.util.ArrayMap<EntityType,Team> toClientAndHostTeamMap(final DataSnapshot teamReferences, final String teamUID) {
+        final android.support.v4.util.ArrayMap<EntityType,Team> clientAndHostTeamMap = new android.support.v4.util.ArrayMap<>();
+        final ArrayList<Team> teams = Team.toArrayList(teamReferences);
+
+        for(final Team teamItem:teams) {
+            if (teamItem.getUID().equals(teamUID)) {
+                clientAndHostTeamMap.put(EntityType.CLIENT,teamItem);
+            } else if (teamItem.getType() == EntityType.HOST) {
+                clientAndHostTeamMap.put(EntityType.HOST,teamItem);
+            }
+
+            if (clientAndHostTeamMap.size() == 2) {
+                return clientAndHostTeamMap;
+            }
+
+        }
+
+        return clientAndHostTeamMap;
+    }
     public static ArrayList<Team> toFilteredArrayList(DataSnapshot userReferences,String field,String content) {
         return Team.toFilteredArrayList(Team.toArrayList(userReferences),field,content);
     }
 
-    public static ArrayList<Team> toFilteredArrayList(ArrayList<Team> teams,String field, String content) {
+    private static ArrayList<Team> toFilteredArrayList(ArrayList<Team> teams,String field, String content) {
         final ArrayList<Team> filteredTeamList = new ArrayList<>();
         for (final Team teamItem:teams) {
             switch (field) {
@@ -95,13 +114,13 @@ public final class Team extends FirebaseEntity {
                     if (!teamItem.getUID().equals(content)) filteredTeamList.add(teamItem);
                     break;
                 case Constants.Strings.UIDs.CHAT_UID:
-                    if (!teamItem.equals(content)) filteredTeamList.add(teamItem);
+                    if (!teamItem.getUID().equals(content)) filteredTeamList.add(teamItem);
                     break;
                 case Constants.Strings.Fields.ENTITY_ROLE:
-                    if (teamItem.getRole().toString().equals(content)) filteredTeamList.add(teamItem);
+                    if ((teamItem.getRole().toString()).equals(content)) filteredTeamList.add(teamItem);
                     break;
                 case Constants.Strings.Fields.ENTITY_TYPE:
-                    if (teamItem.getType().toString().equals(content)) filteredTeamList.add(teamItem);
+                    if ((teamItem.getType().toString()).equals(content)) filteredTeamList.add(teamItem);
                     break;
                 default:
                     break;

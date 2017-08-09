@@ -34,6 +34,7 @@ public class BackendNotificationExtender extends NotificationExtenderService {
 
         JSONObject messageBody = osNotificationReceivedResult.payload.additionalData;
         String navigationDirection;
+        String header = "Augimas";
         if (messageBody.has(Constants.Strings.UIDs.SENDER_UID)) {
             try {
                 if (!messageBody.getString(Constants.Strings.UIDs.SENDER_UID).equals(getCurrentUser().getUID())) {
@@ -41,10 +42,13 @@ public class BackendNotificationExtender extends NotificationExtenderService {
                         navigationDirection = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
                         intent.putExtra(Constants.Strings.Fields.FRAGMENT,navigationDirection);
                     }
+                    if (messageBody.has(Constants.Strings.Fields.HEADER)) {
+                        header = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
+                    }
                     Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                             .setSmallIcon(R.drawable.filled_logo)
-                            .setContentTitle("Augimas")
+                            .setContentTitle(header)
                             .setContentText(messageBody.getString(Constants.Strings.Fields.MESSAGE))
                             .setAutoCancel(true)
                             .setSound(defaultSoundUri)

@@ -201,7 +201,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                 final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
 
                 final Menu menu = navigationView.getMenu();
-
                 final User currentUser = new User(dataSnapshot);
 
                 if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
@@ -451,7 +450,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             BrandingElementsFragment brandingElementsFragment = (BrandingElementsFragment) getSupportFragmentManager().findFragmentByTag(BRANDING_ELEMENTS);
                             if (brandingElementsFragment == null || !brandingElementsFragment.isVisible()) {
 //                                TODO - Check if this works
-                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new BrandingElementsFragment(), BRANDING_ELEMENTS).commit();
+                                manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,BrandingElementsFragment.newInstance(currentUser.getTeamUID()), BRANDING_ELEMENTS).commit();
                             }
                         }
                     }

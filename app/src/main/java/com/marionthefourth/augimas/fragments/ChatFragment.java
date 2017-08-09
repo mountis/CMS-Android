@@ -35,7 +35,6 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.create;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
@@ -73,8 +72,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
             loadPrototypeMessages(activity,recyclerView,channel);
         } else {
             if (getArguments() != null) {
-                setupSendButtonClickListener(activity,sendButton, inputField);
-                loadMessages(activity,recyclerView);
+                setupSendButtonClickListener(activity,sendButton, inputField,view);
+                loadMessages(activity,recyclerView,view);
             }
         }
 
@@ -139,7 +138,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    private void setupSendButtonClickListener(final Activity activity, final AppCompatImageButton sendButton, final TextInputEditText inputField) {
+    private void setupSendButtonClickListener(final Activity activity, final AppCompatImageButton sendButton, final TextInputEditText inputField, final View containingView) {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,14 +150,14 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                             if (currentUser != null && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
                                 if (!inputField.getText().toString().equals("")) {
                                     // Get Channel UID
-                                    Message message = new Message(
+                                    final Message message = new Message(
                                             getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID),
                                             currentUser.getUID(),
                                             inputField.getText().toString()
                                     );
 
                                     // Save Message to Firebase
-                                    create(activity,message);
+                                    create(message, activity);
 
                                     Backend.getReference(R.string.firebase_channels_directory,activity).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
@@ -186,14 +185,22 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                                 }
                                                                             }
 
+                                                                            final Notification hostNotification;
+                                                                            final Notification clientNotification;
+
                                                                             if (channelItem.getName().equals("")) {
-                                                                                Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),otherTeam.getUID());
-                                                                                Backend.sendUpstreamNotification(sendNotification(otherTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
+                                                                                // Client And Host Notification
+                                                                                hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
+                                                                                clientNotification = new Notification(otherTeam,message, Notification.NotificationVerbType.CHAT);
+                                                                                Backend.sendUpstreamNotification(hostNotification,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
+                                                                                Backend.sendUpstreamNotification(clientNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
                                                                             } else {
-                                                                                Backend.sendUpstreamNotification(sendNotification(yourTeam,currentUser, Notification.NotificationVerbType.CHAT,activity),currentUser.getTeamUID());
+                                                                                // Your Team Notification
+                                                                                hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
+                                                                                Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity);
                                                                             }
 
-                                                                            DeviceHelper.dismissKeyboard(getView());
+                                                                            DeviceHelper.dismissKeyboard(containingView);
                                                                         }
                                                                     }
 
@@ -225,7 +232,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     // Clear input text
                                     inputField.setText("");
                                 } else {
-                                    display(SNACKBAR, R.string.required_field, getView());
+                                    display(SNACKBAR, R.string.required_field, containingView);
                                 }
                             }
 
@@ -242,7 +249,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         });
     }
 
-    private void loadMessages(final Activity activity, final RecyclerView recyclerView) {
+    private void loadMessages(final Activity activity, final RecyclerView recyclerView, final View containingView) {
         // Load Messages from Firebase
         Backend.getReference(R.string.firebase_messages_directory, activity).addValueEventListener(new ValueEventListener() {
             @Override
@@ -266,10 +273,10 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     // Read Name of Channel
                                     if (currentChannel.getName().equals("")) {
                                         // Get Both Team UIDs
-                                        getBothTeamUIDs(activity,recyclerView,currentChannel,messages);
+                                        getBothTeamUIDs(activity,recyclerView,currentChannel,messages,containingView);
                                     } else {
                                         // Only Get Current Team UID
-                                        getOneTeamUID(activity,recyclerView,currentChannel,messages);
+                                        getOneTeamUID(activity,recyclerView,currentChannel,messages,containingView);
                                     }
                                 }
                             }
@@ -287,11 +294,11 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
-                                    getView().findViewById(R.id.no_content).setVisibility(View.GONE);
-                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                    containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                    containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
                                 } else {
-                                    getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
-                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                    containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                    containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                 }
                             }
 
@@ -315,7 +322,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    public void getOneTeamUID(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+    public void getOneTeamUID(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages, final View containingView) {
         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -342,8 +349,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                     }
 
                                                     if (messages.size() > 0) {
-                                                        getView().findViewById(R.id.no_content).setVisibility(View.GONE);
-                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                        containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                        containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                         recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,teamMembers, ChatFragment.this));
                                                         recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                                                             @Override
@@ -354,13 +361,13 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                         return;
                                                     } else {
                                                         recyclerView.setAdapter(null);
-                                                        getView().findViewById(R.id.chat_layout).setVisibility(View.GONE);
+                                                        containingView.findViewById(R.id.chat_layout).setVisibility(View.GONE);
                                                         if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
-                                                            getView().findViewById(R.id.no_content).setVisibility(View.GONE);
-                                                            getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                                            containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                            containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
                                                         } else {
-                                                            getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
-                                                            getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                            containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                                            containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                         }
 
                                                         return;
@@ -392,7 +399,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    private void getBothTeamUIDs(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages) {
+    private void getBothTeamUIDs(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages,final View containingView) {
         Backend.getReference(R.string.firebase_chats_directory, activity).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -449,8 +456,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                             }                                                        }
                                                     }
 
-                                                    getView().findViewById(R.id.no_content).setVisibility(View.GONE);
-                                                    getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                    containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                    containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                     recyclerView.setAdapter(new MessageListAdapter(activity,currentChannel,messages,sortedTeamUsers.get(0),sortedTeamUsers.get(1), ChatFragment.this));
                                                     recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                                                         @Override
@@ -462,11 +469,11 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                 } else {
                                                     recyclerView.setAdapter(null);
                                                     if (new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
-                                                        getView().findViewById(R.id.no_content).setVisibility(View.GONE);
-                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
+                                                        containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
+                                                        containingView.findViewById(R.id.no_content_chat).setVisibility(View.VISIBLE);
                                                     } else {
-                                                        getView().findViewById(R.id.no_content).setVisibility(View.VISIBLE);
-                                                        getView().findViewById(R.id.no_content_chat).setVisibility(View.GONE);
+                                                        containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
+                                                        containingView.findViewById(R.id.no_content_chat).setVisibility(View.GONE);
                                                     }
                                                     return;
                                                 }

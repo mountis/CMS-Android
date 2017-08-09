@@ -133,7 +133,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 typesMade.add(false);
                 elements.add(new BrandingElement(BrandingElement.ElementType.getType(i)));
                 elements.get(elements.size()-1).setTeamUID(team.getUID());
-                create(activity,elements.get(elements.size()-1));
+                create(elements.get(elements.size()-1), activity);
             }
         }
 

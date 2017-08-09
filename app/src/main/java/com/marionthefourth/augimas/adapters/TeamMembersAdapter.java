@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -21,13 +22,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
+import static com.marionthefourth.augimas.classes.objects.FirebaseEntity.EntityType.CLIENT;
 import static com.marionthefourth.augimas.classes.objects.FirebaseEntity.EntityType.HOST;
 
 public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.ViewHolder> {
@@ -204,6 +209,42 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                         }
 
                                         update(modifyingUserItem, activity);
+
+                                        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                final String clientTeamUID;
+                                                if (modifyingUserItem.getType() != CLIENT && currentUser.getType() != CLIENT) {
+                                                    // There is no Client in this instance
+                                                }
+                                                final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,modifyingUserItem.getTeamUID());
+                                                final Notification hostNotification;
+                                                final Notification clientNotification;
+                                                if (currentUser.getType() == HOST) {
+                                                    hostNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+
+                                                    if (modifyingUserItem.getType() == HOST) {
+                                                        Backend.sendUpstreamNotification(hostNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity);
+                                                    } else {
+                                                        clientNotification = new Notification(teamArrayMap.get(HOST),modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+
+                                                        Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity);
+                                                        Backend.sendUpstreamNotification(clientNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity);
+                                                    }
+                                                } else {
+                                                    hostNotification = new Notification(teamArrayMap.get(CLIENT),modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                    clientNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+
+                                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(HOST).getUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity);
+                                                    Backend.sendUpstreamNotification(clientNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
                                     } else {
                                         holder.mTeamMemberRoleSpinner.setSelection(modifyingUserItem.getRole().toInt(false)-1);
                                         parent.setEnabled(false);

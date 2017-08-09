@@ -116,7 +116,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
         for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
             final BrandingElement elementItem = new BrandingElement(BrandingElement.ElementType.getType(i));
             elementItem.setTeamUID(newClientTeam.getUID());
-            Backend.create(activity,elementItem);
+            Backend.create(elementItem, activity);
         }
     }
     private void createChannels(Chat connectedChat, Team newClientTeam, Team hostTeam, final Activity activity) {
@@ -132,7 +132,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                 default:
                     break;
             }
-            Backend.create(activity,channel);
+            Backend.create(channel, activity);
         }
     }
     private void createTeamAndAddUserToTeam(final ArrayList<TextInputEditText> editTexts, final Activity activity) {
@@ -154,7 +154,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         newTeam.setStatus(FirebaseEntity.EntityStatus.AWAITING);
                                         newTeam.setType(FirebaseEntity.EntityType.CLIENT);
 
-                                        Backend.create(activity,newTeam);
+                                        Backend.create(newTeam, activity);
                                         currentUser.setTeamUID(newTeam.getUID());
                                         update(currentUser, activity);
 
@@ -162,7 +162,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         createElements(newTeam, activity);
 //                                        Create Chat between the two chats
                                         final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
-                                        Backend.create(activity,connectedChat);
+                                        Backend.create(connectedChat, activity);
 //                                        Create Channels
                                         createChannels(connectedChat, newTeam, teamItem, activity);
 //                                        Create and Send Notifications
@@ -173,7 +173,7 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                         send(joinedTeamNotification, activity);
 
                                         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
-                                        Backend.sendUpstreamNotification(teamCreatedNotification, teamItem.getUID());
+                                        Backend.sendUpstreamNotification(teamCreatedNotification, teamItem.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
 
                                         final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                         activity.startActivity(homeIntent);

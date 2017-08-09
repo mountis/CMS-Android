@@ -77,7 +77,7 @@ public final class NotificationsFragment extends Fragment {
                                         for (DataSnapshot notificationReference:dataSnapshot.getChildren()) {
                                             final Notification notificationItem = new Notification(notificationReference);
                                             if (notificationItem.goesToUID(currentUser.getTeamUID())) {
-                                                if (!notificationItem.getSubjectUID().equals(currentUser.getUID())) {
+                                                if (notificationItem.getSubjectUID().equals(currentUser.getUID())) {
                                                     notifications.add(notificationItem);
                                                 }
                                             }

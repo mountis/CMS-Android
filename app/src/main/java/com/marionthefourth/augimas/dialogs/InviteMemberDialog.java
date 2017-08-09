@@ -15,6 +15,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -180,7 +181,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         Backend.update(teamItem, activity);
 
         FragmentHelper.display(TOAST, R.string.you_added_to_the_team, activity.findViewById(R.id.container));
-        Backend.sendUpstreamNotification(sendNotification(teamItem, invitedUserItem, verb, activity), teamItem.getUID());
+        Backend.sendUpstreamNotification(sendNotification(teamItem, invitedUserItem, verb, activity), teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity);
 
         dialog.dismiss();
     }

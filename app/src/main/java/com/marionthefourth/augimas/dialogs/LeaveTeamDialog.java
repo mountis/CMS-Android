@@ -67,7 +67,9 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
 
                                         update(currentUserItem, activity);
                                         Backend.unSubscribeFrom(teamItem.getUID());
-                                        Backend.sendUpstreamNotification(sendNotification(teamItem, currentUserItem, Notification.NotificationVerbType.LEFT, activity),teamItem.getUID());
+
+
+                                        Backend.sendUpstreamNotification(sendNotification(teamItem, currentUserItem, Notification.NotificationVerbType.LEFT, activity),teamItem.getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity);
                                         FragmentHelper.display(TOAST, R.string.left_team, activity.findViewById(R.id.container));
 
                                         Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {

@@ -125,7 +125,7 @@ public final class HostRequestDialog extends AlertDialog.Builder {
         hostTeam.setStatus(FirebaseEntity.EntityStatus.APPROVED);
         hostTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
 
-        Backend.create(activity,hostTeam);
+        Backend.create(hostTeam, activity);
         currentUser.setTeamUID(hostTeam.getUID());
         update(currentUser, activity);
 
@@ -135,7 +135,7 @@ public final class HostRequestDialog extends AlertDialog.Builder {
         if (inputs.get(0).getText().toString().equals(HOST_REQUEST_CODE)) {
             // Requesting Addition to Admin Team
             hostTeam.addUser(currentUser, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
-            Backend.sendUpstreamNotification(sendNotification(hostTeam, currentUser, Notification.NotificationVerbType.REQUEST, activity), hostTeam.getUID());
+            Backend.sendUpstreamNotification(sendNotification(hostTeam, currentUser, Notification.NotificationVerbType.REQUEST,activity), hostTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.USER_REQUEST, activity);
         } else {
             // Bypass, Adds to Admin Team as Owner
             hostTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);

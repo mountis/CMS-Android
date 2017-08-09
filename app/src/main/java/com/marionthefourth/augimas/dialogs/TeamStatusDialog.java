@@ -2,6 +2,7 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.view.View;
@@ -12,6 +13,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -20,7 +22,6 @@ import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
@@ -70,37 +71,43 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Backend.getReference(R.string.firebase_teams_directory, activity).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                Backend.getReference(R.string.firebase_users_directory, getContext()).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final Team backendTeamItem = new Team(dataSnapshot);
-                            backendTeamItem.setStatus(FirebaseEntity.EntityStatus.getVerbStatus(buttonIndex));
-                            update(backendTeamItem, activity);
+                        final User currentUser = new User(dataSnapshot);
 
-                            final Notification.NotificationVerbType verbType;
-                            switch (buttonIndex) {
-                                case 0: verbType = Notification.NotificationVerbType.APPROVE; break;
-                                default: verbType = Notification.NotificationVerbType.BLOCK; break;
+                        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,teamItem.getUID());
+                                teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(FirebaseEntity.EntityStatus.getVerbStatus(buttonIndex));
+                                update(teamMap.get(FirebaseEntity.EntityType.CLIENT), activity);
+
+                                final Notification.NotificationVerbType verbType;
+                                switch (buttonIndex) {
+                                    case 0: verbType = Notification.NotificationVerbType.APPROVE; break;
+                                    default: verbType = Notification.NotificationVerbType.BLOCK; break;
+                                }
+
+                                final Notification hostNotification = new Notification(currentUser,teamItem, verbType);
+                                final Notification clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),teamItem, verbType);
+
+                                Backend.sendUpstreamNotification(hostNotification, currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.STATUS_UPDATED, activity);
+                                Backend.sendUpstreamNotification(clientNotification, teamItem.getUID(), currentUser.getUID(), Constants.Strings.Headers.STATUS_UPDATED, activity);
                             }
 
-                            Backend.getReference(R.string.firebase_users_directory, getContext()).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    final User currentUser = new User(dataSnapshot);
-                                    Backend.sendUpstreamNotification(sendNotification(backendTeamItem, currentUser, verbType, activity), backendTeamItem.getUID());
-                                    Backend.sendUpstreamNotification(sendNotification(backendTeamItem, currentUser, verbType, activity), currentUser.getTeamUID());
-                                }
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {}
-                            });
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
-                        }
+                            }
+                        });
+
+
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) {}
                 });
+
             }
         });
     }

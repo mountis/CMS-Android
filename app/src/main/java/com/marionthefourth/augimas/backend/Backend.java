@@ -167,7 +167,7 @@ public final class Backend {
 //                    final DatabaseReference newUserReference = usersRef.child(resultUID);
                     user.setUID(resultUID);
 
-                    Backend.create(activity,user);
+                    Backend.create(user, activity);
                     Backend.signIn(activity,view,user);
                     OneSignal.syncHashedEmail(user.getEmail());
                     Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
@@ -280,7 +280,7 @@ public final class Backend {
         });
 
     }
-    public static void create(final Context context, final FirebaseObject firebaseObject) {
+    public static void create(final FirebaseObject firebaseObject, final Context context) {
         String key;
         DatabaseReference myRef = null;
         DatabaseReference itemRef;
@@ -300,7 +300,6 @@ public final class Backend {
             myRef = getReference(R.string.firebase_messages_directory, context);
         } else if (firebaseObject instanceof Notification) {
             myRef = getReference(R.string.firebase_notifications_directory, context);
-            ((Notification) firebaseObject).getMessageText();
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, context);
         } else if (firebaseObject instanceof Device) {
@@ -318,10 +317,12 @@ public final class Backend {
     }
 //    Notification Methods
     public static void send(final Notification notification, final Activity activity) {
-        create(activity,notification);
+        create(notification, activity);
 //        sendPushNotification(activity,notification);
     }
-    public static void sendUpstreamNotification(final Notification notification, final String toTeamUID) {
+    public static void sendUpstreamNotification(final Notification notification, final String toTeamUID, final String senderUID, final String header, Activity activity) {
+        create(notification, activity);
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -344,7 +345,7 @@ public final class Backend {
                         con.setRequestProperty("Authorization", "Basic ZGUxMDg2ZmUtZThiZC00YzVjLTkwODktYTdlZmQ2MDhhYjZj");
                         con.setRequestMethod("POST");
 
-                        JSONObject upstreamJSON = notification.toUpstreamJSON(toTeamUID);
+                        JSONObject upstreamJSON = notification.toUpstreamJSON(toTeamUID,senderUID,header);
 
                         String strJsonBody = upstreamJSON.toString();
 
@@ -381,7 +382,7 @@ public final class Backend {
     }
     public static Notification sendNotification(final FirebaseObject object, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final Activity activity) {
         final Notification notification = new Notification(subject,object,verbType);
-        create(activity,notification);
+        create(notification, activity);
 //        sendPushNotification(activity,notification);
         return notification;
     }
