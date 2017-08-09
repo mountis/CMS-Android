@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -29,7 +30,6 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.send;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
@@ -160,23 +160,37 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
 
 //                                        Create Team Branding Elements
                                         createElements(newTeam, activity);
+                                        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+
 //                                        Create Chat between the two chats
                                         final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
                                         Backend.create(connectedChat, activity);
 //                                        Create Channels
                                         createChannels(connectedChat, newTeam, teamItem, activity);
 //                                        Create and Send Notifications
-                                        final Notification teamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
-                                        teamCreatedNotification.getReceiverUIDs().add(teamItem.getUID());
-                                        send(teamCreatedNotification, activity);
-                                        final Notification joinedTeamNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.JOIN);
-                                        send(joinedTeamNotification, activity);
 
-                                        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
-                                        Backend.sendUpstreamNotification(teamCreatedNotification, teamItem.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
+                                        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,newTeam.getUID());
 
-                                        final Intent homeIntent = new Intent(activity, HomeActivity.class);
-                                        activity.startActivity(homeIntent);
+                                                // Send Client Notifications
+                                                final Notification clientTeamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
+                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
+                                                // Send Host Notifications
+                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity);
+
+                                                final Intent homeIntent = new Intent(activity, HomeActivity.class);
+                                                activity.startActivity(homeIntent);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+
+
                                     }
                                 }
                             }

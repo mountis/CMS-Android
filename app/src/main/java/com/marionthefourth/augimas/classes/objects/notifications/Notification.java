@@ -769,13 +769,28 @@ public final class Notification extends FirebaseContent {
                                 break;
                         }
                     } else {
-                        if (extraString != null) {
+                        if (extraString != null && !extraString.equals("")) {
                             switch(verbType) {
                                 case UPDATE_USERNAME:
                                     setMessageText(subjectPart + " changed " + objectPart + "'s username to " + extraString);
                                     break;
                                 case UPDATE_TEAM_NAME:
                                     setMessageText(subjectPart + " changed " + objectPart + "'s name to " + extraString);
+                                    break;
+                            }
+                        } else {
+                            switch (verbType) {
+                                case CREATE:
+                                    setMessageText(subjectPart + "created " + objectPart + ".");
+                                    break;
+                                case JOIN:
+                                    setMessageText(subjectPart + "joined " + objectPart + ".");
+                                    break;
+                                case LEFT:
+                                    setMessageText(subjectPart + "left " + objectPart + ".");
+                                    break;
+                                case REQUEST_JOIN:
+                                    setMessageText(subjectPart + "is requesting to join " + objectPart + ".");
                                     break;
                             }
                         }
