@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
+import static com.marionthefourth.augimas.classes.objects.FirebaseEntity.EntityStatus.APPROVED;
+import static com.marionthefourth.augimas.classes.objects.FirebaseEntity.EntityStatus.BLOCKED;
 
 public final class TeamStatusDialog extends AlertDialog.Builder {
+
 //    Dialog Constructor
     public TeamStatusDialog(final Team teamItem, final View containingView, final Activity activity) {
         super(containingView.getContext());
@@ -36,14 +39,9 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
         setTitle(getContext().getString(R.string.title_team_status_updater));
 
         ArrayList<AppCompatButton> buttons = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
-            buttons.add(new AppCompatButton(getContext()));
-        }
 
-        setupButtons(buttons, teamItem, activity);
-        setupLayout(buttons, view);
+        setupButtons(buttons, teamItem, view, activity);
 
-        show();
     }
     private void setupLayout(final ArrayList<AppCompatButton> buttons, final View view) {
         final LinearLayout layout = new LinearLayout(view.getContext());
@@ -56,16 +54,56 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
 
         setView(layout);
     }
-    private void setupButtons(final ArrayList<AppCompatButton> buttons, final Team teamItem, final Activity activity) {
-        for (int i = 0; i < buttons.size();i++) {
-            switch (i) {
-                case 0: buttons.get(i).setText(FirebaseEntity.EntityStatus.APPROVED.toVerb()); break;
-                case 1: buttons.get(i).setText(FirebaseEntity.EntityStatus.BLOCKED.toVerb()); break;
+    private void setupButtons(final ArrayList<AppCompatButton> buttons, final Team teamItem, final View view, final Activity activity) {
+
+        Backend.getReference(R.string.firebase_teams_directory,activity).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final Team currentTeam = new Team(dataSnapshot);
+
+                    buttons.add(new AppCompatButton(activity));
+
+                    switch (currentTeam.getStatus()) {
+                        case APPROVED:
+                            buttons.get(0).setText(BLOCKED.toVerb());
+                            buttons.get(0).setTextColor(Color.WHITE);
+                            setupButtonsOnClickListeners(buttons.get(0),0,teamItem,activity);
+                            break;
+                        case AWAITING:
+                            buttons.add(new AppCompatButton(activity));
+
+                            for (int i = 0; i < 2;i++) {
+                                switch (i) {
+                                    case 0: buttons.get(i).setText(APPROVED.toVerb()); break;
+                                    case 1: buttons.get(i).setText(BLOCKED.toVerb()); break;
+                                }
+
+                                buttons.get(i).setTextColor(Color.WHITE);
+                                setupButtonsOnClickListeners(buttons.get(i),i,teamItem,activity);
+                            }
+                            break;
+                        case BLOCKED:
+                            buttons.get(0).setText(APPROVED.toVerb());
+                            buttons.get(0).setTextColor(Color.WHITE);
+                            setupButtonsOnClickListeners(buttons.get(0),0,teamItem,activity);
+                            break;
+                    }
+
+
+                    setupLayout(buttons, view);
+
+                    show();
+                }
             }
 
-            buttons.get(i).setTextColor(Color.WHITE);
-            setupButtonsOnClickListeners(buttons.get(i),i,teamItem,activity);
-        }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
     private void setupButtonsOnClickListeners(final AppCompatButton button, final int buttonIndex, final Team teamItem, final Activity activity) {
         button.setOnClickListener(new View.OnClickListener() {
@@ -80,14 +118,19 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,teamItem.getUID());
-                                teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(FirebaseEntity.EntityStatus.getVerbStatus(buttonIndex));
-                                update(teamMap.get(FirebaseEntity.EntityType.CLIENT), activity);
+
 
                                 final Notification.NotificationVerbType verbType;
-                                switch (buttonIndex) {
-                                    case 0: verbType = Notification.NotificationVerbType.APPROVE; break;
-                                    default: verbType = Notification.NotificationVerbType.BLOCK; break;
+
+                                if (button.getText().toString().equals(APPROVED.toVerb())) {
+                                    verbType = Notification.NotificationVerbType.APPROVE;
+                                    teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(APPROVED);
+                                } else {
+                                    verbType = Notification.NotificationVerbType.BLOCK;
+                                    teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(BLOCKED);
                                 }
+
+                                update(teamMap.get(FirebaseEntity.EntityType.CLIENT), activity);
 
                                 final Notification hostNotification = new Notification(currentUser,teamItem, verbType);
                                 final Notification clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),teamItem, verbType);

@@ -321,7 +321,7 @@ public final class Backend {
 //        sendPushNotification(activity,notification);
     }
     public static void sendUpstreamNotification(final Notification notification, final String toTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
-
+        notification.addReceiverUID(toTeamUID);
         if (shouldSave) {
             create(notification, activity);
         }

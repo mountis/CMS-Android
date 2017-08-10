@@ -34,6 +34,7 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.Fragments.BRANDING_ELEMENTS;
 import static com.marionthefourth.augimas.classes.objects.communication.Channel.sortChannels;
@@ -157,30 +158,54 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
 
-                            if (selectedTopFragment == Constants.Ints.Fragments.SETTINGS && item.getItemId() != R.id.navigation_settings) {
-                                if (item.getItemId() == R.id.navigation_recent_activities && Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
-                                    handleNonSupportFragmentRemoval(rManager);
-                                } else if (item.getItemId() == R.id.navigation_chat && Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
-                                    handleNonSupportFragmentRemoval(rManager);
-                                } else if (item.getItemId() == R.id.navigation_dashboard && Constants.Bools.FeaturesAvailable.DISPLAY_DASHBOARD) {
-                                    handleNonSupportFragmentRemoval(rManager);
-                                }
-                            }
+                            Backend.getReference(R.string.firebase_teams_directory,HomeActivity.this).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        final Team currentTeam = new Team(dataSnapshot);
 
-                            switch (item.getItemId()) {
-                                case R.id.navigation_dashboard:
-                                    handleDashboardNavigation(currentUser,manager);
-                                    break;
-                                case R.id.navigation_chat:
-                                    handleChatNavigation(currentUser, manager);
-                                    break;
-                                case R.id.navigation_recent_activities:
-                                    handleRecentActivitiesNavigation(currentUser,manager);
-                                    break;
-                                case R.id.navigation_settings:
-                                    handleSettingsNavigation(currentUser,rManager);
-                                    break;
-                            }
+                                        if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.BLOCKED) {
+                                            if (selectedTopFragment == Constants.Ints.Fragments.SETTINGS && item.getItemId() != R.id.navigation_settings) {
+                                                if (item.getItemId() == R.id.navigation_recent_activities && Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                } else if (item.getItemId() == R.id.navigation_chat && Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                } else if (item.getItemId() == R.id.navigation_dashboard && Constants.Bools.FeaturesAvailable.DISPLAY_DASHBOARD) {
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                }
+                                            }
+
+                                            switch (item.getItemId()) {
+                                                case R.id.navigation_dashboard:
+                                                    if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.AWAITING) {
+                                                        handleDashboardNavigation(currentUser,manager);
+                                                    }
+                                                    break;
+                                                case R.id.navigation_chat:
+                                                    handleChatNavigation(currentUser, manager);
+                                                    break;
+                                                case R.id.navigation_recent_activities:
+                                                    handleRecentActivitiesNavigation(currentUser,manager);
+                                                    break;
+                                                case R.id.navigation_settings:
+                                                    handleSettingsNavigation(currentUser,rManager);
+                                                    break;
+                                            }
+                                        } else {
+                                            FragmentHelper.display(SNACKBAR,R.string.you_dont_have_access,item.getActionView());
+                                            startActivity(new Intent(HomeActivity.this,SignInActivity.class));
+                                        }
+
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+
                         }
                     }
 

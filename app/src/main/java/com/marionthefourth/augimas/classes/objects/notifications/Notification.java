@@ -35,6 +35,8 @@ public final class Notification extends FirebaseContent {
     @Exclude
     private FirebaseEntity.EntityStatus statusObject;
     private String extraString = "";
+    private String extraString2 = "";
+    private String teamNameString = "";
     private String objectUID;
     private String subjectUID;
     private String messageText;
@@ -44,11 +46,21 @@ public final class Notification extends FirebaseContent {
     private NotificationSubjectType subjectType = NotificationSubjectType.DEFAULT;
     private NotificationObjectType extraObjectType = NotificationObjectType.DEFAULT;
 
-    public Notification(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String extraString) {
+    public Notification(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String teamNameString) {
         this(subject,object,verbType);
-        this.extraString = extraString;
-        addReceiverUID(subject);
-        addReceiverUID(object);
+        setTeamNameString(teamNameString);
+        setMessage();
+    }
+
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString) {
+        this(subject,object,verbType,extraString);
+        setExtraString(extraString);
+        setMessage();
+    }
+
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
+        this(subject,object,verbType,teamNameString,extraString);
+        setExtraString2(extraString2);
         setMessage();
     }
 
@@ -341,7 +353,7 @@ public final class Notification extends FirebaseContent {
             return 5;
         }
     }
-//    Notification Constructors
+    //    Notification Constructors
     public Notification() { }
     public Notification(final Parcel in) {
         final Notification notification = (Notification) in.readSerializable();
@@ -395,20 +407,18 @@ public final class Notification extends FirebaseContent {
     public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
         this(subject,vType);
         setObject(object);
-        addReceiverUID(subject);
-        addReceiverUID(object);
         setMessage();
     }
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String extraString) {
+    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String teamNameString) {
         this(subject,object,vType);
-        this.roleObject = roleObject;
-        this.extraString = extraString;
+        setRoleObject(roleObject);
+        setTeamNameString(teamNameString);
         setMessage();
     }
     public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
         this(subject,object,vType);
-        this.statusObject = statusObject;
-        this.extraString = extraString;
+        setStatusObject(statusObject);
+        setExtraString(extraString);
         setMessage();
     }
 
@@ -704,52 +714,124 @@ public final class Notification extends FirebaseContent {
             switch (objectType) {
                 case BRANDING_ELEMENT:
                     String objectType = ((BrandingElement) getObject()).getType().toString() + " Section.";
-                    switch (verbType) {
-                        case ADD:
-                            setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
-                            break;
-                        case APPROVE:
-                            setMessageText(subjectPart + "approved the " + objectType);
-                            break;
-                        case UPDATE:
-                            setMessageText(subjectPart + "updated a " + objectType + " item.");
-                            break;
-                        case AWAIT:
-                            setMessageText(subjectPart + "is awaiting approval of the " + objectType);
-                            break;
-                        case DISAPPROVE:
-                            setMessageText(subjectPart + "disapproved the current " + objectType);
-                            break;
-                        case REMOVE:
-                            setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
-                            break;
-                        default:
-                            return "missing [objectType]";
-                    }
-                    break;
-                case MESSAGE:
-                    setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
-                    break;
-                case MEMBER:
-                    objectPart = ((User) getObject()).getName();
-
-                    if (roleObject != null) {
-                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString() + ".");
-                        break;
-                    } else if (statusObject != null) {
-                        switch(verbType) {
+                    if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                        String teamName = getTeamNameString();
+                        if (teamName.endsWith("s")) {
+                            teamName += "' ";
+                        } else {
+                            teamName += "'s ";
+                        }
+                        switch (verbType) {
+                            case ADD:
+                                if (extraString != null && !extraString.equals("")) {
+                                    setMessageText(subjectPart + "added " + extraString + " to " + teamName + objectType);
+                                }
+                                break;
                             case APPROVE:
-                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                setMessageText(subjectPart + "approved " + teamName + objectType);
                                 break;
-                            case INVITE:
-                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                            case UPDATE:
+                                if (extraString != null && extraString2 != null && !extraString.equals("") && !extraString2.equals("")) {
+                                    setMessageText(subjectPart + "changed " + extraString + " to " + extraString2 + " in " + teamName + objectType);
+                                }
                                 break;
-                            case BLOCK:
-                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                            case AWAIT:
+                                setMessageText(subjectPart + "is awaiting approval of " + teamName + objectType);
+                                break;
+                            case DISAPPROVE:
+                                setMessageText(subjectPart + "disapproved the " + teamName + objectType);
+                                break;
+                            case REMOVE:
+                                if (extraString != null && !extraString.equals("")) {
+                                    setMessageText(subjectPart + "removed " + extraString + " from " + teamName + objectType);
+                                }
                                 break;
                             default:
                                 return "missing [objectType]";
                         }
+                    } else {
+                        switch (verbType) {
+                            case ADD:
+                                setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
+                                break;
+                            case APPROVE:
+                                setMessageText(subjectPart + "approved the " + objectType);
+                                break;
+                            case UPDATE:
+                                if (extraString != null && extraString2 != null && !extraString.equals("") && !extraString2.equals("")) {
+                                    setMessageText(subjectPart + "changed " + extraString + " to " + extraString2 + " in the " + objectType);
+                                }
+                                break;
+                            case AWAIT:
+                                setMessageText(subjectPart + "is awaiting approval of the " + objectType);
+                                break;
+                            case DISAPPROVE:
+                                setMessageText(subjectPart + "disapproved the current " + objectType);
+                                break;
+                            case REMOVE:
+                                setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
+                                break;
+                            default:
+                                return "missing [objectType]";
+                        }
+                    }
+
+                    break;
+                case MESSAGE:
+                    if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                        String teamName = getTeamNameString();
+                        setMessageText(subjectPart + " from " + teamName + "said, \"" + ((Message) object).getText() + "\"");
+                    } else {
+                        setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
+                    }
+                    break;
+                case MEMBER:
+                    objectPart = ((User) getObject()).getName();
+                    if (roleObject != null) {
+                        String objectName = "";
+                        if (objectPart.endsWith("s")) {
+                            objectName += objectPart + "' ";
+                        } else {
+                            objectName += objectPart + "'s ";
+                        }
+                        if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                            setMessageText(subjectPart + "updated " + objectName + "role in " + getTeamNameString() + " to " + roleObject.toString() + ".");
+                        } else {
+                            setMessageText(subjectPart + "updated " + objectName + "role to " + roleObject.toString() + ".");
+                        }
+                        break;
+                    } else if (statusObject != null) {
+                        if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                            final String teamEndString = getTeamNameString() + "!";
+                            switch(verbType) {
+                                case APPROVE:
+                                    setMessageText(subjectPart + "accepted " + objectPart + " into " + teamEndString);
+                                    break;
+                                case INVITE:
+                                    setMessageText(subjectPart + "invited " + objectPart + " to " + teamEndString);
+                                    break;
+                                case BLOCK:
+                                    setMessageText(subjectPart + "blocked " + objectPart + " from " + teamEndString);
+                                    break;
+                                default:
+                                    return "missing [objectType]";
+                            }
+                        } else {
+                            switch(verbType) {
+                                case APPROVE:
+                                    setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                    break;
+                                case INVITE:
+                                    setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                    break;
+                                case BLOCK:
+                                    setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                                    break;
+                                default:
+                                    return "missing [objectType]";
+                            }
+                        }
+
 
                     }
                     break;
@@ -758,27 +840,33 @@ public final class Notification extends FirebaseContent {
                     if (statusObject != null) {
                         switch(verbType) {
                             case APPROVE:
-                                setMessageText(subjectPart + " accepted " + objectPart + " into the team!");
+                                setMessageText(subjectPart + "accepted " + objectPart + "!");
                                 break;
                             case INVITE:
-                                setMessageText(subjectPart + " invited " + objectPart + " to the team!");
+                                setMessageText(subjectPart + "invited " + objectPart + "!");
                                 break;
                             case BLOCK:
-                                setMessageText(subjectPart + " blocked " + objectPart + " from the team!");
+                                setMessageText(subjectPart + "blocked " + objectPart + "!");
                                 break;
                         }
                     } else {
                         if (extraString != null && !extraString.equals("")) {
                             switch(verbType) {
                                 case UPDATE_USERNAME:
-                                    setMessageText(subjectPart + " changed " + objectPart + "'s username to " + extraString);
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s username to " + extraString);
                                     break;
                                 case UPDATE_TEAM_NAME:
-                                    setMessageText(subjectPart + " changed " + objectPart + "'s name to " + extraString);
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s name to " + extraString);
                                     break;
                             }
                         } else {
                             switch (verbType) {
+                                case APPROVE:
+                                    setMessageText(subjectPart + "approved " + objectPart + ".");
+                                    break;
+                                case BLOCK:
+                                    setMessageText(subjectPart + "blocked " + objectPart + ".");
+                                    break;
                                 case CREATE:
                                     setMessageText(subjectPart + "created " + objectPart + ".");
                                     break;
@@ -844,6 +932,16 @@ public final class Notification extends FirebaseContent {
                 getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
             }
         }
+    }
+
+    public void addReceiverUID(final String toUID) {
+        if (getReceiverUIDs().size() > 0) {
+            for(String uid:getReceiverUIDs()) {
+                if(uid.equals(toUID)) return;
+            }
+        }
+
+        getReceiverUIDs().add(toUID);
     }
 
     private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, NotificationVerbType vType) {
@@ -928,6 +1026,37 @@ public final class Notification extends FirebaseContent {
         return getSubjectType();
     }
 
+
+    public String getExtraString2() {
+        return extraString2;
+    }
+    public void setExtraString2(String extraString2) {
+        this.extraString2 = extraString2;
+    }
+    public FirebaseEntity.EntityRole getRoleObject() {
+        return roleObject;
+    }
+    public void setRoleObject(FirebaseEntity.EntityRole roleObject) {
+        this.roleObject = roleObject;
+    }
+    public FirebaseEntity.EntityStatus getStatusObject() {
+        return statusObject;
+    }
+    public void setStatusObject(FirebaseEntity.EntityStatus statusObject) {
+        this.statusObject = statusObject;
+    }
+    public String getExtraString() {
+        return extraString;
+    }
+    public void setExtraString(String extraString) {
+        this.extraString = extraString;
+    }
+    public String getTeamNameString() {
+        return teamNameString;
+    }
+    public void setTeamNameString(String teamNameString) {
+        this.teamNameString = teamNameString;
+    }
     public String getMessageText() {
         return messageText;
     }

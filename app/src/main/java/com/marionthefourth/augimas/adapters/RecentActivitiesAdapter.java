@@ -34,23 +34,23 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
-public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
+public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActivitiesAdapter.ViewHolder> {
     private Activity activity;
     private ArrayList<Notification> notifications = new ArrayList<>();
 //    Adapter Constructor
-    public NotificationsAdapter(Activity activity, ArrayList<Notification> notifications) {
+    public RecentActivitiesAdapter(Activity activity, ArrayList<Notification> notifications) {
         this.activity = activity;
         this.notifications = notifications;
     }
 //    Adapter Methods
     @Override
-    public NotificationsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecentActivitiesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_notification, parent, false);
-        return new NotificationsAdapter.ViewHolder(view);
+        return new RecentActivitiesAdapter.ViewHolder(view);
     }
     @Override
-    public void onBindViewHolder(final NotificationsAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(final RecentActivitiesAdapter.ViewHolder holder, int position) {
         holder.notificationItem = notifications.get(position);
         holder.mIconLetterMoniker.setText(holder.notificationItem.getMessageText().substring(0,1));
 

@@ -258,7 +258,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                                     final Notification hostNotification;
                                                     final Notification clientNotification;
                                                     if (currentUser.getType() == HOST) {
-                                                        hostNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                        hostNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,teamArrayMap.get(CLIENT).getName());
 
                                                         if (modifyingUserItem.getType() == HOST) {
                                                             Backend.sendUpstreamNotification(hostNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);

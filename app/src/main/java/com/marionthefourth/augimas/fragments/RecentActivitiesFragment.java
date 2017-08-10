@@ -18,7 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
-import com.marionthefourth.augimas.adapters.NotificationsAdapter;
+import com.marionthefourth.augimas.adapters.RecentActivitiesAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
@@ -27,6 +27,7 @@ import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
@@ -89,26 +90,25 @@ public final class RecentActivitiesFragment extends Fragment {
                         if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                             Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
                                 @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.hasChildren()) {
-                                        final ArrayList<Notification> notifications = new ArrayList<>();
-                                        for (DataSnapshot notificationReference:dataSnapshot.getChildren()) {
-                                            final Notification notificationItem = new Notification(notificationReference);
-                                            if (notificationItem.goesToUID(currentUser.getTeamUID())) {
-                                                if (notificationItem.getSubjectUID().equals(currentUser.getUID()) || notificationItem.goesToUID(currentUser.getTeamUID())) {
-                                                    notifications.add(notificationItem);
-                                                }
+                                public void onDataChange(final DataSnapshot notificationSnapshot) {
+                                    if (notificationSnapshot.hasChildren()) {
+                                        final ArrayList<Notification> filteredNotifications = new ArrayList<>();
+                                        for (final Notification notificationItem:Notification.toArrayList(notificationSnapshot)) {
+                                            if (notificationItem.goesToUID(currentUser.getTeamUID()) && !notificationItem.getSubjectUID().equals(currentUser.getTeamUID())) {
+                                                filteredNotifications.add(notificationItem);
                                             }
                                         }
 
-                                        if (notifications.size() > 0) {
+                                        if (filteredNotifications.size() > 0) {
 
+                                            Collections.reverse(filteredNotifications);
                                             view.findViewById(R.id.no_content).setVisibility(View.GONE);
-                                            recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
+                                            recyclerView.setAdapter(new RecentActivitiesAdapter(activity, filteredNotifications));
                                         } else {
                                             recyclerView.setAdapter(null);
                                             view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
                                         }
+
 
                                     } else {
                                         recyclerView.setAdapter(null);
@@ -179,7 +179,7 @@ public final class RecentActivitiesFragment extends Fragment {
         notifications.add(new Notification(walmart, Notification.NotificationVerbType.UPDATE, BrandingElement.ElementType.MISSION_STATEMENT));
         notifications.add(new Notification(aol, Notification.NotificationVerbType.APPROVE, BrandingElement.ElementType.DOMAIN_NAME));
 
-        recyclerView.setAdapter(new NotificationsAdapter(activity,notifications));
+        recyclerView.setAdapter(new RecentActivitiesAdapter(activity,notifications));
     }
 
 }

@@ -15,7 +15,7 @@ import android.view.animation.AnimationUtils;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
-import com.marionthefourth.augimas.dialogs.ElementStatusDialog;
+import com.marionthefourth.augimas.dialogs.BrandingElementStatusDialog;
 
 import java.util.ArrayList;
 
@@ -86,7 +86,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         holder.mBrandingElementStatus.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                new ElementStatusDialog(holder, holder.mView, activity);
+                new BrandingElementStatusDialog(holder, holder.mView, activity);
                 return true;
             }
         });

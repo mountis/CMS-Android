@@ -1,6 +1,7 @@
 package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.view.View;
@@ -21,14 +22,13 @@ import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.send;
 import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 
-public final class ElementStatusDialog extends AlertDialog.Builder {
+public final class BrandingElementStatusDialog extends AlertDialog.Builder {
 //    Dialog Constructor
-    public ElementStatusDialog(final BrandingElementsAdapter.ViewHolder holder, final View containingView, final Activity activity) {
+    public BrandingElementStatusDialog(final BrandingElementsAdapter.ViewHolder holder, final View containingView, final Activity activity) {
         super(containingView.getContext());
         setupDialog(holder, containingView, activity);
     }
@@ -72,7 +72,6 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
                 @Override
                 public void onClick(View v) {
                     holder.mBrandingElementStatus.setBackgroundDrawable(BrandingElement.ElementStatus.getStatus(finalI).toDrawable(getContext()));
-
                     if (!PROTOTYPE_MODE) {
                         Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(holder.elementItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -81,8 +80,9 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
 
                                 elementItem.setStatus(BrandingElement.ElementStatus.fromVerb(buttons.get(finalI).getText().toString()));
                                 holder.elementItem = elementItem;
+
                                 update(elementItem, activity);
-                                sendNotifications(holder.elementItem, activity);
+                                sendStatusDialogNotifications(holder.elementItem, activity);
                                 dialog.dismiss();
                             }
 
@@ -96,49 +96,35 @@ public final class ElementStatusDialog extends AlertDialog.Builder {
         }
     }
 //    Functional Methods
-    private void sendNotifications(final BrandingElement elementItem, final Activity activity) {
+    private void sendStatusDialogNotifications(final BrandingElement elementItem, final Activity activity) {
         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (!currentUser.getTeamUID().equals("")) {
-                        final Notification userUpdatedStatusNotification = new Notification();
-                        final Notification teamUpdatedStatusNotification = new Notification();
-
-                        userUpdatedStatusNotification.setSubject(currentUser);
-                        userUpdatedStatusNotification.setSubjectType(Notification.NotificationSubjectType.MEMBER);
-
-                        Notification.NotificationVerbType verb = Notification.NotificationVerbType.toVerbType(elementItem.getStatus());
-
-                        userUpdatedStatusNotification.setVerbType(verb);
-                        teamUpdatedStatusNotification.setVerbType(verb);
-
-                        userUpdatedStatusNotification.setObject(elementItem);
-                        userUpdatedStatusNotification.setObjectType(Notification.NotificationObjectType.BRANDING_ELEMENT);
-                        teamUpdatedStatusNotification.setObject(elementItem);
-                        teamUpdatedStatusNotification.setObjectType(Notification.NotificationObjectType.BRANDING_ELEMENT);
+                        final Notification.NotificationVerbType verb = Notification.NotificationVerbType.toVerbType(elementItem.getStatus());
 
                         // Send modifying notification to both Teams
                         Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                    for (final Team teamItem:Team.toArrayList(dataSnapshot)) {
-                                        // Get the Client's Team & Host's Team
-                                        if (teamItem.getUID().equals(elementItem.getTeamUID()) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
-                                            // The Client Team Modified It
-                                            userUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
-                                        } else if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST) && elementItem.getTeamUID().equals(currentUser.getTeamUID())) {
-                                            // The Admin Team Modified It
-                                            teamUpdatedStatusNotification.setSubject(currentUser);
-                                            teamUpdatedStatusNotification.getReceiverUIDs().add(teamItem.getUID());
-                                            Backend.sendUpstreamNotification(userUpdatedStatusNotification, teamItem.getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
-                                        }
+                                    final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,elementItem.getTeamUID());
+
+                                    final Notification hostNotification;
+                                    final Notification clientNotification;
+
+                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                        hostNotification = new Notification(currentUser,elementItem,verb,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getName());
+                                        clientNotification = new Notification(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+                                    } else {
+                                        hostNotification = new Notification(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+                                        clientNotification = new Notification(currentUser,elementItem,verb);
                                     }
-                                    send(teamUpdatedStatusNotification, activity);
-                                    send(userUpdatedStatusNotification, activity);
+
+                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
+                                    Backend.sendUpstreamNotification(clientNotification,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
                                 }
                             }
 

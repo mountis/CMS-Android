@@ -32,7 +32,6 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.update;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 /**
@@ -77,7 +76,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         return new BrandingNamesAdapter.ViewHolder(view);
     }
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         final int POSITION = holder.getAdapterPosition();
 
         if (getItemCount() == 1) {
@@ -151,7 +150,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    handleInput(holder,POSITION,activity);
+                    handleInput(holder,POSITION);
                 }
                 return false;
             }
@@ -171,13 +170,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     } else {
                         if (holder.creating || holder.editing) {
                             if (!holder.mNameEditText.getText().toString().equals("")) {
-                                handleInput(holder,POSITION,activity);
+                                handleInput(holder,POSITION);
                             } else {
                                 if (brandingName.getData().size() >= POSITION+1) {
                                     holder.hideView();
                                     brandingName.getData().remove(POSITION);
-                                    Backend.update(brandingName, activity);
-                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString());
+
+                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 }
                             }
                         }
@@ -198,7 +197,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     // delete data if there
                     if (holder.creating) {
                         if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,POSITION,activity);
+                            handleInput(holder,POSITION);
                         } else {
                             holder.creating = false;
                             holder.turnButtonToCreate();
@@ -214,11 +213,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
                             if (!holder.mNameEditText.getText().toString().equals("")) {
                                 if (POSITION == brandingName.getData().size()) {
-                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString());
                                     brandingName.getData().remove(holder.mNameEditText.getText().toString());
+                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 } else {
-                                    updateBrandingElement(brandingName, Notification.NotificationVerbType.REMOVE,brandingName.getData().get(POSITION));
+                                    final String previousName = brandingName.getData().get(position);
                                     brandingName.getData().remove(POSITION);
+                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE,previousName, null);
                                 }
                             }
 
@@ -230,7 +230,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         });
     }
 
-    private void updateBrandingElement(final BrandingElement brandingName, final Notification.NotificationVerbType verbType, final String extraString) {
+    private void sendBrandingElementNotification(final BrandingElement brandingName, final Notification.NotificationVerbType verbType, final String extraString, final String extraString2) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -243,21 +243,34 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             final User currentUser = new User(dataSnapshot);
 
                             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                update(brandingName,activity);
-
                                 final Notification hostNotification;
                                 final Notification clientNotification;
 
-                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                    hostNotification = new Notification(currentUser,brandingName, verbType, extraString);
-                                    clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, extraString);
-                                } else {
-                                    hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, extraString);
-                                    clientNotification = new Notification(currentUser,brandingName, verbType, extraString);
+                                switch (verbType) {
+                                    case UPDATE:
+                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                            hostNotification = new Notification(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString,extraString2);
+                                            clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "", extraString, extraString2);
+                                        } else {
+                                            hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString,extraString2);
+                                            clientNotification = new Notification(currentUser,brandingName, verbType, "",extraString,extraString2);
+                                        }
+                                        break;
+                                    default:
+                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                            hostNotification = new Notification(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString);
+                                            clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "",extraString);
+                                        } else {
+                                            hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString);
+                                            clientNotification = new Notification(currentUser,brandingName, verbType,"", extraString);
+                                        }
+                                        break;
                                 }
 
-                                Backend.sendUpstreamNotification(hostNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-                                Backend.sendUpstreamNotification(clientNotification,brandingName.getTeamUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+                                Backend.sendUpstreamNotification(hostNotification,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+                                Backend.sendUpstreamNotification(clientNotification,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+
+                                Backend.update(brandingName, activity);
                             }
 
                         }
@@ -277,18 +290,20 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
     }
 
-    private void handleInput(final ViewHolder holder, final int position, final Activity activity) {
+    private void handleInput(final ViewHolder holder, final int position) {
         if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), brandingName.getType())) {
             if (position == brandingName.getData().size()) {
                 brandingName.getData().add(holder.mNameEditText.getText().toString());
+                sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.ADD,holder.mNameEditText.getText().toString(), null);
             } else if (position < brandingName.getData().size()){
-                brandingName.getData().set(position,holder.mNameEditText.getText().toString());
+                if (!holder.mNameEditText.getText().toString().equals(brandingName.getData().get(position))) {
+                    final String previousName = brandingName.getData().get(position);
+                    brandingName.getData().set(position,holder.mNameEditText.getText().toString());
+                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString());
+                }
             }
             holder.creating = false;
             holder.editing = false;
-            Backend.update(brandingName, activity);
-            updateBrandingElement(brandingName, Notification.NotificationVerbType.ADD,holder.mNameEditText.getText().toString());
-
         } else {
             // Inproper Input
             holder.mNameEditText.setText("");
@@ -359,7 +374,6 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         private void hideInputAndTurnButtonToCreate(final boolean manual) {
             turnButtonToCreate();
             hideInput(manual);
-
         }
 
         void hideButton() {
