@@ -13,15 +13,13 @@ public final class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
+            case android.R.id.home: NavUtils.navigateUpFromSameTask(this);
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            default: return super.onOptionsItemSelected(item);
         }
     }
 }

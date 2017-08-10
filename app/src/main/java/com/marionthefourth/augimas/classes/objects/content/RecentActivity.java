@@ -1080,7 +1080,16 @@ public final class RecentActivity extends FirebaseContent {
                                     setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
                                     break;
                                 case INVITE:
-                                    setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                    if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                                        final String teamName = getTeamNameString();
+                                        if (getExtraString() != null && !getExtraString().equals("")) {
+                                            setMessageText(subjectPart + "from " + getExtraString() + ", invited " + objectPart + " to " + teamName + ".");
+                                        } else {
+                                            setMessageText(subjectPart + "invited " + objectPart + " to " + teamName + ".");
+                                        }
+                                    } else {
+                                        setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                    }
                                     break;
                                 case BLOCK:
                                     setMessageText(subjectPart + "blocked " + objectPart + " from the team!");

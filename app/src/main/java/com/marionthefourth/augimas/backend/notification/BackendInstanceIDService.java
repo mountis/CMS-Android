@@ -9,6 +9,6 @@ public final class BackendInstanceIDService extends FirebaseInstanceIdService {
     @Override
     public void onTokenRefresh() {
         // Get updated InstanceID token.
-        Backend.sendRegistrationToServer(getApplicationContext(),FirebaseInstanceId.getInstance().getToken());
+        Backend.sendRegistrationToServer(FirebaseInstanceId.getInstance().getToken(), getApplicationContext());
     }
 }

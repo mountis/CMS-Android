@@ -101,7 +101,6 @@ public final class SignInFragment extends Fragment {
                     final User currentUser = new User(dataSnapshot);
                     if (!currentUser.getTeamUID().equals("")) {
                         OneSignal.sendTag(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
-
                     }
                     OneSignal.syncHashedEmail(user.getEmail());
                     OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
@@ -201,7 +200,7 @@ public final class SignInFragment extends Fragment {
                         display(SNACKBAR, R.string.feature_unavailable, view);
                     }
 
-                    Backend.signIn(activity,view,user);
+                    Backend.signIn(user, view, activity);
                 }
             }
         });

@@ -15,21 +15,19 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.ChatFragment;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public final class ChatActivity extends AppCompatActivity {
-    private ViewPager mViewPager;
-    private ChatActivity.SectionsPagerAdapter mSectionsPagerAdapter;
-//    Activity Methods
+    //    Activity Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,19 +35,13 @@ public final class ChatActivity extends AppCompatActivity {
 
         setupActionBar(getSupportActionBar());
 
-        // Create the adapter that will return a fragment for each of the two
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new ChatActivity.SectionsPagerAdapter(getSupportFragmentManager());
+        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        final ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
+        final SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
-
         mViewPager.setCurrentItem(getIntent().getIntExtra(Constants.Strings.Fields.SELECTED_INDEX,0));
 
         setupTabItemTitles(tabLayout);
@@ -65,73 +57,64 @@ public final class ChatActivity extends AppCompatActivity {
     }
 //    Action Bar Methods
     private void setupActionBar(final ActionBar actionBar) {
-        actionBar.setTitle("Chat");
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setTitle("Chat");
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 //    Tab Item Naming Methods
     private void setupTabItemTitles(final TabLayout tabLayout) {
         final ArrayList<String> teamUIDs = getTeamUIDsFromIntent();
 
-        Backend.getReference(R.string.firebase_users_directory, this).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                        // Get Current Team
-                        Backend.getReference(R.string.firebase_teams_directory, ChatActivity.this).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    final Team currentTeam = new Team(dataSnapshot);
-                                    if (currentTeam != null) {
-                                        if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-
-                                        }
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, this).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User(userSnapshot);
+                        if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                            // Get Current Team
+                            Backend.getReference(R.string.firebase_teams_directory, ChatActivity.this).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot teamSnapshot) {
+                                    if (teamSnapshot.exists()) {
+                                        final Team currentTeam = new Team(teamSnapshot);
                                         tabLayout.getTabAt(FirebaseEntity.EntityType.HOST.toInt(false)).setText(currentTeam.getName());
-
-                                        // get other Team
-                                        setTabTextToOtherTeamName(tabLayout,teamUIDs);
+                                        // Get other Team
+                                        setTabTextToOtherTeamName(teamUIDs, tabLayout);
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                                // TODO - Display Empty Chat
-                            }
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    // TODO - Display Empty Chat
+                                }
+                            });
+                        }
+
                     }
-
                 }
-            }
 
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // TODO - Display Empty Chat
-            }
-        });    }
-    private void setTabTextToOtherTeamName(final TabLayout tabLayout, ArrayList<String> teamUIDs) {
-        // Pull the Team from Firebase matching the other Team UID
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // TODO - Display Empty Chat
+                }
+            });
+        }
+    }
+    private void setTabTextToOtherTeamName(final ArrayList<String> teamUIDs, final TabLayout tabLayout) {
         Backend.getReference(R.string.firebase_teams_directory, this).child(teamUIDs.get(FirebaseEntity.EntityType.CLIENT.toInt(false))).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final Team teamItem = new Team(dataSnapshot);
-                    if (teamItem != null) {
-                        // Set the First Tab Name To the Other Team's Name
-                        tabLayout.getTabAt(FirebaseEntity.EntityType.CLIENT.toInt(false)).setText(teamItem.getName());
-                    }
-                } else {
-                    // TODO - Display Error, Couldn't Get Team Name
+                    // Set the First Tab Name To the Other Team's Name
+                    tabLayout.getTabAt(FirebaseEntity.EntityType.CLIENT.toInt(false)).setText(teamItem.getName());
                 }
             }
-
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // TODO - Display Error, Couldn't Get Team Name
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 //    Intent Methods
@@ -148,17 +131,14 @@ public final class ChatActivity extends AppCompatActivity {
         return channelUIDs;
     }
 //    Section Pager Adapter
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+        private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
-
         @Override
         public Fragment getItem(int position) {
             return ChatFragment.newInstance(getChannelUIDsFromIntent().get(position));
         }
-
         @Override
         public int getCount() {
             return 2;

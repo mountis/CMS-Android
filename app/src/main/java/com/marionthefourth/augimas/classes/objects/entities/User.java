@@ -120,10 +120,10 @@ public final class User extends FirebaseEntity {
         final ArrayMap<EntityRole,ArrayList<User>> userArrayMap = new ArrayMap<>();
         for(final EntityRole role:EntityRole.getAllRoles()) {
             userArrayMap.put(role,new ArrayList<User>());
-            for(final User user:users) {
+            for(final User user:clonedUsers) {
                 if (user.getRole().equals(role)) {
                     userArrayMap.get(role).add(user);
-                    clonedUsers.remove(user);
+//                    clonedUsers.remove(user);
                 }
             }
         }

@@ -66,15 +66,20 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
 
                                         final RecentActivity leftRecentActivity = new RecentActivity(currentUserItem,teamArrayMap.get(teamType), RecentActivity.NotificationVerbType.LEFT);
                                         if (teamArrayMap.size() == 2) {
-                                            if (teamType == FirebaseEntity.EntityType.HOST) {
+                                            leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+
+                                            if (teamType != FirebaseEntity.EntityType.HOST) {
                                                 leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
-                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
                                             } else {
-                                                leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
-                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
                                             }
+
+                                        } else {
+                                            leftRecentActivity.addReceiverUID(currentUserItem);
+                                            Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
+
                                         }
-                                        Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
 
                                         teamArrayMap.get(teamType).removeUser(currentUserItem);
                                         update(currentUserItem, activity);

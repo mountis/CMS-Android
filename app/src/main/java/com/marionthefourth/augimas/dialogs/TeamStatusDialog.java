@@ -119,7 +119,6 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,teamItem.getUID());
 
-
                                 final RecentActivity.NotificationVerbType verbType;
 
                                 if (button.getText().toString().equals(APPROVED.toVerb())) {

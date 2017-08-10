@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -15,20 +16,19 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
-import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.backend.Backend.sendNotification;
 
 public final class InviteMemberDialog extends AlertDialog.Builder {
 //    Dialog Constructor
@@ -166,22 +166,49 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
     private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User currentUserItem, final User invitedUserItem, final AppCompatSpinner memberRoleSpinner) {
         FirebaseEntity.EntityRole role = FirebaseEntity.EntityRole.NONE;
         FirebaseEntity.EntityStatus status = FirebaseEntity.EntityStatus.AWAITING;
-        RecentActivity.NotificationVerbType verb = RecentActivity.NotificationVerbType.REQUEST;
+        final RecentActivity.NotificationVerbType verb;
 
         if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
             status = FirebaseEntity.EntityStatus.APPROVED;
             verb = RecentActivity.NotificationVerbType.JOIN;
             role = (FirebaseEntity.EntityRole) memberRoleSpinner.getSelectedItem();
+        } else {
+            verb = RecentActivity.NotificationVerbType.REQUEST;
         }
 
         invitedUserItem.setType(currentUserItem.getType());
 
         teamItem.addUser(invitedUserItem, role, status);
         Backend.update(invitedUserItem, activity);
-        Backend.update(teamItem, activity);
 
         FragmentHelper.display(TOAST, R.string.you_added_to_the_team, activity.findViewById(R.id.container));
-        Backend.sendUpstreamNotification(sendNotification(teamItem, invitedUserItem, verb, activity), teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
+
+        final RecentActivity recentActivity;
+        recentActivity = new RecentActivity(currentUserItem,invitedUserItem,verb,teamItem.getName());
+        recentActivity.addReceiverUID(invitedUserItem.getTeamUID());
+
+        if (invitedUserItem.getType() != FirebaseEntity.EntityType.HOST) {
+            Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUserItem.getTeamUID());
+                        recentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                        if (currentUserItem.getType() == FirebaseEntity.EntityType.HOST) {
+                            recentActivity.setExtraString(teamArrayMap.get(FirebaseEntity.EntityType.HOST).getName());
+                            recentActivity.setMessage();
+                        }
+                        Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
+                        Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        } else {
+            Backend.sendUpstreamNotification(recentActivity, teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
+        }
 
         dialog.dismiss();
     }

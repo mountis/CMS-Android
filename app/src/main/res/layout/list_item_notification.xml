@@ -4,6 +4,7 @@
     android:orientation="horizontal"
     android:layout_marginLeft="15dp"
     android:layout_marginRight="5dp"
+    android:layout_marginBottom="10dp"
     android:layout_width="match_parent"
     android:id="@+id/notification_view_id"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -32,7 +33,6 @@
             android:id="@+id/item_label_notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLines="3"
             android:textSize="20sp"
             android:text="@string/notification_text"
             android:textAppearance="?attr/textAppearanceListItem"/>

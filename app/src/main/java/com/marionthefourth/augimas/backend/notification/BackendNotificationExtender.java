@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.backend.notification;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -28,9 +29,12 @@ public class BackendNotificationExtender extends NotificationExtenderService {
     protected boolean onNotificationProcessing(OSNotificationReceivedResult osNotificationReceivedResult) {
         Intent intent = new Intent(this, SignInActivity.class);
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, uniqueInt, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         JSONObject messageBody = osNotificationReceivedResult.payload.additionalData;
         String navigationDirection;
@@ -56,6 +60,7 @@ public class BackendNotificationExtender extends NotificationExtenderService {
                             .setContentTitle(header)
                             .setContentText(messageBody.getString(Constants.Strings.Fields.MESSAGE))
                             .setAutoCancel(true)
+                            .setPriority(Notification.PRIORITY_HIGH)
                             .setSound(defaultSoundUri)
                             .setContentIntent(pendingIntent);
 

@@ -57,13 +57,12 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.buildProgressDi
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class Backend {
-//    Sign In/Out/Up & Reauthenticate Methods
-    public static void signIn(final Activity activity, final View view, final User user) {
+//    Sign In/Out/Up & Re-Authenticate Methods
+    public static void signIn(final User user, final View view, final Activity activity) {
         final Context context = view.getContext();
         final DatabaseReference usersRef = getReference(R.string.firebase_users_directory, activity);
         final ProgressDialog loadingProgress = buildProgressDialog(R.string.progress_signing_in, view);
         // To dismiss the dialog
-
         if (PROTOTYPE_MODE) {
             final Intent homeIntent = new Intent(context, HomeActivity.class);
             context.startActivity(homeIntent);
@@ -77,68 +76,60 @@ public final class Backend {
                                 // Get the User instance from the user reference
                                 final User newUser = new User(userReference);
                                 // Check to see if the User instance's Session ID matches the current Session ID
-                                if (newUser != null && user != null) {
-                                    if (newUser.getUsername().equals(user.getUsername()) || newUser.getEmail().equals(user.getUsername())) {
-                                        // Ensure no one is signed in
-                                        if (getCurrentUser() != null && user.getTeamUID().equals("")) {
-                                            signOut((AppCompatActivity) context, false);
-                                        }
+                                if (newUser.getUsername().equals(user.getUsername()) || newUser.getEmail().equals(user.getUsername())) {
+                                    // Ensure no one is signed in
+                                    if (getCurrentUser() != null && user.getTeamUID().equals("")) {
+                                        signOut((AppCompatActivity) context, false);
+                                    }
 
-                                        // Sign In
-                                        final FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                                        user.setEmail(newUser.getEmail());
+                                    // Sign In
+                                    final FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                                    user.setEmail(newUser.getEmail());
 
-                                        mAuth.signInWithEmailAndPassword(newUser.getEmail(), user.getPassword())
-                                                .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<AuthResult>() {
-                                                    @Override
-                                                    public void onComplete(@android.support.annotation.NonNull com.google.android.gms.tasks.Task<AuthResult> task) {
-                                                        Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
-                                                        // If sign in fails, display a message to the user. If sign in succeeds
-                                                        // the auth state listener will be notified and logic to handle the
-                                                        // signed in user can be handled in the listener.
-                                                        if (!task.isSuccessful()) {
-                                                            Log.w(TAG, "signInWithEmail", task.getException());
-                                                            display(SNACKBAR, R.string.error_incorrect_signin_detail_1, view);
-                                                        } else {
-                                                            user.setEmail(newUser.getEmail());
-                                                            user.setUID(newUser.getUID());
+                                    mAuth.signInWithEmailAndPassword(newUser.getEmail(), user.getPassword())
+                                            .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<AuthResult>() {
+                                                @Override
+                                                public void onComplete(@android.support.annotation.NonNull com.google.android.gms.tasks.Task<AuthResult> task) {
+                                                    Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+                                                    // If sign in fails, display a message to the user. If sign in succeeds
+                                                    // the auth state listener will be notified and logic to handle the
+                                                    // signed in user can be handled in the listener.
+                                                    if (!task.isSuccessful()) {
+                                                        Log.w(TAG, "signInWithEmail", task.getException());
+                                                        display(SNACKBAR, R.string.error_incorrect_signin_detail_1, view);
+                                                    } else {
+                                                        user.setEmail(newUser.getEmail());
+                                                        user.setUID(newUser.getUID());
 
-                                                            display(TOAST, R.string.success_signin, view);
+                                                        display(TOAST, R.string.success_signin, view);
 
-                                                            if (!user.getTeamUID().equals("")) {
-                                                                Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
-                                                            }
-
-                                                            OneSignal.syncHashedEmail(user.getEmail());
-                                                            Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
-
-                                                            final Intent homeIntent = new Intent(context, HomeActivity.class);
-                                                            context.startActivity(homeIntent);
+                                                        if (!user.getTeamUID().equals("")) {
+                                                            Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
                                                         }
 
-                                                        loadingProgress.dismiss();
+                                                        OneSignal.syncHashedEmail(user.getEmail());
+                                                        Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
 
+                                                        final Intent homeIntent = new Intent(context, HomeActivity.class);
+                                                        context.startActivity(homeIntent);
                                                     }
-                                                });
-                                    }
-                                }
 
+                                                    loadingProgress.dismiss();
+
+                                                }
+                                            });
+                                }
                             }
                         } else {
                             loadingProgress.dismiss();
                             display(SNACKBAR, R.string.error_incorrect_signin_general, view);
                         }
                     }
-
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
             }
-
         }
-
     }
     public static void signOut(final Activity appCompatActivity, final boolean shouldCloseActivity) {
         if (Constants.Bools.FeaturesAvailable.SIGN_OUT) {
@@ -168,7 +159,7 @@ public final class Backend {
                     user.setUID(resultUID);
 
                     Backend.create(user, activity);
-                    Backend.signIn(activity,view,user);
+                    Backend.signIn(user, view, activity);
                     OneSignal.syncHashedEmail(user.getEmail());
                     Backend.subscribeTo(Constants.Strings.UIDs.USER_UID,user.getUID());
 
@@ -221,7 +212,7 @@ public final class Backend {
         }
     }
 //    Data CUD Methods
-    public static void update(FirebaseObject firebaseObject, final Activity activity){
+    public static void update(final FirebaseObject firebaseObject, final Activity activity){
         DatabaseReference myRef = null;
         DatabaseReference itemRef;
         if (firebaseObject instanceof User) {
@@ -245,7 +236,7 @@ public final class Backend {
             itemRef.setValue(firebaseObject.toMap());
         }
     }
-    public static void delete(FirebaseObject firebaseObject, final Activity activity) {
+    public static void delete(final FirebaseObject firebaseObject, final Activity activity) {
 
         int directory = R.string.firebase_database_url;
 
@@ -313,15 +304,14 @@ public final class Backend {
             itemRef.setValue(firebaseObject.toMap());
         }
 
-
     }
 //    RecentActivity Methods
     public static void send(final RecentActivity recentActivity, final Activity activity) {
         create(recentActivity, activity);
 //        sendPushNotification(activity,recentActivity);
     }
-    public static void sendUpstreamNotification(final RecentActivity recentActivity, final String toTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
-        recentActivity.addReceiverUID(toTeamUID);
+    public static void sendUpstreamNotification(final RecentActivity recentActivity, final String receivingTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
+        recentActivity.addReceiverUID(receivingTeamUID);
         if (shouldSave) {
             create(recentActivity, activity);
         }
@@ -348,7 +338,7 @@ public final class Backend {
                         con.setRequestProperty("Authorization", "Basic ZGUxMDg2ZmUtZThiZC00YzVjLTkwODktYTdlZmQ2MDhhYjZj");
                         con.setRequestMethod("POST");
 
-                        JSONObject upstreamJSON = recentActivity.toNotificationJSON(toTeamUID,senderUID,header);
+                        JSONObject upstreamJSON = recentActivity.toNotificationJSON(receivingTeamUID,senderUID,header);
 
                         String strJsonBody = upstreamJSON.toString();
 
@@ -375,7 +365,6 @@ public final class Backend {
                         jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
                         scanner.close();
                         System.out.println("jsonResponse:\n" + jsonResponse);
-
                     } catch (Throwable t) {
                         t.printStackTrace();
                     }
@@ -386,18 +375,17 @@ public final class Backend {
     public static RecentActivity sendNotification(final FirebaseObject object, final FirebaseObject subject, final RecentActivity.NotificationVerbType verbType, final Activity activity) {
         final RecentActivity recentActivity = new RecentActivity(subject,object,verbType);
         create(recentActivity, activity);
-//        sendPushNotification(activity,recentActivity);
         return recentActivity;
     }
 //    Subscription Methods
     public static void unSubscribeFrom(final String uid) {
         OneSignal.deleteTag(uid);
         FirebaseMessaging.getInstance().unsubscribeFromTopic(uid);
-}
+    }
     public static void subscribeTo(final String tag, final String uid) {
         OneSignal.sendTag(tag,uid);
         FirebaseMessaging.getInstance().subscribeToTopic(uid);
-}
+    }
 //    Other Methods
     public static User getCurrentUser() {
         final User user = new User();
@@ -407,10 +395,9 @@ public final class Backend {
             user.setUID(firebaseUser.getUid());
             return user;
         }
-
         return null;
     }
-    public static void sendRegistrationToServer(final Context context, final String token) {
+    public static void sendRegistrationToServer(final String token, final Context context) {
         Backend.getReference(R.string.firebase_devices_directory, context).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -454,7 +441,6 @@ public final class Backend {
                                         OneSignal.syncHashedEmail(email);
                                         update(currentUser, activity);
                                     }
-
                                     @Override
                                     public void onCancelled(DatabaseError databaseError) {}
                                 });
@@ -463,7 +449,6 @@ public final class Backend {
                         }
                     });
         }
-
     }
     public static void updateUsername(final Activity activity, final String username) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -481,7 +466,5 @@ public final class Backend {
                 public void onCancelled(DatabaseError databaseError) {}
             });
         }
-
-
     }
 }

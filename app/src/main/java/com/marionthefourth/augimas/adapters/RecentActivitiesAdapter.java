@@ -45,8 +45,6 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
 
         pullItemsData(holder);
 
-
-
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

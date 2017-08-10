@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.view.View;
@@ -94,15 +95,32 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         setView(layout);
     }
     //    Functional Methods
-    private void addUserToTeam(final User user, final Team teamItem, final FirebaseEntity.EntityRole memberRole, final FirebaseEntity.EntityStatus memberStatus, final DialogInterface dialog, final Activity activity) {
-        teamItem.addUser(user,memberRole,memberStatus);
-        Backend.update(user, activity);
-        Backend.update(teamItem, activity);
+    private void addUserToTeam(final User currentUser, final Team teamItem, final FirebaseEntity.EntityRole memberRole, final FirebaseEntity.EntityStatus memberStatus, final DialogInterface dialog, final Activity activity) {
+        teamItem.addUser(currentUser,memberRole,memberStatus);
+        Backend.update(currentUser, activity);
         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
-        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
-            Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, RecentActivity.NotificationVerbType.REQUEST, activity), teamItem.getUID(), getCurrentUser().getUID(),Constants.Strings.Headers.NEW_USER, activity, true);
-        }
+        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
+
+                    final RecentActivity recentActivity = new RecentActivity(currentUser,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT),RecentActivity.NotificationVerbType.REQUEST_JOIN);
+                    recentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                    recentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
+                    Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_USER, activity, true);
+                    Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_USER, activity, false);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
 
         dialog.dismiss();
     }

@@ -175,7 +175,7 @@ public final class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (PROTOTYPE_MODE) {
-                    Backend.signIn(activity, view,null);
+                    Backend.signIn(null, view, activity);
                 } else {
                     if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
                         if (allTextFieldsAreFilled(view,layouts,inputs)) {
