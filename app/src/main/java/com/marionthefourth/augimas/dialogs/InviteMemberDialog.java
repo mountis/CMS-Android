@@ -19,7 +19,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
@@ -166,11 +166,11 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
     private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User currentUserItem, final User invitedUserItem, final AppCompatSpinner memberRoleSpinner) {
         FirebaseEntity.EntityRole role = FirebaseEntity.EntityRole.NONE;
         FirebaseEntity.EntityStatus status = FirebaseEntity.EntityStatus.AWAITING;
-        Notification.NotificationVerbType verb = Notification.NotificationVerbType.REQUEST;
+        RecentActivity.NotificationVerbType verb = RecentActivity.NotificationVerbType.REQUEST;
 
         if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
             status = FirebaseEntity.EntityStatus.APPROVED;
-            verb = Notification.NotificationVerbType.JOIN;
+            verb = RecentActivity.NotificationVerbType.JOIN;
             role = (FirebaseEntity.EntityRole) memberRoleSpinner.getSelectedItem();
         }
 

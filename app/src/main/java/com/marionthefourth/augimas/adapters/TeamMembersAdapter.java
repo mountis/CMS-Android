@@ -1,6 +1,5 @@
 package com.marionthefourth.augimas.adapters;
 
-import android.accessibilityservice.AccessibilityService;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
@@ -11,7 +10,6 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -27,9 +25,9 @@ import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 
 import java.util.ArrayList;
 
@@ -43,28 +41,11 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
     private Activity activity;
     private ArrayList<User> members = new ArrayList<>();
     private boolean isDisabled = false;
-    private AccessibilityService.SoftKeyboardController keyboard;
-    RecyclerView.OnItemTouchListener mOnItemTouchListener = new RecyclerView.OnItemTouchListener() {
-        @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-            if (!isDisabled) {
-                rv.findChildViewUnder(e.getX(), e.getY()).performClick();
-                return true;
-            }
-
-            isDisabled = !isDisabled;
-            return false;
-        }
-
-        @Override
-        public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
-
-        @Override
-        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
-    };
+    private TextInputEditText nameEditText;
+    private TextInputEditText usernameEditText;
 
 //    Adapter Constructor
-    public TeamMembersAdapter(final Activity activity, final ArrayList<User> members, final User currentUser, TextInputEditText usernameEditText, TextInputEditText nameEditText) {
+    public TeamMembersAdapter(final Activity activity, final ArrayList<User> members, final User currentUser, final TextInputEditText usernameEditText, final TextInputEditText nameEditText) {
         this.members = members;
         this.activity = activity;
         this.currentUser = currentUser;
@@ -83,9 +64,18 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
             }
         };
 
-        nameEditText.setOnFocusChangeListener(focusChangeListener);
-        usernameEditText.setOnFocusChangeListener(focusChangeListener);
+        this.nameEditText = nameEditText;
+        this.usernameEditText = usernameEditText;
+
+        this.nameEditText.setOnFocusChangeListener(focusChangeListener);
+        this.usernameEditText.setOnFocusChangeListener(focusChangeListener);
     }
+
+    private void releaseFocus() {
+        nameEditText.clearFocus();
+        usernameEditText.clearFocus();
+    }
+
 //    Adapter Methods
     @Override
     public TeamMembersAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -107,7 +97,6 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 
     private void setupSpinner(final ViewHolder holder) {
         final ArrayList<FirebaseEntity.EntityRole> roles = FirebaseEntity.EntityRole.getAllRoles();
-
         roles.remove(FirebaseEntity.EntityRole.DEFAULT);
         final ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<FirebaseEntity.EntityRole>(activity,R.layout.spinner_item_team_member,R.id.team_member_role, roles) {
             public boolean areAllItemsEnabled() {
@@ -125,7 +114,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
 
                 final TextView tv = (TextView) v.findViewById(R.id.spinnerTarget);
 
-                tv.setText(FirebaseEntity.EntityRole.getRole(position).toString());
+                tv.setText(FirebaseEntity.EntityRole.getRole(position+1).toString());
 
                 final View finalV = v;
                 Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
@@ -200,6 +189,8 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                 holder.mTeamMemberRoleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(final AdapterView<?> parent, final View view, final int position, long id) {
+                        releaseFocus();
+
                         Backend.getReference(R.string.firebase_users_directory, activity).child(holder.userItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -214,6 +205,10 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                     final boolean userNotIsRestricted = !modifyingUserItem.getUsername().equals("marionthefourth");
                                     final boolean userHasExclusiveAccess = currentUser.hasExclusiveAccess(modifyingUserItem.getRole());
                                     final boolean userHasProperRank = currentUser.hasInclusiveAccess(selectedRole);
+
+                                    if (selectedRole == modifyingUserItem.getRole()) {
+                                        return;
+                                    }
                                     if (currentUser.getType() == HOST) {
                                         if (modifyingUserItem.getType() == HOST) {
                                             userIsQualified = userIsAtLeastAnEditor && userHasExclusiveAccess && userHasProperRank;
@@ -253,28 +248,27 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                         Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (!isDisabled) {
-                                                    final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,modifyingUserItem.getTeamUID());
-                                                    final Notification hostNotification;
-                                                    final Notification clientNotification;
-                                                    if (currentUser.getType() == HOST) {
-                                                        hostNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,teamArrayMap.get(CLIENT).getName());
+                                                final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,modifyingUserItem.getTeamUID());
+                                                final RecentActivity hostRecentActivity;
+                                                final RecentActivity clientRecentActivity;
 
-                                                        if (modifyingUserItem.getType() == HOST) {
-                                                            Backend.sendUpstreamNotification(hostNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
-                                                        } else {
-                                                            clientNotification = new Notification(teamArrayMap.get(HOST),modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                if (currentUser.getType() == HOST) {
+                                                    hostRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,teamArrayMap.get(CLIENT).getName());
 
-                                                            Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
-                                                            Backend.sendUpstreamNotification(clientNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
-                                                        }
+                                                    if (modifyingUserItem.getType() == HOST) {
+                                                        Backend.sendUpstreamNotification(hostRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                     } else {
-                                                        hostNotification = new Notification(teamArrayMap.get(CLIENT),modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
-                                                        clientNotification = new Notification(currentUser,modifyingUserItem, Notification.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(HOST),modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
 
-                                                        Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(HOST).getUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
-                                                        Backend.sendUpstreamNotification(clientNotification,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
+                                                        Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
+                                                        Backend.sendUpstreamNotification(clientRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                     }
+                                                } else {
+                                                    hostRecentActivity = new RecentActivity(teamArrayMap.get(CLIENT),modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                    clientRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+
+                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(HOST).getUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
+                                                    Backend.sendUpstreamNotification(clientRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                 }
 
                                             }
@@ -284,6 +278,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                         });
                                     } else {
                                         holder.mTeamMemberRoleSpinner.setSelection(modifyingUserItem.getRole().toInt(false)-1);
+                                        holder.mTeamMemberRoleSpinner.clearFocus();
                                         parent.setEnabled(false);
                                         view.setEnabled(false);
                                     }

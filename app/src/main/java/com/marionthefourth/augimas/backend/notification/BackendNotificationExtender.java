@@ -20,7 +20,7 @@ import org.json.JSONObject;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 /**
- * Created by MGR4 on 8/6/17.
+ * Created on 8/6/17.
  */
 
 public class BackendNotificationExtender extends NotificationExtenderService {
@@ -35,6 +35,7 @@ public class BackendNotificationExtender extends NotificationExtenderService {
         JSONObject messageBody = osNotificationReceivedResult.payload.additionalData;
         String navigationDirection;
         String header = "Augimas";
+        String recentActivityUID;
         if (messageBody.has(Constants.Strings.UIDs.SENDER_UID)) {
             try {
                 if (!messageBody.getString(Constants.Strings.UIDs.SENDER_UID).equals(getCurrentUser().getUID())) {
@@ -44,6 +45,10 @@ public class BackendNotificationExtender extends NotificationExtenderService {
                     }
                     if (messageBody.has(Constants.Strings.Fields.HEADER)) {
                         header = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
+                    }
+                    if (messageBody.has(Constants.Strings.UIDs.RECENT_ACTIVITY_UID)) {
+                        recentActivityUID = messageBody.getString(Constants.Strings.UIDs.RECENT_ACTIVITY_UID);
+                        intent.putExtra(Constants.Strings.UIDs.RECENT_ACTIVITY_UID,recentActivityUID);
                     }
                     Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)

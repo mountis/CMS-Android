@@ -17,7 +17,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 
@@ -120,23 +120,23 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                                 final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,teamItem.getUID());
 
 
-                                final Notification.NotificationVerbType verbType;
+                                final RecentActivity.NotificationVerbType verbType;
 
                                 if (button.getText().toString().equals(APPROVED.toVerb())) {
-                                    verbType = Notification.NotificationVerbType.APPROVE;
+                                    verbType = RecentActivity.NotificationVerbType.APPROVE;
                                     teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(APPROVED);
                                 } else {
-                                    verbType = Notification.NotificationVerbType.BLOCK;
+                                    verbType = RecentActivity.NotificationVerbType.BLOCK;
                                     teamMap.get(FirebaseEntity.EntityType.CLIENT).setStatus(BLOCKED);
                                 }
 
                                 update(teamMap.get(FirebaseEntity.EntityType.CLIENT), activity);
 
-                                final Notification hostNotification = new Notification(currentUser,teamItem, verbType);
-                                final Notification clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),teamItem, verbType);
+                                final RecentActivity hostRecentActivity = new RecentActivity(currentUser,teamItem, verbType);
+                                final RecentActivity clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),teamItem, verbType);
 
-                                Backend.sendUpstreamNotification(hostNotification, currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.STATUS_UPDATED, activity, true);
-                                Backend.sendUpstreamNotification(clientNotification, teamItem.getUID(), currentUser.getUID(), Constants.Strings.Headers.STATUS_UPDATED, activity, true);
+                                Backend.sendUpstreamNotification(hostRecentActivity, currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.STATUS_UPDATED, activity, true);
+                                Backend.sendUpstreamNotification(clientRecentActivity, teamItem.getUID(), currentUser.getUID(), Constants.Strings.Headers.STATUS_UPDATED, activity, true);
                             }
 
                             @Override

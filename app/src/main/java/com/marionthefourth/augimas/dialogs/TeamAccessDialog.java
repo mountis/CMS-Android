@@ -1,7 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
@@ -11,25 +10,14 @@ import android.support.v7.widget.AppCompatTextView;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.activities.ChatActivity;
 import com.marionthefourth.augimas.classes.constants.Constants;
-import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
-import com.marionthefourth.augimas.classes.objects.communication.Channel;
-import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
-import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
-import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
-
-import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.classes.objects.communication.Channel.sortChannels;
 
 /**
  * Created on 7/24/17.
@@ -83,7 +71,7 @@ public final class TeamAccessDialog extends Builder {
                             break;
                         case 2:
                             // Setup Chat Button
-                            transitionUserToChatFragment(teamItem, activity);
+                            FragmentHelper.transitionUserToChatFragment(teamItem, activity, null);
                             break;
                         case 3:
                             // Setup Team Management Button
@@ -97,73 +85,4 @@ public final class TeamAccessDialog extends Builder {
         }
     }
 //    Transitional Method
-    private void transitionUserToChatFragment(final Team teamItem, final Activity activity) {
-        Backend.getReference(R.string.firebase_chats_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (final Chat chatItem:Chat.toArrayList(dataSnapshot)) {
-                        if (chatItem.hasTeam(teamItem.getUID())) {
-                            Backend.getReference(R.string.firebase_channels_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.hasChildren()) {
-                                        ArrayList<String> fields = new ArrayList<>();
-                                        fields.add(Constants.Strings.UIDs.CHAT_UID);
-                                        fields.add(Constants.Strings.Fields.FULL_NAME);
-                                        ArrayList<String> content = new ArrayList<>();
-                                        content.add(chatItem.getUID());
-                                        content.add(teamItem.getName());
-                                        final ArrayList<Channel> channels = Channel.toFilteredArrayList(Channel.toArrayList(dataSnapshot),fields,content);
-
-                                        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    final User currentUser = new User(dataSnapshot);
-                                                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                            @Override
-                                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                                                    final Team currentTeam = new Team(dataSnapshot);
-                                                                    ArrayList<String> channelUIDs = sortChannels(channels);
-
-                                                                    final Intent chatIntent = new Intent(activity, ChatActivity.class);
-
-                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false),currentTeam.getUID());
-                                                                    chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false),teamItem.getUID());
-                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false),channelUIDs.get(0));
-                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false),channelUIDs.get(1));
-                                                                    activity.startActivity(chatIntent);
-                                                                }
-                                                            }
-
-                                                            @Override
-                                                            public void onCancelled(DatabaseError databaseError) {}
-                                                        });
-                                                    }
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {}
-                            });
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 }

@@ -18,7 +18,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
@@ -101,7 +101,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
         Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
-            Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, Notification.NotificationVerbType.REQUEST, activity), teamItem.getUID(), getCurrentUser().getUID(),Constants.Strings.Headers.NEW_USER, activity, true);
+            Backend.sendUpstreamNotification(Backend.sendNotification(teamItem, user, RecentActivity.NotificationVerbType.REQUEST, activity), teamItem.getUID(), getCurrentUser().getUID(),Constants.Strings.Headers.NEW_USER, activity, true);
         }
 
         dialog.dismiss();

@@ -17,7 +17,7 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 
@@ -103,7 +103,7 @@ public final class BrandingElementStatusDialog extends AlertDialog.Builder {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
                     if (!currentUser.getTeamUID().equals("")) {
-                        final Notification.NotificationVerbType verb = Notification.NotificationVerbType.toVerbType(elementItem.getStatus());
+                        final RecentActivity.NotificationVerbType verb = RecentActivity.NotificationVerbType.toVerbType(elementItem.getStatus());
 
                         // Send modifying notification to both Teams
                         Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -112,19 +112,19 @@ public final class BrandingElementStatusDialog extends AlertDialog.Builder {
                                 if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
                                     final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,elementItem.getTeamUID());
 
-                                    final Notification hostNotification;
-                                    final Notification clientNotification;
+                                    final RecentActivity hostRecentActivity;
+                                    final RecentActivity clientRecentActivity;
 
                                     if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                        hostNotification = new Notification(currentUser,elementItem,verb,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getName());
-                                        clientNotification = new Notification(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+                                        hostRecentActivity = new RecentActivity(currentUser,elementItem,verb,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getName());
+                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
                                     } else {
-                                        hostNotification = new Notification(teamArrayMap.get(currentUser.getType()),elementItem,verb);
-                                        clientNotification = new Notification(currentUser,elementItem,verb);
+                                        hostRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+                                        clientRecentActivity = new RecentActivity(currentUser,elementItem,verb);
                                     }
 
-                                    Backend.sendUpstreamNotification(hostNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
-                                    Backend.sendUpstreamNotification(clientNotification,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
+                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
+                                    Backend.sendUpstreamNotification(clientRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
                                 }
                             }
 

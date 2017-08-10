@@ -16,13 +16,14 @@
 
         <include android:id="@+id/no_content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:visibility="gone"
             layout="@layout/layout_no_content_general"/>
 
         <include android:id="@+id/no_content_chat"
+            android:layout_weight="1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:visibility="gone"
             layout="@layout/layout_no_content_chat"/>
 

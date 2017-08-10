@@ -323,6 +323,11 @@ public final class Constants {
                 public static final int PRODUCTS_SERVICES = 0x289BABA;
             }
         }
+
+        public static final class Sender {
+            public static final int TO = 0x01235;
+            public static final int FROM = 0x0485;
+        }
     }
     public static final class Bools {
         public static final boolean PROTOTYPE_MODE = false;
@@ -364,6 +369,7 @@ public final class Constants {
             public static final String CHANNEL_UID = "channelUID";
             public static final String BRANDING_ELEMENT_UID = "brandingElementUID";
             public static final String DEVICE_UID = "deviceUID";
+            public static final String RECENT_ACTIVITY_UID = "recentActivityUID";
         }
 
         public static final class Fields {
@@ -394,6 +400,7 @@ public final class Constants {
 
             public static final String MESSAGE = "message";
             public static final String HEADER = "header";
+            public static final String SELECTED_INDEX = "selectedIndex";
         }
 
         public static final class Server {

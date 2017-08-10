@@ -12,12 +12,20 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.backend.Backend;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
+import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.dialogs.BrandingElementStatusDialog;
 
 import java.util.ArrayList;
+
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public final class BrandingElementsAdapter extends RecyclerView.Adapter<BrandingElementsAdapter.ViewHolder> {
     private Team team;
@@ -86,7 +94,25 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         holder.mBrandingElementStatus.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                new BrandingElementStatusDialog(holder, holder.mView, activity);
+                if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                    Backend.getReference(R.string.firebase_users_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot userSnapshot) {
+                            if (userSnapshot.exists()) {
+                                final User currentUser = new User(userSnapshot);
+                                if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                    new BrandingElementStatusDialog(holder, holder.mView, activity);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
                 return true;
             }
         });

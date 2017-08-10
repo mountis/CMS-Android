@@ -26,7 +26,7 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
@@ -79,12 +79,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         final int POSITION = holder.getAdapterPosition();
 
-        if (getItemCount() == 1) {
-            if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
-                Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (!new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
+            Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                        if (getItemCount() == 1) {
                             holder.mView.setVisibility(View.GONE);
 
                             if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
@@ -93,35 +93,51 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                 containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.GONE);
 
                             }
-
                             containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
                             // Set alternative View for display when there is no data.
                         } else {
+                            if (POSITION > brandingName.getData().size()-1) {
+                                holder.hideView();
+                            } else {
+                                holder.mNameEditText.setText(brandingName.getData().get(POSITION));
+                                holder.mCreateButton.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        holder.hideButton();
+                                    }
+                                });
+                                holder.mNameEditText.setEnabled(false);
+                                holder.mNameEditText.setClickable(false);
+                                holder.revealInputAndTurnButtonToDelete(false);
+                                holder.editing = false;
+                            }
+                        }
+
+                    } else {
+                        if (getItemCount() == 1) {
                             if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
                                 containingView.findViewById(R.id.branding_element_domain_name_layout).setVisibility(View.VISIBLE);
                             } else {
                                 containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.VISIBLE);
 
                             }
-
                             containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
                         }
+                        if (POSITION > brandingName.getData().size()-1) {
+                            holder.hideInput(false);
+                        } else {
+                            holder.mNameEditText.setText(brandingName.getData().get(position));
+                            holder.revealInputAndTurnButtonToDelete(false);
+                            holder.editing = false;
+                        }
                     }
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
-            }
-        }
-
-        if (POSITION > brandingName.getData().size()-1) {
-            holder.hideInput(false);
-        } else {
-            holder.mNameEditText.setText(brandingName.getData().get(position));
-            holder.revealInputAndTurnButtonToDelete(false);
-            holder.editing = false;
+                }
+            });
         }
 
         final Animation bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
@@ -176,7 +192,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                     holder.hideView();
                                     brandingName.getData().remove(POSITION);
 
-                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 }
                             }
                         }
@@ -214,11 +230,11 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             if (!holder.mNameEditText.getText().toString().equals("")) {
                                 if (POSITION == brandingName.getData().size()) {
                                     brandingName.getData().remove(holder.mNameEditText.getText().toString());
-                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 } else {
                                     final String previousName = brandingName.getData().get(position);
                                     brandingName.getData().remove(POSITION);
-                                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.REMOVE,previousName, null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE,previousName, null);
                                 }
                             }
 
@@ -230,7 +246,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         });
     }
 
-    private void sendBrandingElementNotification(final BrandingElement brandingName, final Notification.NotificationVerbType verbType, final String extraString, final String extraString2) {
+    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.NotificationVerbType verbType, final String extraString, final String extraString2) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -243,32 +259,32 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             final User currentUser = new User(dataSnapshot);
 
                             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                final Notification hostNotification;
-                                final Notification clientNotification;
+                                final RecentActivity hostRecentActivity;
+                                final RecentActivity clientRecentActivity;
 
                                 switch (verbType) {
                                     case UPDATE:
                                         if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostNotification = new Notification(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString,extraString2);
-                                            clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "", extraString, extraString2);
+                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString,extraString2);
+                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "", extraString, extraString2);
                                         } else {
-                                            hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString,extraString2);
-                                            clientNotification = new Notification(currentUser,brandingName, verbType, "",extraString,extraString2);
+                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString,extraString2);
+                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType, "",extraString,extraString2);
                                         }
                                         break;
                                     default:
                                         if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostNotification = new Notification(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString);
-                                            clientNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "",extraString);
+                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString);
+                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "",extraString);
                                         } else {
-                                            hostNotification = new Notification(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString);
-                                            clientNotification = new Notification(currentUser,brandingName, verbType,"", extraString);
+                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString);
+                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType,"", extraString);
                                         }
                                         break;
                                 }
 
-                                Backend.sendUpstreamNotification(hostNotification,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-                                Backend.sendUpstreamNotification(clientNotification,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+                                Backend.sendUpstreamNotification(hostRecentActivity,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
+                                Backend.sendUpstreamNotification(clientRecentActivity,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
 
                                 Backend.update(brandingName, activity);
                             }
@@ -294,12 +310,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), brandingName.getType())) {
             if (position == brandingName.getData().size()) {
                 brandingName.getData().add(holder.mNameEditText.getText().toString());
-                sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.ADD,holder.mNameEditText.getText().toString(), null);
+                sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.ADD,holder.mNameEditText.getText().toString(), null);
             } else if (position < brandingName.getData().size()){
                 if (!holder.mNameEditText.getText().toString().equals(brandingName.getData().get(position))) {
                     final String previousName = brandingName.getData().get(position);
                     brandingName.getData().set(position,holder.mNameEditText.getText().toString());
-                    sendBrandingElementNotification(brandingName, Notification.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString());
+                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString());
                 }
             }
             holder.creating = false;
@@ -369,6 +385,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
         void hideView() {
             mView.startAnimation(close);
+            hideButton();
         }
 
         private void hideInputAndTurnButtonToCreate(final boolean manual) {
@@ -378,10 +395,14 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
         void hideButton() {
             mCreateButton.startAnimation(close);
+            mCreateButton.setEnabled(false);
+            mCreateButton.setClickable(false);
         }
 
         void revealButton() {
             mCreateButton.startAnimation(open);
+            mCreateButton.setEnabled(true);
+            mCreateButton.setClickable(true);
         }
 
         void revealInputAndTurnButtonToDelete(final boolean manual) {

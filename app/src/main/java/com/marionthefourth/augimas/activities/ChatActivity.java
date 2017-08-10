@@ -50,6 +50,8 @@ public final class ChatActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
+        mViewPager.setCurrentItem(getIntent().getIntExtra(Constants.Strings.Fields.SELECTED_INDEX,0));
+
         setupTabItemTitles(tabLayout);
     }
     public boolean onOptionsItemSelected(MenuItem item) {

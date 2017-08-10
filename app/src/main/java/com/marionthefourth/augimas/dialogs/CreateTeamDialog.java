@@ -24,7 +24,7 @@ import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
@@ -173,11 +173,11 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,newTeam.getUID());
                                                 // Send Client Notifications
-                                                final Notification clientTeamCreatedNotification = new Notification(currentUser,newTeam, Notification.NotificationVerbType.CREATE);
-                                                clientTeamCreatedNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
-                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
+                                                final RecentActivity clientTeamCreatedRecentActivity = new RecentActivity(currentUser,newTeam, RecentActivity.NotificationVerbType.CREATE);
+                                                clientTeamCreatedRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                                                Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
                                                 // Send Host Notifications
-                                                Backend.sendUpstreamNotification(clientTeamCreatedNotification, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
+                                                Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
 
                                                 final Intent homeIntent = new Intent(activity, HomeActivity.class);
                                                 activity.startActivity(homeIntent);

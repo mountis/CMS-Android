@@ -267,6 +267,14 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                 if (selectedTopFragment != Constants.Ints.Fragments.NOTIFICATION) {
                     selectedTopFragment = Constants.Ints.Fragments.NOTIFICATION;
                     manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new RecentActivitiesFragment(),Constants.Strings.Fragments.RECENT_ACTIVITIES).commitAllowingStateLoss();
+                } else {
+                    RecentActivitiesFragment recentActivitiesFragment = (RecentActivitiesFragment) getSupportFragmentManager().findFragmentByTag(Constants.Strings.Fragments.RECENT_ACTIVITIES);
+                    if (recentActivitiesFragment == null || !recentActivitiesFragment.isVisible()) {
+                        getSupportFragmentManager().beginTransaction().setTransition(
+                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                                new RecentActivitiesFragment(),
+                                Constants.Strings.Fragments.RECENT_ACTIVITIES).commit();
+                    }
                 }
             } else {
                 FragmentHelper.display(TOAST,R.string.you_dont_have_access,findViewById(R.id.container));
@@ -327,7 +335,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         if (Constants.Bools.FeaturesAvailable.DISPLAY_CHATS) {
             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                 if (getIntent().getExtras() != null) {
-//                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.notificationItem.getObject().getUID());
+//                intent.putExtra(Constants.Strings.UIDs.TEAM_UID,holder.recentActivityItem.getObject().getUID());
 
                 } else {
                     if (selectedTopFragment != Constants.Ints.Fragments.CHAT) {
@@ -336,83 +344,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
                                 manager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new ChatListFragment(),Constants.Strings.Fragments.CHAT_LIST).commit();
                             } else {
-                                // Get Channel UIDs & Team UIDs
-                                final ArrayList<String> teamUIDs = new ArrayList<>();
-                                final ArrayList<Channel> channels = new ArrayList<>();
-
-                                teamUIDs.add(currentUser.getTeamUID());
-
-                                Backend.getReference(R.string.firebase_chats_directory, this).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                            for (DataSnapshot chatReference:dataSnapshot.getChildren()) {
-                                                final Chat chatItem = new Chat(chatReference);
-                                                if (currentUser.isInChat(chatItem)) {
-                                                    // Get Other Team Admin Team UID
-                                                    Backend.getReference(R.string.firebase_teams_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                                            if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                                                for (DataSnapshot teamReference:dataSnapshot.getChildren()) {
-                                                                    final Team teamItem = new Team(teamReference);
-                                                                    if (!currentUser.isInTeam(teamItem) && chatItem.hasTeam(teamItem.getUID())) {
-                                                                        teamUIDs.add(teamItem.getUID());
-                                                                        // Get Channel UIDs
-                                                                        Backend.getReference(R.string.firebase_channels_directory, HomeActivity.this).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                            @Override
-                                                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                                                                    for (DataSnapshot channelReference:dataSnapshot.getChildren()) {
-                                                                                        final Channel channelItem = new Channel(channelReference);
-                                                                                        if (channelItem.getChatUID().equals(chatItem.getUID())) {
-                                                                                            channels.add(channelItem);
-                                                                                        }
-                                                                                    }
-
-                                                                                    if (channels.size() != 0) {
-                                                                                        Intent chatIntent = new Intent(HomeActivity.this,ChatActivity.class);
-                                                                                        for (int i = 0; i < channels.size();i++) {
-                                                                                            if (!channels.get(i).getName().equals(teamItem.getName())) {
-                                                                                                if(channels.get(i).getName().equals("")) {
-                                                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.CLIENT.toInt(false),channels.get(i).getUID());
-                                                                                                } else {
-                                                                                                    chatIntent.putExtra(Constants.Strings.UIDs.CHANNEL_UID + FirebaseEntity.EntityType.HOST.toInt(false),channels.get(i).getUID());
-                                                                                                }
-                                                                                            }
-                                                                                        }
-
-                                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.HOST.toInt(false),teamUIDs.get(0));
-                                                                                        chatIntent.putExtra(Constants.Strings.UIDs.TEAM_UIDS + FirebaseEntity.EntityType.CLIENT.toInt(false),teamUIDs.get(1));
-
-                                                                                        startActivity(chatIntent);
-
-                                                                                    }
-                                                                                }
-                                                                            }
-
-                                                                            @Override
-                                                                            public void onCancelled(DatabaseError databaseError) {
-
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {}
-                                                    });
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {}
-                                });
-
+                                FragmentHelper.transitionClientUserToChatFragment(currentUser,this,"");
                             }
                         }
                     }

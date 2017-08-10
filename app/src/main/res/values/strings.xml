@@ -36,7 +36,7 @@
     <string name="firebase_members_directory">members</string>
     <string name="firebase_messages_directory">messages</string>
     <string name="firebase_teams_directory">teams</string>
-    <string name="firebase_notifications_directory">notifications</string>
+    <string name="firebase_notifications_directory">recentActivities</string>
     <string name="firebase_channels_directory">channels</string>
     <string name="firebase_devices_directory">devices</string>
     <string name="firebase_url_directory">https://augimas-25621.firebaseio.com/</string>
@@ -225,7 +225,7 @@
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
-    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_new_message_notifications">New message recentActivities</string>
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
     <string name="pref_title_vibrate">Vibrate</string>
@@ -290,7 +290,7 @@
     <string name="social_media_text">social media</string>
     <string name="social_media_name_text">social media name</string>
     <string name="title_element_status_updater">Update Element Status</string>
-    <string name="notification_text">notification text</string>
+    <string name="notification_text">recentActivity text</string>
     <string name="team_name_text">team name</string>
     <string name="team_member_name">team member name</string>
     <string name="title_invite_member">Invite Member</string>

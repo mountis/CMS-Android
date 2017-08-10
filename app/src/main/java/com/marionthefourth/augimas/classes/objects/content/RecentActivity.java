@@ -1,18 +1,31 @@
-package com.marionthefourth.augimas.classes.objects.notifications;
+package com.marionthefourth.augimas.classes.objects.content;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Parcel;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.ValueEventListener;
+import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.HomeActivity;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseContent;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.FirebaseObject;
+import com.marionthefourth.augimas.classes.objects.communication.Channel;
+import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
-import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
+import com.marionthefourth.augimas.fragments.BrandingElementFragment;
+import com.marionthefourth.augimas.fragments.TeamManagementFragment;
+import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,10 +35,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
-import static com.marionthefourth.augimas.classes.objects.notifications.Notification.NotificationObjectType.BRANDING_ELEMENT;
+import static com.marionthefourth.augimas.classes.objects.content.RecentActivity.NotificationObjectType.BRANDING_ELEMENT;
 
-public final class Notification extends FirebaseContent {
+public final class RecentActivity extends FirebaseContent {
     @Exclude
     private FirebaseObject subject;
     @Exclude
@@ -40,27 +54,34 @@ public final class Notification extends FirebaseContent {
     private String objectUID;
     private String subjectUID;
     private String messageText;
+    private int senderType;
     private ArrayList<String> receiverUIDs = new ArrayList<>();
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
     private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
     private NotificationSubjectType subjectType = NotificationSubjectType.DEFAULT;
     private NotificationObjectType extraObjectType = NotificationObjectType.DEFAULT;
 
-    public Notification(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String teamNameString) {
+    public RecentActivity(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String teamNameString) {
         this(subject,object,verbType);
         setTeamNameString(teamNameString);
         setMessage();
     }
 
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString) {
         this(subject,object,verbType,extraString);
         setExtraString(extraString);
         setMessage();
     }
 
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
         this(subject,object,verbType,teamNameString,extraString);
         setExtraString2(extraString2);
+        setMessage();
+    }
+
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final int senderType) {
+        this(subject,object,verbType,teamNameString);
+        setSenderType(senderType);
         setMessage();
     }
 
@@ -353,17 +374,17 @@ public final class Notification extends FirebaseContent {
             return 5;
         }
     }
-    //    Notification Constructors
-    public Notification() { }
-    public Notification(final Parcel in) {
-        final Notification notification = (Notification) in.readSerializable();
-        setUID(notification.getUID());
-        setObject(notification.getObject());
-        setSubject(notification.getSubject());
-        setVerbType(notification.getVerbType());
-        setReceiverUIDs(notification.getReceiverUIDs());
+    //    RecentActivity Constructors
+    public RecentActivity() { }
+    public RecentActivity(final Parcel in) {
+        final RecentActivity recentActivity = (RecentActivity) in.readSerializable();
+        setUID(recentActivity.getUID());
+        setObject(recentActivity.getObject());
+        setSubject(recentActivity.getSubject());
+        setVerbType(recentActivity.getVerbType());
+        setReceiverUIDs(recentActivity.getReceiverUIDs());
     }
-    public Notification(final DataSnapshot nRef) {
+    public RecentActivity(final DataSnapshot nRef) {
         this();
         if (nRef.hasChild(Constants.Strings.UIDs.UID)) {
             setUID(nRef.child(Constants.Strings.UIDs.UID).getValue().toString());
@@ -393,41 +414,41 @@ public final class Notification extends FirebaseContent {
             index++;
         }
     }
-    public static ArrayList<Notification> toArrayList(DataSnapshot notificationReferences) {
-        final ArrayList<Notification> notifications = new ArrayList<>();
+    public static ArrayList<RecentActivity> toArrayList(DataSnapshot notificationReferences) {
+        final ArrayList<RecentActivity> recentActivities = new ArrayList<>();
         for(DataSnapshot notificationReference:notificationReferences.getChildren()) {
-            notifications.add(new Notification(notificationReference));
+            recentActivities.add(new RecentActivity(notificationReference));
         }
-        return notifications;
+        return recentActivities;
     }
-    public Notification(final FirebaseObject subject, final NotificationVerbType vType) {
+    public RecentActivity(final FirebaseObject subject, final NotificationVerbType vType) {
         setVerbType(vType);
         setSubject(subject);
     }
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
         this(subject,vType);
         setObject(object);
         setMessage();
     }
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String teamNameString) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String teamNameString) {
         this(subject,object,vType);
         setRoleObject(roleObject);
         setTeamNameString(teamNameString);
         setMessage();
     }
-    public Notification(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
         this(subject,object,vType);
         setStatusObject(statusObject);
         setExtraString(extraString);
         setMessage();
     }
 
-    public Notification(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
+    public RecentActivity(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
         setVerbType(vType);
         setObjectType(oType);
         setSubjectType(sType);
     }
-    public Notification(final FirebaseObject subject, final NotificationVerbType vType, final BrandingElement.ElementType brandingElementType) {
+    public RecentActivity(final FirebaseObject subject, final NotificationVerbType vType, final BrandingElement.ElementType brandingElementType) {
         this(subject,vType);
     }
 //    Functional Methods
@@ -465,7 +486,7 @@ public final class Notification extends FirebaseContent {
 
     return bundle;
 }
-    public JSONObject toUpstreamJSON(final String toTeamUID, final String senderUID, String header) {
+    public JSONObject toNotificationJSON(final String toTeamUID, final String senderUID, String header) {
         JSONObject upstreamJSON = new JSONObject();
         try {
             upstreamJSON.put(Constants.Strings.Server.Fields.APP_ID,Constants.Strings.Server.OneSignal.APP_ID);
@@ -483,7 +504,8 @@ public final class Notification extends FirebaseContent {
             data.put(Constants.Strings.Server.Fields.MESSAGE, setMessage());
             data.put(Constants.Strings.Fields.FRAGMENT,getObjectTypeString());
             data.put(Constants.Strings.UIDs.SENDER_UID,senderUID);
-            data.put(Constants.Strings.Fields.HEADER,"");
+            data.put(Constants.Strings.Fields.HEADER,header);
+            data.put(Constants.Strings.UIDs.RECENT_ACTIVITY_UID,getUID());
             upstreamJSON.put(Constants.Strings.Server.Fields.DATA,data);
 //            Add Language
             JSONObject englishMessage = new JSONObject();
@@ -506,6 +528,236 @@ public final class Notification extends FirebaseContent {
         + "\"contents\": {\"en\": \"English Message\"}"
         + "}";
         */
+    }
+    public void navigate(final Activity activity) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    final User currentUser = new User(dataSnapshot);
+
+                    final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
+                    final String subjectTeamUID;
+                    switch(getSubjectType()) {
+                        case MEMBER:
+                            subjectTeamUID = ((User) getSubject()).getTeamUID();
+                            break;
+                        case TEAM:
+                        default:
+                            subjectTeamUID = (getSubject()).getUID();
+                            break;
+
+                    }
+                    switch (getObjectType()) {
+                        case BRANDING_ELEMENT:
+                            Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
+//                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
+
+                                    navigation.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Bundle bundle = new Bundle();
+                                            bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
+                                            bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
+                                            ((HomeActivity)activity)
+                                                    .getSupportFragmentManager()
+                                                    .beginTransaction()
+                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                    .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
+                                                    .commit();
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                            break;
+                        case MESSAGE:
+                            Backend.getReference(R.string.firebase_messages_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final Message messageItem = new Message(dataSnapshot);
+
+//                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+//                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+//                                    } else {
+//                                        navigation.setSelectedItemId(R.id.navigation_chat);
+//                                    }
+
+
+                                    // Get Sender UID to find out what team the sender was if the host
+                                    // Get the Current User UID to pass in to get the Chat
+
+                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                        Backend.getReference(R.string.firebase_channels_directory,activity).child(messageItem.getChannelUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot channelSnapshot) {
+                                                if (channelSnapshot.exists()) {
+                                                    final Channel currentChannel = new Channel(channelSnapshot);
+                                                    Backend.getReference(R.string.firebase_chats_directory,activity).child(currentChannel.getChatUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot chatSnapshot) {
+                                                            if (chatSnapshot.exists()) {
+                                                                final Chat currentChat = new Chat(chatSnapshot);
+                                                                final String teamUID;
+                                                                if (currentChat.getTeamUIDs().get(0).equals(currentUser.getTeamUID())) {
+                                                                    teamUID = currentChat.getTeamUIDs().get(1);
+                                                                } else {
+                                                                    teamUID = currentChat.getTeamUIDs().get(0);
+                                                                }
+
+
+                                                                Backend.getReference(R.string.firebase_teams_directory,activity).child(teamUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(final DataSnapshot teamSnapshot) {
+                                                                        if (teamSnapshot.exists()) {
+                                                                            navigation.post(new Runnable() {
+                                                                                @Override
+                                                                                public void run() {
+                                                                                    FragmentHelper.transitionUserToChatFragment(new Team(teamSnapshot),activity, messageItem.getChannelUID());
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(DatabaseError databaseError) {
+
+                                                                    }
+                                                                });
+
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {}
+                                                    });
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {}
+                                        });
+
+                                    } else {
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                FragmentHelper.transitionClientUserToChatFragment(currentUser,activity, messageItem.getChannelUID());
+                                            }
+                                        });
+                                    }
+//                                    navigation.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            ((AppCompatActivity)activity)
+//                                                    .getSupportFragmentManager()
+//                                                    .beginTransaction()
+//                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+//                                                    .replace(R.id.container, ChatFragment.newInstance(messageItem.getChannelUID()))
+//                                                    .commit();
+//                                        }
+//                                    });
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                            break;
+                        case MEMBER:
+                            Backend.getReference(R.string.firebase_users_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final User userObjectElement = new User(dataSnapshot);
+
+                                    Backend.getReference(R.string.firebase_teams_directory,activity).child(userObjectElement.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final Team teamElement = new Team(dataSnapshot);
+
+//                                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+//                                                if (userObjectElement.getType() == FirebaseEntity.EntityType.HOST) {
+//                                                    navigation.setSelectedItemId(R.id.navigation_settings);
+//                                                } else {
+//                                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
+//                                                }
+//                                            } else {
+//                                                navigation.setSelectedItemId(R.id.navigation_settings);
+//                                            }
+
+                                            navigation.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((AppCompatActivity)activity)
+                                                            .getSupportFragmentManager()
+                                                            .beginTransaction()
+                                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                            .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
+                                                            .commit();
+                                                }
+                                            });
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                            break;
+                        case TEAM:
+                            Backend.getReference(R.string.firebase_teams_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    final Team teamElement = new Team(dataSnapshot);
+
+//                                    if (currentUser.getTeamUID().equals(subjectTeamUID)) {
+//                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+//                                    } else {
+//                                        navigation.setSelectedItemId(R.id.navigation_settings);
+//                                    }
+
+                                    navigation.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            ((AppCompatActivity)activity)
+                                                    .getSupportFragmentManager()
+                                                    .beginTransaction()
+                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                    .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
+                                                    .commit();
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                            break;
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
     }
     @Override
     public Map<String, String> toMap() {
@@ -553,11 +805,11 @@ public final class Notification extends FirebaseContent {
         return 0;
     }
     public static final Creator CREATOR = new Creator() {
-        public Notification createFromParcel(Parcel in) {
-            return new Notification(in);
+        public RecentActivity createFromParcel(Parcel in) {
+            return new RecentActivity(in);
         }
-        public Notification[] newArray(int size) {
-            return new Notification[size];
+        public RecentActivity[] newArray(int size) {
+            return new RecentActivity[size];
         }
     };
 //    Other Methods
@@ -780,7 +1032,13 @@ public final class Notification extends FirebaseContent {
                 case MESSAGE:
                     if (getTeamNameString() != null && !getTeamNameString().equals("")) {
                         String teamName = getTeamNameString();
-                        setMessageText(subjectPart + " from " + teamName + "said, \"" + ((Message) object).getText() + "\"");
+                        if (getSenderType() != 0) {
+                            if (getSenderType() == Constants.Ints.Sender.TO) {
+                                setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\" to " + teamName + ".");
+                            } else {
+                                setMessageText(subjectPart + "from " + teamName + " said, \"" + ((Message) object).getText() + "\"");
+                            }
+                        }
                     } else {
                         setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
                     }
@@ -1026,7 +1284,12 @@ public final class Notification extends FirebaseContent {
         return getSubjectType();
     }
 
-
+    public int getSenderType() {
+        return senderType;
+    }
+    public void setSenderType(int senderType) {
+        this.senderType = senderType;
+    }
     public String getExtraString2() {
         return extraString2;
     }

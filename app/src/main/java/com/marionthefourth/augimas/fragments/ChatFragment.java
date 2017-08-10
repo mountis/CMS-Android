@@ -26,9 +26,9 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
 
 import java.util.ArrayList;
@@ -153,7 +153,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     final Message message = new Message(
                                             getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID),
                                             currentUser.getUID(),
-                                            inputField.getText().toString()
+                                            inputField.getText().toString().trim()
                                     );
 
                                     // Save Message to Firebase
@@ -177,6 +177,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                         if (dataSnapshot.hasChildren()) {
                                                                             Team otherTeam = null;
                                                                             Team yourTeam = null;
+
                                                                             for(final Team teamItem:Team.toFilteredArrayList(Team.toArrayList(dataSnapshot),Constants.Strings.UIDs.CHAT_UID,chatItem.getTeamUIDs())) {
                                                                                 if (currentUser.isInTeam(teamItem)) {
                                                                                     yourTeam = teamItem;
@@ -185,19 +186,19 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                                                                 }
                                                                             }
 
-                                                                            final Notification hostNotification;
-                                                                            final Notification clientNotification;
+                                                                            final RecentActivity hostRecentActivity;
+                                                                            final RecentActivity clientRecentActivity;
 
                                                                             if (channelItem.getName().equals("")) {
-                                                                                // Client And Host Notification
-                                                                                hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
-                                                                                clientNotification = new Notification(otherTeam,message, Notification.NotificationVerbType.CHAT);
-                                                                                Backend.sendUpstreamNotification(hostNotification,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
-                                                                                Backend.sendUpstreamNotification(clientNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+                                                                                // Client And Host RecentActivity
+                                                                                hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT,otherTeam.getName(),Constants.Ints.Sender.TO);
+                                                                                clientRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT,yourTeam.getName(),Constants.Ints.Sender.FROM);
+                                                                                Backend.sendUpstreamNotification(hostRecentActivity,yourTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+                                                                                Backend.sendUpstreamNotification(clientRecentActivity,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
                                                                             } else {
-                                                                                // Your Team Notification
-                                                                                hostNotification = new Notification(currentUser,message, Notification.NotificationVerbType.CHAT);
-                                                                                Backend.sendUpstreamNotification(hostNotification,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+                                                                                // Your Team RecentActivity
+                                                                                hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT);
+                                                                                Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
                                                                             }
 
                                                                             DeviceHelper.dismissKeyboard(containingView);

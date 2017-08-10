@@ -24,7 +24,7 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,18 +92,18 @@ public final class RecentActivitiesFragment extends Fragment {
                                 @Override
                                 public void onDataChange(final DataSnapshot notificationSnapshot) {
                                     if (notificationSnapshot.hasChildren()) {
-                                        final ArrayList<Notification> filteredNotifications = new ArrayList<>();
-                                        for (final Notification notificationItem:Notification.toArrayList(notificationSnapshot)) {
-                                            if (notificationItem.goesToUID(currentUser.getTeamUID()) && !notificationItem.getSubjectUID().equals(currentUser.getTeamUID())) {
-                                                filteredNotifications.add(notificationItem);
+                                        final ArrayList<RecentActivity> filteredRecentActivities = new ArrayList<>();
+                                        for (final RecentActivity recentActivityItem : RecentActivity.toArrayList(notificationSnapshot)) {
+                                            if (recentActivityItem.goesToUID(currentUser.getTeamUID()) && !recentActivityItem.getSubjectUID().equals(currentUser.getTeamUID())) {
+                                                filteredRecentActivities.add(recentActivityItem);
                                             }
                                         }
 
-                                        if (filteredNotifications.size() > 0) {
+                                        if (filteredRecentActivities.size() > 0) {
 
-                                            Collections.reverse(filteredNotifications);
+                                            Collections.reverse(filteredRecentActivities);
                                             view.findViewById(R.id.no_content).setVisibility(View.GONE);
-                                            recyclerView.setAdapter(new RecentActivitiesAdapter(activity, filteredNotifications));
+                                            recyclerView.setAdapter(new RecentActivitiesAdapter(activity, filteredRecentActivities));
                                         } else {
                                             recyclerView.setAdapter(null);
                                             view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
@@ -170,16 +170,16 @@ public final class RecentActivitiesFragment extends Fragment {
         Team walmart = new Team("Walmart","walmart");
         Team aol = new Team("AOL","aol");
 
-        // Display a Requesting Approval Notification
-        // Display a Updated Mission Statement Notification
-        // Display a Client Approved Element Notification
+        // Display a Requesting Approval RecentActivity
+        // Display a Updated Mission Statement RecentActivity
+        // Display a Client Approved Element RecentActivity
 
-        ArrayList<Notification> notifications = new ArrayList<>();
-        notifications.add(new Notification(google, Notification.NotificationVerbType.APPROVE));
-        notifications.add(new Notification(walmart, Notification.NotificationVerbType.UPDATE, BrandingElement.ElementType.MISSION_STATEMENT));
-        notifications.add(new Notification(aol, Notification.NotificationVerbType.APPROVE, BrandingElement.ElementType.DOMAIN_NAME));
+        ArrayList<RecentActivity> recentActivities = new ArrayList<>();
+        recentActivities.add(new RecentActivity(google, RecentActivity.NotificationVerbType.APPROVE));
+        recentActivities.add(new RecentActivity(walmart, RecentActivity.NotificationVerbType.UPDATE, BrandingElement.ElementType.MISSION_STATEMENT));
+        recentActivities.add(new RecentActivity(aol, RecentActivity.NotificationVerbType.APPROVE, BrandingElement.ElementType.DOMAIN_NAME));
 
-        recyclerView.setAdapter(new RecentActivitiesAdapter(activity,notifications));
+        recyclerView.setAdapter(new RecentActivitiesAdapter(activity, recentActivities));
     }
 
 }

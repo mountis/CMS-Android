@@ -38,7 +38,7 @@ public final class BackendMessagingService extends FirebaseMessagingService {
             sendNotification(null,remoteMessage.getNotification().getBody());
         }
     }
-//    Notification Sending Method
+//    RecentActivity Sending Method
     private void sendNotification(Map<String, String> messageBody, String body) {
         Intent intent = new Intent(this, SignInActivity.class);
 

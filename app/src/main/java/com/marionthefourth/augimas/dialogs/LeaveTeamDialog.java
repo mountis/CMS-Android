@@ -15,7 +15,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
@@ -64,17 +64,17 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                         final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUserItem.getTeamUID());
                                         final FirebaseEntity.EntityType teamType = currentUserItem.getType();
 
-                                        final Notification leftNotification = new Notification(currentUserItem,teamArrayMap.get(teamType),Notification.NotificationVerbType.LEFT);
+                                        final RecentActivity leftRecentActivity = new RecentActivity(currentUserItem,teamArrayMap.get(teamType), RecentActivity.NotificationVerbType.LEFT);
                                         if (teamArrayMap.size() == 2) {
                                             if (teamType == FirebaseEntity.EntityType.HOST) {
-                                                leftNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
-                                                Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                                leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
+                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
                                             } else {
-                                                leftNotification.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
-                                                Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
+                                                leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, false);
                                             }
                                         }
-                                        Backend.sendUpstreamNotification(leftNotification,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
+                                        Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
 
                                         teamArrayMap.get(teamType).removeUser(currentUserItem);
                                         update(currentUserItem, activity);

@@ -13,13 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
@@ -78,44 +78,51 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     private void handleSingleTeam(final ViewHolder holder, int position) {
         // Figure out who is sending the message
         holder.senderItem = User.getMessageSender(teamMembers,holder.messageItem);
+
         holder.mTimestampLabel.setVisibility(View.GONE);
 
         if (PROTOTYPE_MODE) {
 
         } else {
-            if (holder.senderItem.getEmail().equals(Backend.getCurrentUser().getEmail())) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
-                }
+            if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                if ((holder.senderItem != null ? holder.senderItem.getUID():null) != null) {
+                    if (holder.senderItem.getUID().equals(getCurrentUser().getUID())) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
+                        }
 
-                LinearLayoutCompat messageViewLinearLayout = (LinearLayoutCompat) holder.mView.findViewById(R.id.item_linear_layout);
-                holder.mMessageLabel.setTextColor(ContextCompat.getColor(context, R.color.yourMessageTextColor));
-                holder.mUsernameLabel.setVisibility(View.GONE);
-                holder.mChatLetterMoniker.setVisibility(View.GONE);
-                messageViewLinearLayout.setGravity(Gravity.RIGHT);
-                messageViewLinearLayout.setRight(15);
-
-                holder.mMessageLabel.setGravity(Gravity.RIGHT);
-
-            } else {
-                // Only Display Username if there are more than two users
-                holder.mUsernameLabel.setText(holder.senderItem.getUsername());
-
-                if (position -1 >= 0) {
-                    if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {
+                        LinearLayoutCompat messageViewLinearLayout = (LinearLayoutCompat) holder.mView.findViewById(R.id.item_linear_layout);
+                        holder.mMessageLabel.setTextColor(ContextCompat.getColor(context, R.color.yourMessageTextColor));
                         holder.mUsernameLabel.setVisibility(View.GONE);
+                        holder.mChatLetterMoniker.setVisibility(View.GONE);
+                        messageViewLinearLayout.setGravity(Gravity.RIGHT);
+                        messageViewLinearLayout.setRight(15);
+
+                        holder.mMessageLabel.setGravity(Gravity.RIGHT);
+
+                    } else {
+                        // Only Display Username if there are more than two users
+                        holder.mUsernameLabel.setText(holder.senderItem.getUsername());
+
+                        if (position -1 >= 0) {
+                            if (messages.get(position-1).getSenderUID().equals(holder.senderItem.getUID())) {
+                                holder.mUsernameLabel.setVisibility(View.GONE);
+                            }
+                        }
+
+                        // Only Display the Chat Letter on this message if the next one isn't by the same user
+                        if (position + 1 < messages.size()) {
+                            if (messages.get(position+1).getSenderUID().equals(holder.senderItem.getUID())) {
+                                holder.mChatLetterMoniker.setVisibility(View.INVISIBLE);
+                            }
+                        }
+
+                        holder.mChatLetterMoniker.setText(holder.mUsernameLabel.getText().toString().substring(0,1));
                     }
                 }
 
-                // Only Display the Chat Letter on this message if the next one isn't by the same user
-                if (position + 1 < messages.size()) {
-                    if (messages.get(position+1).getSenderUID().equals(holder.senderItem.getUID())) {
-                        holder.mChatLetterMoniker.setVisibility(View.INVISIBLE);
-                    }
-                }
-
-                holder.mChatLetterMoniker.setText(holder.mUsernameLabel.getText().toString().substring(0,1));
             }
+
         }
 
         // Set message label
@@ -186,7 +193,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 holder.mChatLetterMoniker.setText(holder.mUsernameLabel.getText().toString().substring(0,1));
             }
         } else {
-            if (holder.senderItem.getEmail().equals(Backend.getCurrentUser().getEmail())) {
+            if (holder.senderItem.getEmail().equals(getCurrentUser().getEmail())) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     holder.mMessageLabel.setBackgroundDrawable(context.getDrawable(R.drawable.your_circle));
                 }

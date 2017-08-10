@@ -37,7 +37,7 @@ import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.entities.Device;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.notifications.Notification;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 import com.onesignal.OneSignal;
 
@@ -234,7 +234,7 @@ public final class Backend {
             myRef = getReference(R.string.firebase_chats_directory, activity);
         } else if (firebaseObject instanceof Message) {
             myRef = getReference(R.string.firebase_messages_directory, activity);
-        } else if (firebaseObject instanceof Notification) {
+        } else if (firebaseObject instanceof RecentActivity) {
             myRef = getReference(R.string.firebase_notifications_directory, activity);
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, activity);
@@ -259,7 +259,7 @@ public final class Backend {
             directory = R.string.firebase_branding_element_contents_directory;
         } else if (firebaseObject instanceof Team) {
             directory = R.string.firebase_teams_directory;
-        } else if (firebaseObject instanceof Notification){
+        } else if (firebaseObject instanceof RecentActivity){
             directory = R.string.firebase_notifications_directory;
         } else if (firebaseObject instanceof Channel) {
             directory = R.string.firebase_channels_directory;
@@ -298,7 +298,7 @@ public final class Backend {
             myRef = getReference(R.string.firebase_teams_directory, context);
         } else if (firebaseObject instanceof Message) {
             myRef = getReference(R.string.firebase_messages_directory, context);
-        } else if (firebaseObject instanceof Notification) {
+        } else if (firebaseObject instanceof RecentActivity) {
             myRef = getReference(R.string.firebase_notifications_directory, context);
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, context);
@@ -315,15 +315,15 @@ public final class Backend {
 
 
     }
-//    Notification Methods
-    public static void send(final Notification notification, final Activity activity) {
-        create(notification, activity);
-//        sendPushNotification(activity,notification);
+//    RecentActivity Methods
+    public static void send(final RecentActivity recentActivity, final Activity activity) {
+        create(recentActivity, activity);
+//        sendPushNotification(activity,recentActivity);
     }
-    public static void sendUpstreamNotification(final Notification notification, final String toTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
-        notification.addReceiverUID(toTeamUID);
+    public static void sendUpstreamNotification(final RecentActivity recentActivity, final String toTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
+        recentActivity.addReceiverUID(toTeamUID);
         if (shouldSave) {
-            create(notification, activity);
+            create(recentActivity, activity);
         }
 
         AsyncTask.execute(new Runnable() {
@@ -348,7 +348,7 @@ public final class Backend {
                         con.setRequestProperty("Authorization", "Basic ZGUxMDg2ZmUtZThiZC00YzVjLTkwODktYTdlZmQ2MDhhYjZj");
                         con.setRequestMethod("POST");
 
-                        JSONObject upstreamJSON = notification.toUpstreamJSON(toTeamUID,senderUID,header);
+                        JSONObject upstreamJSON = recentActivity.toNotificationJSON(toTeamUID,senderUID,header);
 
                         String strJsonBody = upstreamJSON.toString();
 
@@ -383,11 +383,11 @@ public final class Backend {
             }
         });
     }
-    public static Notification sendNotification(final FirebaseObject object, final FirebaseObject subject, final Notification.NotificationVerbType verbType, final Activity activity) {
-        final Notification notification = new Notification(subject,object,verbType);
-        create(notification, activity);
-//        sendPushNotification(activity,notification);
-        return notification;
+    public static RecentActivity sendNotification(final FirebaseObject object, final FirebaseObject subject, final RecentActivity.NotificationVerbType verbType, final Activity activity) {
+        final RecentActivity recentActivity = new RecentActivity(subject,object,verbType);
+        create(recentActivity, activity);
+//        sendPushNotification(activity,recentActivity);
+        return recentActivity;
     }
 //    Subscription Methods
     public static void unSubscribeFrom(final String uid) {
