@@ -244,17 +244,26 @@ public class TeamManagementFragment extends Fragment {
 
                                 }
                             });
+
+                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST && teamItem.getType() != FirebaseEntity.EntityType.HOST) {
+                                LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
+                                lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
+
+                                inviteMembers.setLayoutParams(lp);
+                            }
+
                         } else {
                             teamNameEditText.setEnabled(false);
                             usernameEditText.setEnabled(false);
                             updateButton.setVisibility(View.GONE);
                             inviteMembers.setEnabled(false);
 
-                            LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
-                            lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
+                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST && teamItem.getType() != FirebaseEntity.EntityType.HOST) {
+                                LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
+                                lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
 
-                            inviteMembers.setLayoutParams(lp);
-
+                                inviteMembers.setLayoutParams(lp);
+                            }
                         }
 
                         if (!currentUser.isInTeam(teamItem)) {

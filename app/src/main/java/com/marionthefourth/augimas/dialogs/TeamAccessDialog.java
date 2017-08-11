@@ -13,6 +13,7 @@ import android.view.View;
 
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.classes.constants.Constants;
+import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
@@ -54,16 +55,21 @@ public final class TeamAccessDialog extends Builder {
         AppCompatTextView teamName = (AppCompatTextView) dialogView.findViewById(R.id.item_label_team_display_name);
         teamName.setText(teamItem.getName());
 
-        ArrayList<AppCompatImageButton> buttons = new ArrayList<>();
+        final ArrayList<AppCompatImageButton> buttons = new ArrayList<>();
         for (int i = 0; i < BUTTON_IDS.length; i++) {
             buttons.add((AppCompatImageButton)dialogView.findViewById(BUTTON_IDS[i]));
             final int buttonIndex = i;
+            final int finalI = i;
             buttons.get(i).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     switch (buttonIndex) {
                         case 0:
-                            new TeamStatusDialog(teamItem, activity.findViewById(R.id.container), activity);
+                            if (teamItem.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {
+                                new TeamStatusDialog(teamItem, activity.findViewById(R.id.container), activity);
+                            } else {
+                                buttons.get(finalI).setVisibility(View.GONE);
+                            }
                             break;
                         case 1:
                             // Setup Dashboard Button

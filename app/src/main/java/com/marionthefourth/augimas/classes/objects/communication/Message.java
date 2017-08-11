@@ -43,8 +43,8 @@ public final class Message extends FirebaseCommunication {
             setSenderUID(messageReference.child(Constants.Strings.UIDs.SENDER_UID).getValue().toString());
         }
 
-        if (messageReference.hasChild(Constants.Strings.Fields.TIME)) {
-            setTimestamp(messageReference.child(Constants.Strings.Fields.TIME).getValue().toString());
+        if (messageReference.hasChild(Constants.Strings.Fields.TIMESTAMP)) {
+            setTimestamp(messageReference.child(Constants.Strings.Fields.TIMESTAMP).getValue().toString());
         }
 
         if (messageReference.hasChild(Constants.Strings.Fields.COMMUNICATION_TYPE)) {

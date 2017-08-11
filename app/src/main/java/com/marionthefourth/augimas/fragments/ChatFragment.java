@@ -32,10 +32,10 @@ import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.helpers.DeviceHelper;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import static com.marionthefourth.augimas.backend.Backend.create;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
@@ -67,14 +67,9 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         final Activity activity = getActivity();
         determineToDisplayChatInputSection(activity,view);
 
-        if (PROTOTYPE_MODE) {
-            Channel channel = new Channel();
-            loadPrototypeMessages(activity,recyclerView,channel);
-        } else {
-            if (getArguments() != null) {
-                setupSendButtonClickListener(activity,sendButton, inputField,view);
-                loadMessages(activity,recyclerView,view);
-            }
+        if (getArguments() != null) {
+            setupSendButtonClickListener(activity,sendButton, inputField,view);
+            loadMessages(activity,recyclerView,view);
         }
 
         return view;
@@ -103,41 +98,6 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
 
     }
 
-    private void loadPrototypeMessages(final Activity activity, final RecyclerView recyclerView, final Channel channel) {
-        ArrayList<Message> messages = new ArrayList<>();
-        ArrayList<User> users = new ArrayList<>();
-        users.add(new User("zaynewaynes"));
-        users.get(0).setUID("11111");
-        users.add(new User("timwallace"));
-        users.get(1).setUID("11112");
-        users.add(new User("englishmuffin"));
-        users.get(2).setUID("11113");
-        users.add(new User("probablytheowner"));
-        users.get(3).setUID("11114");
-
-        messages.add(new Message(channel,users.get(3),"Guess what guys?"));
-        messages.add(new Message(channel,users.get(2),"Whats?"));
-        messages.add(new Message(channel,users.get(1),"Sup?"));
-        messages.add(new Message(channel,users.get(0),"Doc"));
-        messages.add(new Message(channel,users.get(3),"We're live!"));
-        messages.add(new Message(channel,users.get(2),"Ain't that something special"));
-
-        ArrayList<User> adminUsers = new ArrayList<>();
-        adminUsers.add(new User("roliepolie"));
-        adminUsers.get(0).setUID("21111");
-        adminUsers.add(new User("karmapolice"));
-        adminUsers.get(1).setUID("31111");
-
-        messages.add(new Message(channel,adminUsers.get(0),"I think so :D"));
-        messages.add(new Message(channel,adminUsers.get(1),"Everyone put your hands up! :)"));
-
-        ArrayList<Team> teams = new ArrayList<>();
-        teams.add(new Team("Augimas","51515",adminUsers));
-
-        recyclerView.setAdapter(new MessageListAdapter(activity,channel,messages,adminUsers,users, ChatFragment.this));
-
-    }
-
     private void setupSendButtonClickListener(final Activity activity, final AppCompatImageButton sendButton, final TextInputEditText inputField, final View containingView) {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,7 +107,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
-                            if (currentUser != null && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
                                 if (!inputField.getText().toString().equals("")) {
                                     // Get Channel UID
                                     final Message message = new Message(
@@ -156,6 +116,7 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                             inputField.getText().toString().trim()
                                     );
 
+                                    message.setTimestamp(new Date().toString());
                                     // Save Message to Firebase
                                     create(message, activity);
 
@@ -241,11 +202,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
-
             }
         });
     }
@@ -322,7 +280,6 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         });
 
     }
-
     public void getOneTeamUID(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages, final View containingView) {
         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -398,7 +355,6 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         });
 
     }
-
     private void getBothTeamUIDs(final Activity activity, final RecyclerView recyclerView, final Channel currentChannel, final ArrayList<Message> messages,final View containingView) {
         Backend.getReference(R.string.firebase_chats_directory, activity).child(currentChannel.getChatUID()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -520,15 +476,8 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         });
 
     }
-
     @Override
     public void onMessageListFragmentInteraction(View view, Message messageItem, User userItem) {
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
 
     }
 }

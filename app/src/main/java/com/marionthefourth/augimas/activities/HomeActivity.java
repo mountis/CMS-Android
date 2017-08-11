@@ -68,9 +68,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
             } else {
                 setupHomeActivity(manager,navigation);
@@ -78,8 +76,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         } else {
             setupHomeActivity(manager, navigation);
         }
-
-
     }
     private void setupHomeActivity(final FragmentManager manager, final BottomNavigationView navigation) {
         if (getCurrentUser() != null && getCurrentUser().getUID() != null) {
@@ -186,7 +182,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         if (dataSnapshot.exists()) {
                             final User currentUser = new User(dataSnapshot);
 
-                            Backend.getReference(R.string.firebase_teams_directory,HomeActivity.this).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(R.string.firebase_teams_directory,HomeActivity.this).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
