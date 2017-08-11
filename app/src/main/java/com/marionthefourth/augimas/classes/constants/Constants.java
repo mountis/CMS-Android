@@ -522,7 +522,7 @@ public final class Constants {
         public static final String UPDATE_ACCOUNT_INFO_KEY = "updateAccountInfo";
         public static final String BUILD_VERSION_KEY = "buildInformation";
 
-        public static final String ADMIN_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";
+        public static final String HOST_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";
         public static final String HOST_REQUEST_CODE = "1-0F-U$";
         public static final String ADMIN_TEAM_NAME = "Augimas";
         public static final String ADMIN_TEAM_USERNAME = "augimas";

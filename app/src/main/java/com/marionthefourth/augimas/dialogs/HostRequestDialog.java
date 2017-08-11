@@ -73,7 +73,7 @@ public final class HostRequestDialog extends AlertDialog.Builder {
             public void onClick(DialogInterface dialog, int which) {
                 if (Constants.Bools.FeaturesAvailable.REQUEST_ADMIN_ROLE) {
                     if (inputs.get(0).getText().toString().equals(HOST_REQUEST_CODE) ||
-                            inputs.get(0).getText().toString().equals(Constants.Strings.ADMIN_ACCESS_CODE)) {
+                            inputs.get(0).getText().toString().equals(Constants.Strings.HOST_ACCESS_CODE)) {
                         Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {

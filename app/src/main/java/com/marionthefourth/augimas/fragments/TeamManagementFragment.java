@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
@@ -17,7 +18,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -30,9 +30,9 @@ import com.marionthefourth.augimas.adapters.TeamMembersAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.dialogs.CreateTeamDialog;
 import com.marionthefourth.augimas.dialogs.InviteMemberDialog;
 import com.marionthefourth.augimas.dialogs.JoinTeamDialog;
@@ -42,24 +42,13 @@ import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.backend.Backend.update;
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public class TeamManagementFragment extends Fragment {
 //    Fragment Constructor
     public TeamManagementFragment() { }
     //    Fragment Methods
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                startActivity(new Intent(getActivity(), HomeActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
     public static TeamManagementFragment newInstance(Team teamItem) {
         final Bundle args = new Bundle();
-
         if (teamItem != null) args.putSerializable(Constants.Strings.TEAM,teamItem);
 
         TeamManagementFragment fragment = new TeamManagementFragment();
@@ -71,7 +60,6 @@ public class TeamManagementFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_team_management, container, false);
 
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.team_member_recycler_view);
-        // Set the adapter
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
@@ -89,7 +77,6 @@ public class TeamManagementFragment extends Fragment {
                         actionBar.setTitle(Constants.Strings.Titles.TEAM + " " + teamItem.getName());
                     }
                 }
-
             }
 
             view.setFocusableInTouchMode(true);
@@ -100,181 +87,118 @@ public class TeamManagementFragment extends Fragment {
                 public boolean onKey(View v, int keyCode, KeyEvent event) {
                     if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
                         if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
-                            // Check if User is in Team
                             if (finalTeamItem != null) {
-                                if (getCurrentUser().isInTeam(finalTeamItem)) {
-                                    ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
-                                    final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
-                                    navigation.setSelectedItemId(R.id.navigation_settings);
-                                } else {
-                                    Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            final User currentUser = new User(dataSnapshot);
+                                Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        final User currentUser = new User(dataSnapshot);
+                                        if (currentUser.isInTeam(finalTeamItem)) {
+                                            ((AppCompatActivity) activity).getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
+                                            ((BottomNavigationView) activity.findViewById(R.id.navigation)).setSelectedItemId(R.id.navigation_settings);
+                                        } else {
                                             if (currentUser.getTeamUID().equals("") || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                                                 final FragmentManager rManager = activity.getFragmentManager();
                                                 rManager.beginTransaction().setTransition(
                                                         android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
                                                         new SettingsFragment(),
                                                         Constants.Strings.Fragments.SETTINGS).commit();
-
                                             } else {
                                                 getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
                                                 final Activity activity = getActivity();
-                                                final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                                                activity.startActivity(homeIntent);
+                                                activity.startActivity(new Intent(activity, HomeActivity.class));
                                             }
                                         }
+                                    }
 
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-
-                                        }
-                                    });
-
-                                }
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+                                    }
+                                });
                                 return true;
                             }
-                            getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
-                            final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
-                            navigation.setSelectedItemId(R.id.navigation_settings);
-
-                            Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    final User currentUser = new User(dataSnapshot);
-                                    if (currentUser.getTeamUID().equals("") || !currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                                        final FragmentManager rManager = activity.getFragmentManager();
-                                        rManager.beginTransaction().setTransition(
-                                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                new SettingsFragment(),
-                                                Constants.Strings.Fragments.SETTINGS).commit();
-
-                                    } else {
-                                        getFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE).remove(TeamManagementFragment.this).commit();
-                                        final Activity activity = getActivity();
-                                        final Intent homeIntent = new Intent(activity,HomeActivity.class);
-                                        activity.startActivity(homeIntent);
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
-                            });
-
-
                         }
-
-                        return true;
                     }
                     return false;
                 }
             });
 
-
-            if (!PROTOTYPE_MODE) {
-                if (teamItem != null) {
-                    loadTeam(teamItem, recyclerView, view, activity);
-                } else {
-                    loadTeam(getCurrentUser(), recyclerView, view, activity);
-                }
+            if (teamItem != null) {
+                loadTeam(teamItem, recyclerView, view, activity);
+            } else {
+                loadTeam(getCurrentUser(), recyclerView, view, activity);
             }
         }
 
         return view;
     }
-
 //    Functional Methods
     private void loadTeam(final Team teamItem, final RecyclerView recyclerView, final View view, Activity activity) {
-        populateInTeamLayout(activity,view,recyclerView,teamItem);
-        LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
-        layout.setVisibility(View.GONE);
+        populateTeamLayout(teamItem, view, recyclerView, activity);
     }
-    private void loadTeam(final User user, final RecyclerView recyclerView, final View view, final Activity activity) {
-        if (user != null) {
-            Backend.getReference(R.string.firebase_users_directory, activity).child(user.getUID()).addValueEventListener(new ValueEventListener() {
+    private void loadTeam(@Nullable final User currentUser, final RecyclerView recyclerView, final View view, final Activity activity) {
+        if ((currentUser != null ? currentUser.getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(currentUser.getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
                         final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
 
-                        final User currentUser = new User(dataSnapshot);
+                        final User currentUser = new User(userSnapshot);
                         if (currentUser.getTeamUID().equals("")) {
-                            // Display Join & Create Teams
-                            populateNoTeamLayout(activity, view);
-
-
-
-                            LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
-                            layout.setVisibility(View.GONE);
+                            populateCreateOrJoinTeamLayout(view, activity);
                         } else {
                             Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                                 @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                        final Team teamItem = new Team(dataSnapshot);
+                                public void onDataChange(DataSnapshot teamSnapshot) {
+                                    if (teamSnapshot.exists() && teamSnapshot.hasChildren()) {
+                                        final Team currentTeam = new Team(teamSnapshot);
                                         if (actionBar != null) {
-                                            actionBar.setTitle(Constants.Strings.Titles.TEAM + " " + teamItem.getName());
+                                            actionBar.setTitle(Constants.Strings.Titles.TEAM + " " + currentTeam.getName());
                                         }
-                                        populateInTeamLayout(activity, view,recyclerView,teamItem);
-                                        LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
-                                        layout.setVisibility(View.GONE);
+                                        populateTeamLayout(currentTeam, view, recyclerView, activity);
                                     } else {
                                         // Display Join & Create Teams
-                                        populateNoTeamLayout(activity,view);
-                                        LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
-                                        layout.setVisibility(View.GONE);
+                                        populateCreateOrJoinTeamLayout(view, activity);
                                     }
                                 }
-
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) {}
                             });
                         }
                     }
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });
-
         }
     }
-    private void populateNoTeamLayout(final Activity activity, final View view) {
-        LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.no_team_layout);
-        layout.setVisibility(View.VISIBLE);
-
-        AppCompatButton createTeamButton = (AppCompatButton) view.findViewById(R.id.button_create_team);
-        createTeamButton.setOnClickListener(new View.OnClickListener() {
+    private void populateCreateOrJoinTeamLayout(final View view, final Activity activity) {
+        view.findViewById(R.id.team_layout).setVisibility(View.GONE);
+        view.findViewById(R.id.button_create_team).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new CreateTeamDialog(view, activity);
             }
         });
-        AppCompatButton joinTeamButton = (AppCompatButton) view.findViewById(R.id.button_join_team);
-        joinTeamButton.setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.button_join_team).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new JoinTeamDialog(view, activity);
             }
         });
+        view.findViewById(R.id.create_or_join_team_layout).setVisibility(View.VISIBLE);
     }
-    private void populateInTeamLayout(final Activity activity, final View view, final RecyclerView recyclerView, final Team team) {
-        final LinearLayoutCompat layout = (LinearLayoutCompat)view.findViewById(R.id.in_team_layout);
-        layout.setVisibility(View.VISIBLE);
-
-        final TextInputEditText nameEditText = (TextInputEditText) view.findViewById(R.id.input_team_name);
-        nameEditText.setText(team.getName());
-        final TextInputEditText usernameEditText = (TextInputEditText) view.findViewById(R.id.input_team_username);
-        usernameEditText.setText(team.getUsername());
-
-        final AppCompatButton updateButton = (AppCompatButton) view.findViewById(R.id.button_update_team_info);
-
-        final AppCompatButton inviteMembers = (AppCompatButton)view.findViewById(R.id.button_invite_member);
-
+    private void populateTeamLayout(final Team teamItem, final View view, final RecyclerView recyclerView, final Activity activity) {
+        view.findViewById(R.id.create_or_join_team_layout).setVisibility(View.GONE);
+        view.findViewById(R.id.team_layout).setVisibility(View.VISIBLE);
         final AppCompatButton leaveTeam = (AppCompatButton)view.findViewById(R.id.button_leave_team);
+        final TextInputEditText teamNameEditText = (TextInputEditText) view.findViewById(R.id.input_team_name);
+        final AppCompatButton inviteMembers = (AppCompatButton)view.findViewById(R.id.button_invite_member);
+        final AppCompatButton updateButton = (AppCompatButton) view.findViewById(R.id.button_update_team_info);
+        final TextInputEditText usernameEditText = (TextInputEditText) view.findViewById(R.id.input_team_username);
+
+        teamNameEditText.setText(teamItem.getName());
+        usernameEditText.setText(teamItem.getUsername());
 
         inviteMembers.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,185 +217,53 @@ public class TeamManagementFragment extends Fragment {
         if ((getCurrentUser() != null ? getCurrentUser().toString(): null) != null) {
             Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        final User currentUser = new User(dataSnapshot);
-                        if (currentUser.isInTeam(team)) {
-                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-                                updateButton.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    final Team currentTeam = new Team(dataSnapshot);
-                                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                                            final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
-                                                            if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
-                                                                final RecentActivity hostRecentActivity;
-                                                                final RecentActivity clientRecentActivity;
-                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    } else {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(FirebaseEntity.EntityType.HOST),currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                        Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                    }
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                } else {
-                                                                    hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                }
-                                                                currentTeam.setUsername(usernameEditText.getText().toString().trim());
-                                                                update(currentTeam, activity);
-                                                            }
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User(userSnapshot);
+                        if ((currentUser.isInTeam(teamItem) && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN))
+                                || (!currentUser.isInTeam(teamItem) && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR))) {
+                            updateButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
+                                            final Team currentTeam = teamArrayMap.get(currentUser.getType());
 
-                                                            if (!currentTeam.getName().equals(nameEditText.getText().toString())) {
-                                                                final RecentActivity hostRecentActivity;
-                                                                final RecentActivity clientRecentActivity;
-                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    } else {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                        clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                        Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                    }
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                } else {
-                                                                    hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                }
-                                                                currentTeam.setName(nameEditText.getText().toString().trim());
-                                                                update(currentTeam, activity);
-                                                            }
-                                                        }
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {}
-                                                    });
-                                                }
-                                            }
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
-                                    }
-                                });
-                            } else {
-                                nameEditText.setEnabled(false);
-                                usernameEditText.setEnabled(false);
-                                updateButton.setVisibility(View.GONE);
-                            }
+                                            // If Updated Username Field
+                                            handleUsernameUpdate(currentUser, usernameEditText, currentTeam, teamArrayMap, activity);
 
-                            if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                inviteMembers.setEnabled(false);
-                                inviteMembers.setVisibility(View.GONE);
-                            }
+                                            // If Updated Team Name Field
+                                            handleTeamNameUpdate(currentUser, teamNameEditText, currentTeam, teamArrayMap, activity);
 
-                            loadTeamMembers(activity, recyclerView,team,currentUser,usernameEditText,nameEditText);
+                                        }
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {}
+                                    });
+
+                                }
+                            });
                         } else {
-                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                updateButton.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(team.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    final Team currentTeam = new Team(dataSnapshot);
-
-                                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                                            final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
-
-                                                            if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
-                                                                final RecentActivity hostRecentActivity;
-                                                                final RecentActivity clientRecentActivity;
-                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    } else {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                        clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                        Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                    }
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                } else {
-                                                                    hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-                                                                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-
-                                                                }
-                                                                currentTeam.setUsername(usernameEditText.getText().toString());
-                                                            }
-
-                                                            if (!currentTeam.getName().equals(nameEditText.getText().toString())) {
-                                                                final RecentActivity hostRecentActivity;
-                                                                final RecentActivity clientRecentActivity;
-                                                                if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                    if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    } else {
-                                                                        hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                        clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                        Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                    }
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                } else {
-                                                                    hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,usernameEditText.getText().toString());
-                                                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
-                                                                }
-                                                                currentTeam.setName(nameEditText.getText().toString());
-
-                                                            }
-
-                                                            update(currentTeam, activity);
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {
-
-                                                        }
-                                                    });
-
-
-
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
-                                    }
-                                });
-                            } else {
-                                nameEditText.setEnabled(false);
-                                usernameEditText.setEnabled(false);
-                                updateButton.setVisibility(View.GONE);
-                                inviteMembers.setEnabled(false);
-
-                            }
-
-                            leaveTeam.setEnabled(false);
-                            leaveTeam.setVisibility(View.GONE);
+                            teamNameEditText.setEnabled(false);
+                            usernameEditText.setEnabled(false);
+                            updateButton.setVisibility(View.GONE);
+                            inviteMembers.setEnabled(false);
 
                             LinearLayoutCompat.LayoutParams lp = new LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT);
                             lp.setMargins(0, 0, 0, (int) (40*activity.getResources().getDisplayMetrics().density));
 
                             inviteMembers.setLayoutParams(lp);
 
-                            loadTeamMembers(activity, recyclerView,team,currentUser, usernameEditText, nameEditText);
+                            loadTeamMembers(currentUser,teamItem, usernameEditText, teamNameEditText, recyclerView, activity);
+                        }
+
+                        if (!currentUser.isInTeam(teamItem)) {
+                            leaveTeam.setEnabled(false);
+                            leaveTeam.setVisibility(View.GONE);
+                        } else if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                            inviteMembers.setEnabled(false);
+                            inviteMembers.setVisibility(View.GONE);
                         }
                     }
                 }
@@ -481,40 +273,73 @@ public class TeamManagementFragment extends Fragment {
             });
         }
     }
-    private void loadTeamMembers(final Activity activity, final RecyclerView recyclerView, final Team team, final User user, final TextInputEditText usernameEditText, final TextInputEditText nameEditText) {
+    private void handleTeamNameUpdate(final User currentUser, final TextInputEditText teamNameEditText, final Team currentTeam, final ArrayMap<FirebaseEntity.EntityType, Team> teamArrayMap, final Activity activity) {
+        if (!currentTeam.getName().equals(teamNameEditText.getText().toString())) {
+            final RecentActivity hostRecentActivity;
+            final RecentActivity clientRecentActivity;
+            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                    hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,teamNameEditText.getText().toString());
+                } else {
+                    hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,teamNameEditText.getText().toString());
+                    clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,teamNameEditText.getText().toString());
+                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
+                }
+                Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
+            } else {
+                hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,teamNameEditText.getText().toString());
+                clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_TEAM_NAME,teamNameEditText.getText().toString());
+                Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
+                Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
+            }
+            currentTeam.setName(teamNameEditText.getText().toString().trim());
+            update(currentTeam, activity);
+        }
+    }
+    private void handleUsernameUpdate(final User currentUser, final TextInputEditText usernameEditText, final Team currentTeam, final ArrayMap<FirebaseEntity.EntityType, Team> teamArrayMap, final Activity activity) {
+        if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
+            final RecentActivity hostRecentActivity;
+            final RecentActivity clientRecentActivity;
+            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                if (currentTeam.getType() == FirebaseEntity.EntityType.HOST) {
+                    hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                } else {
+                    hostRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                    clientRecentActivity = new RecentActivity(teamArrayMap.get(FirebaseEntity.EntityType.HOST),currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                    Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
+                }
+                Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
+            } else {
+                hostRecentActivity = new RecentActivity(currentTeam,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
+                Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
+                Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
+            }
+            currentTeam.setUsername(usernameEditText.getText().toString().trim());
+            update(currentTeam, activity);
+        }
+    }
+    private void loadTeamMembers(final User currentUser, final Team team, final TextInputEditText usernameEditText, final TextInputEditText teamNameEditText, final RecyclerView recyclerView, final Activity activity) {
         if (team != null) {
             Backend.getReference(
                     R.string.firebase_teams_directory, activity
             ).child(team.getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.hasChildren()) {
-                        final Team teamItem = new Team(dataSnapshot);
+                public void onDataChange(DataSnapshot teamSnapshot) {
+                    if (teamSnapshot.hasChildren()) {
+                        final Team teamItem = new Team(teamSnapshot);
                         // Get all team members
 
                         Backend.getReference(R.string.firebase_users_directory, activity).addValueEventListener(new ValueEventListener() {
                             @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.hasChildren()) {
-                                    final ArrayList<User> teamMembers = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
+                            public void onDataChange(DataSnapshot userSnapshot) {
+                                if (userSnapshot.hasChildren()) {
+                                    final ArrayList<User> teamMembers = User.toFilteredArrayList(userSnapshot, Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
 
                                     if (teamMembers.size() == 0) {
                                         recyclerView.setAdapter(null);
                                     } else {
-                                        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    final User currentUser = new User(dataSnapshot);
-                                                    if (currentUser != null) {
-                                                        recyclerView.setAdapter(new TeamMembersAdapter(activity, teamMembers,currentUser,usernameEditText,nameEditText));
-                                                    }
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
+                                        recyclerView.setAdapter(new TeamMembersAdapter(currentUser, teamMembers, usernameEditText, teamNameEditText, activity));
                                     }
                                 }
                             }

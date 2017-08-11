@@ -45,7 +45,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
     private TextInputEditText usernameEditText;
 
 //    Adapter Constructor
-    public TeamMembersAdapter(final Activity activity, final ArrayList<User> members, final User currentUser, final TextInputEditText usernameEditText, final TextInputEditText nameEditText) {
+    public TeamMembersAdapter(final User currentUser, final ArrayList<User> members, final TextInputEditText usernameEditText, final TextInputEditText nameEditText, final Activity activity) {
         this.members = members;
         this.activity = activity;
         this.currentUser = currentUser;

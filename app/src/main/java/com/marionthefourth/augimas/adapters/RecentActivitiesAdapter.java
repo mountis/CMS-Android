@@ -39,18 +39,23 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
     @Override
     public void onBindViewHolder(final RecentActivitiesAdapter.ViewHolder holder, int position) {
         holder.recentActivityItem = recentActivities.get(position);
-        holder.mIconLetterMoniker.setText(holder.recentActivityItem.getMessageText().substring(0,1));
+        if (holder.recentActivityItem.getMessageText() != null &&
+                !holder.recentActivityItem.getMessageText().equals("")) {
+            holder.mIconLetterMoniker.setText(holder.recentActivityItem.getMessageText().substring(0,1));
 
-        holder.mNotificationText.setText(holder.recentActivityItem.getMessageText());
+            holder.mNotificationText.setText(holder.recentActivityItem.getMessageText());
 
-        pullItemsData(holder);
+            pullItemsData(holder);
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                holder.recentActivityItem.navigate(activity);
-            }
-        });
+            holder.mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.recentActivityItem.navigate(activity);
+                }
+            });
+        } else {
+            holder.mView.setVisibility(View.GONE);
+        }
     }
     @Override
     public int getItemCount() {
