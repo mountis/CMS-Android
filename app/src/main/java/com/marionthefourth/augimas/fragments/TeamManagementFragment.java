@@ -306,12 +306,10 @@ public class TeamManagementFragment extends Fragment {
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
                                                     final Team currentTeam = new Team(dataSnapshot);
-
                                                     Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                                             final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
-
                                                             if (!currentTeam.getUsername().equals(usernameEditText.getText().toString())) {
                                                                 final RecentActivity hostRecentActivity;
                                                                 final RecentActivity clientRecentActivity;
@@ -329,9 +327,9 @@ public class TeamManagementFragment extends Fragment {
                                                                     clientRecentActivity = new RecentActivity(currentUser,currentTeam, RecentActivity.NotificationVerbType.UPDATE_USERNAME,usernameEditText.getText().toString());
                                                                     Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
                                                                     Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_USERNAME_UPDATED,activity, true);
-
                                                                 }
-                                                                currentTeam.setUsername(usernameEditText.getText().toString());
+                                                                currentTeam.setUsername(usernameEditText.getText().toString().trim());
+                                                                update(currentTeam, activity);
                                                             }
 
                                                             if (!currentTeam.getName().equals(nameEditText.getText().toString())) {
@@ -352,28 +350,18 @@ public class TeamManagementFragment extends Fragment {
                                                                     Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
                                                                     Backend.sendUpstreamNotification(clientRecentActivity,currentTeam.getUID(),currentUser.getUID(),Constants.Strings.Headers.TEAM_NAME_UPDATED,activity, true);
                                                                 }
-                                                                currentTeam.setName(nameEditText.getText().toString());
-
+                                                                currentTeam.setName(nameEditText.getText().toString().trim());
+                                                                update(currentTeam, activity);
                                                             }
-
-                                                            update(currentTeam, activity);
                                                         }
-
                                                         @Override
-                                                        public void onCancelled(DatabaseError databaseError) {
-
-                                                        }
+                                                        public void onCancelled(DatabaseError databaseError) {}
                                                     });
-
-
-
                                                 }
                                             }
-
                                             @Override
                                             public void onCancelled(DatabaseError databaseError) {}
                                         });
-                                        // Get Text From Fields
                                     }
                                 });
                             } else {

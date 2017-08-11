@@ -88,7 +88,7 @@ public final class RecentActivitiesFragment extends Fragment {
                             }
                         });
                         if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                            Backend.getReference(R.string.firebase_notifications_directory, activity).addValueEventListener(new ValueEventListener() {
+                            Backend.getReference(R.string.firebase_recent_activities_directory, activity).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(final DataSnapshot notificationSnapshot) {
                                     if (notificationSnapshot.hasChildren()) {

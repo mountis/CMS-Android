@@ -307,15 +307,15 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     }
 
     private void handleInput(final ViewHolder holder, final int position) {
-        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString(), brandingName.getType())) {
+        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString().trim(), brandingName.getType())) {
             if (position == brandingName.getData().size()) {
-                brandingName.getData().add(holder.mNameEditText.getText().toString());
-                sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.ADD,holder.mNameEditText.getText().toString(), null);
+                brandingName.getData().add(holder.mNameEditText.getText().toString().trim());
+                sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.ADD,holder.mNameEditText.getText().toString().trim(), null);
             } else if (position < brandingName.getData().size()){
-                if (!holder.mNameEditText.getText().toString().equals(brandingName.getData().get(position))) {
-                    final String previousName = brandingName.getData().get(position);
-                    brandingName.getData().set(position,holder.mNameEditText.getText().toString());
-                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString());
+                if (!holder.mNameEditText.getText().toString().trim().equals(brandingName.getData().get(position))) {
+                    final String previousName = brandingName.getData().get(position).trim();
+                    brandingName.getData().set(position,holder.mNameEditText.getText().toString().trim());
+                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString().trim());
                 }
             }
             holder.creating = false;

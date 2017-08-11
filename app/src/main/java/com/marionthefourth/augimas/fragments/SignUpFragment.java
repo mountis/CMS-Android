@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.ArrayMap;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -68,12 +67,13 @@ public final class SignUpFragment extends Fragment {
 
         return view;
     }
-    private ArrayMap<String,ArrayList<View>> getAllVisualElementViews(final View view) {
-//        TODO - Try to combine all three Visual Element Arrays Into 1
-        final ArrayMap<String,ArrayList<View>> visualElements = new ArrayMap<>();
-//        visualElements.put(Constants.Strings.Elements.BUTTONS,(ArrayList<View>)getAllButtonViews(view));
-        return visualElements;
-    }
+//    private ArrayMap<String,ArrayList<View>> getAllVisualElementViews(final View view) {
+////        TODO - Try to combine all three Visual Element Arrays Into 1
+//        final ArrayMap<String,ArrayList<View>> visualElements = new ArrayMap<>();
+////        visualElements.put(Constants.Strings.Elements.BUTTONS,(ArrayList<View>)getAllButtonViews(view));
+//        return visualElements;
+//    }
+
     private ArrayList<Button> getAllButtonViews(final View view) {
         final int BUTTON_VIEW_IDS[] = {
                 R.id.button_sign_up,
@@ -312,7 +312,7 @@ public final class SignUpFragment extends Fragment {
 
         final ArrayList<String> fields = new ArrayList<>();
         for(int ID:INPUT_VIEW_IDS) {
-            fields.add(((TextInputEditText)getView().findViewById(ID)).getText().toString());
+            fields.add(((TextInputEditText)getView().findViewById(ID)).getText().toString().trim());
         }
 
         return FirebaseObject.getFromFields(fields,OBJECT_TYPE);

@@ -36,7 +36,7 @@
     <string name="firebase_members_directory">members</string>
     <string name="firebase_messages_directory">messages</string>
     <string name="firebase_teams_directory">teams</string>
-    <string name="firebase_notifications_directory">recentActivities</string>
+    <string name="firebase_recent_activities_directory">recentActivities</string>
     <string name="firebase_channels_directory">channels</string>
     <string name="firebase_devices_directory">devices</string>
     <string name="firebase_url_directory">https://augimas-25621.firebaseio.com/</string>

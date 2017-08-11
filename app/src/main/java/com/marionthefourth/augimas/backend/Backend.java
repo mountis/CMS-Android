@@ -226,7 +226,7 @@ public final class Backend {
         } else if (firebaseObject instanceof Message) {
             myRef = getReference(R.string.firebase_messages_directory, activity);
         } else if (firebaseObject instanceof RecentActivity) {
-            myRef = getReference(R.string.firebase_notifications_directory, activity);
+            myRef = getReference(R.string.firebase_recent_activities_directory, activity);
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, activity);
         }
@@ -251,7 +251,7 @@ public final class Backend {
         } else if (firebaseObject instanceof Team) {
             directory = R.string.firebase_teams_directory;
         } else if (firebaseObject instanceof RecentActivity){
-            directory = R.string.firebase_notifications_directory;
+            directory = R.string.firebase_recent_activities_directory;
         } else if (firebaseObject instanceof Channel) {
             directory = R.string.firebase_channels_directory;
         }
@@ -290,7 +290,7 @@ public final class Backend {
         } else if (firebaseObject instanceof Message) {
             myRef = getReference(R.string.firebase_messages_directory, context);
         } else if (firebaseObject instanceof RecentActivity) {
-            myRef = getReference(R.string.firebase_notifications_directory, context);
+            myRef = getReference(R.string.firebase_recent_activities_directory, context);
         } else if (firebaseObject instanceof Channel) {
             myRef = getReference(R.string.firebase_channels_directory, context);
         } else if (firebaseObject instanceof Device) {

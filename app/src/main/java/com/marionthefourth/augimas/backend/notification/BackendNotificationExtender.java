@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import com.marionthefourth.augimas.R;
-import com.marionthefourth.augimas.activities.SignInActivity;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.onesignal.NotificationExtenderService;
 import com.onesignal.OSNotificationReceivedResult;
@@ -27,38 +27,50 @@ import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 public class BackendNotificationExtender extends NotificationExtenderService {
     @Override
     protected boolean onNotificationProcessing(OSNotificationReceivedResult osNotificationReceivedResult) {
-        Intent intent = new Intent(this, SignInActivity.class);
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        final int flags = Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                Intent.FLAG_ACTIVITY_NEW_TASK;
+        final int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
 
-        int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
+        final JSONObject messageBody = osNotificationReceivedResult.payload.additionalData;
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, uniqueInt, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            String header = "";
+            String message = "";
+            String senderUID = "";
+            String recentActivityUID = "";
+            String navigationDirection = "";
+            if (messageBody.has(Constants.Strings.Fields.FRAGMENT)) {
+                navigationDirection = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
+            }
+            if (messageBody.has(Constants.Strings.Fields.HEADER)) {
+                header = messageBody.getString(Constants.Strings.Fields.HEADER);
+            }
+            if (messageBody.has(Constants.Strings.UIDs.RECENT_ACTIVITY_UID)) {
+                recentActivityUID = messageBody.getString(Constants.Strings.UIDs.RECENT_ACTIVITY_UID);
+            }
+            if (messageBody.has(Constants.Strings.UIDs.SENDER_UID)) {
+                senderUID = messageBody.getString(Constants.Strings.UIDs.SENDER_UID);
+            }
+            if (messageBody.has(Constants.Strings.Fields.MESSAGE)) {
+                message = messageBody.getString(Constants.Strings.Fields.MESSAGE);
+            }
 
-        JSONObject messageBody = osNotificationReceivedResult.payload.additionalData;
-        String navigationDirection;
-        String header = "Augimas";
-        String recentActivityUID;
-        if (messageBody.has(Constants.Strings.UIDs.SENDER_UID)) {
-            try {
-                if (!messageBody.getString(Constants.Strings.UIDs.SENDER_UID).equals(getCurrentUser().getUID())) {
-                    if (messageBody.has(Constants.Strings.Fields.FRAGMENT)) {
-                        navigationDirection = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
-                        intent.putExtra(Constants.Strings.Fields.FRAGMENT,navigationDirection);
-                    }
-                    if (messageBody.has(Constants.Strings.Fields.HEADER)) {
-                        header = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
-                    }
-                    if (messageBody.has(Constants.Strings.UIDs.RECENT_ACTIVITY_UID)) {
-                        recentActivityUID = messageBody.getString(Constants.Strings.UIDs.RECENT_ACTIVITY_UID);
-                        intent.putExtra(Constants.Strings.UIDs.RECENT_ACTIVITY_UID,recentActivityUID);
-                    }
+            if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+                if (!senderUID.equals("") && !senderUID.equals(getCurrentUser().getUID())) {
+                    final Intent intent = new Intent(BackendNotificationExtender.this,HomeActivity.class);
+                    intent.putExtra(Constants.Strings.UIDs.RECENT_ACTIVITY_UID,recentActivityUID);
+                    intent.addFlags(flags);
+
+                    final PendingIntent pendingIntent = PendingIntent.getActivity(BackendNotificationExtender.this, uniqueInt, intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+
                     Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(BackendNotificationExtender.this)
                             .setSmallIcon(R.drawable.filled_logo)
                             .setContentTitle(header)
-                            .setContentText(messageBody.getString(Constants.Strings.Fields.MESSAGE))
+                            .setContentText(message)
                             .setAutoCancel(true)
                             .setPriority(Notification.PRIORITY_HIGH)
                             .setSound(defaultSoundUri)
@@ -67,12 +79,13 @@ public class BackendNotificationExtender extends NotificationExtenderService {
                     NotificationManager notificationManager =
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-                    notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+                    notificationManager.notify(0, notificationBuilder.build());
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
         return true;
     }
 }

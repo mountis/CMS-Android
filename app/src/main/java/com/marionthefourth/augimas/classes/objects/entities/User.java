@@ -10,6 +10,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,6 +87,13 @@ public final class User extends FirebaseEntity {
         setName(fullname);
         setEmail(email);
         setUsername(username);
+    }
+    public boolean hasSeen(final RecentActivity recentActivity) {
+        for(String seenUID:recentActivity.getSeenUIDs()) {
+            if (seenUID.equals(getUID())) return true;
+        }
+
+        return false;
     }
     public static ArrayList<User> toArrayList(DataSnapshot userReferences) {
         final ArrayList<User> users = new ArrayList<>();

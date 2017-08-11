@@ -55,6 +55,7 @@ public final class RecentActivity extends FirebaseContent {
     private String subjectUID;
     private String messageText;
     private int senderType;
+    private ArrayList<String> seenUIDs = new ArrayList<>();
     private ArrayList<String> receiverUIDs = new ArrayList<>();
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
     private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
@@ -537,17 +538,7 @@ public final class RecentActivity extends FirebaseContent {
                     final User currentUser = new User(dataSnapshot);
 
                     final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
-                    final String subjectTeamUID;
-                    switch(getSubjectType()) {
-                        case MEMBER:
-                            subjectTeamUID = ((User) getSubject()).getTeamUID();
-                            break;
-                        case TEAM:
-                        default:
-                            subjectTeamUID = (getSubject()).getUID();
-                            break;
 
-                    }
                     switch (getObjectType()) {
                         case BRANDING_ELEMENT:
                             Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -822,7 +813,7 @@ public final class RecentActivity extends FirebaseContent {
         return null;
     }
     //    Class Getters & Setters
-    public String getObjectTypeString() {
+    private String getObjectTypeString() {
         switch (getObjectType()) {
             case BRANDING_ELEMENT:
                 return Constants.Strings.Fragments.BRANDING_ELEMENTS;
@@ -837,6 +828,13 @@ public final class RecentActivity extends FirebaseContent {
         }
     }
 
+    public boolean hasBeenSeenBy(final User user) {
+        for(String seenUID:getSeenUIDs()) {
+            if (seenUID.equals(user.getUID())) return true;
+        }
+
+        return false;
+    }
     public String getRelativeMessage(final String relativeUID) {
         String subjectPart = "";
         String verbPart = "";
@@ -1120,10 +1118,10 @@ public final class RecentActivity extends FirebaseContent {
                         if (extraString != null && !extraString.equals("")) {
                             switch(verbType) {
                                 case UPDATE_USERNAME:
-                                    setMessageText(subjectPart + "changed " + objectPart + "'s username to " + extraString);
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s username to " + extraString + ".");
                                     break;
                                 case UPDATE_TEAM_NAME:
-                                    setMessageText(subjectPart + "changed " + objectPart + "'s name to " + extraString);
+                                    setMessageText(subjectPart + "changed " + objectPart + "'s name to " + extraString + ".");
                                     break;
                             }
                         } else {
@@ -1145,6 +1143,20 @@ public final class RecentActivity extends FirebaseContent {
                                     break;
                                 case REQUEST_JOIN:
                                     setMessageText(subjectPart + "is requesting to join " + objectPart + ".");
+                                    break;
+                                case UPDATE_USERNAME:
+                                    if (subject instanceof Team && subjectUID.equals(objectUID)) {
+                                        setMessageText(subjectPart + "changed their username to " + getTeamNameString() + ".");
+                                    } else {
+                                        setMessageText(subjectPart + "changed " + objectPart + "'s username to " + getTeamNameString() + ".");
+                                    }
+                                    break;
+                                case UPDATE_TEAM_NAME:
+                                    if (subject instanceof Team && subjectUID.equals(objectUID)) {
+                                        setMessageText(subjectPart + "changed their name to " + getTeamNameString() + ".");
+                                    } else {
+                                        setMessageText(subjectPart + "changed " + objectPart + "'s name to " + getTeamNameString() + ".");
+                                    }
                                     break;
                             }
                         }
@@ -1220,8 +1232,6 @@ public final class RecentActivity extends FirebaseContent {
                         getReceiverUIDs().add(((User) object).getTeamUID());
                     } else if (object instanceof Team) {
                         getReceiverUIDs().add(object.getUID());
-                    } else if (object instanceof BrandingElement) {
-                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
                     }
                 } else if (object instanceof FirebaseContent) {
                     if (object instanceof BrandingElement) {
@@ -1254,9 +1264,19 @@ public final class RecentActivity extends FirebaseContent {
 
         }
     }
+
+    public void addSeenUID(final User user) {
+        if (getSeenUIDs().size() > 0) {
+            for (final String seenUID : getSeenUIDs()) {
+                if (seenUID.equals(user.getUID())) return;
+            }
+        }
+
+        getSeenUIDs().add(user.getUID());
+    }
     public String getObjectUID() { return objectUID; }
-    public void setObjectUID(final String objectUID) { this.objectUID = objectUID; }
-    public FirebaseObject getObject() { return object; }
+    private void setObjectUID(final String objectUID) { this.objectUID = objectUID; }
+    private FirebaseObject getObject() { return object; }
     public NotificationObjectType setObject(final FirebaseObject object) {
         this.object = object;
         if (object != null) {
@@ -1277,8 +1297,8 @@ public final class RecentActivity extends FirebaseContent {
         return getObjectType();
     }
     public String getSubjectUID() { return subjectUID; }
-    public void setSubjectUID(final String subjectUID) { this.subjectUID = subjectUID; }
-    public FirebaseObject getSubject() { return subject; }
+    private void setSubjectUID(final String subjectUID) { this.subjectUID = subjectUID; }
+    private FirebaseObject getSubject() { return subject; }
     public NotificationSubjectType setSubject(final FirebaseObject subject) {
         this.subject = subject;
         setSubjectUID(subject.getUID());
@@ -1293,54 +1313,60 @@ public final class RecentActivity extends FirebaseContent {
         return getSubjectType();
     }
 
-    public int getSenderType() {
+    public ArrayList<String> getSeenUIDs() {
+        return seenUIDs;
+    }
+    public void setSeenUIDs(ArrayList<String> seenUIDs) {
+        this.seenUIDs = seenUIDs;
+    }
+    private int getSenderType() {
         return senderType;
     }
-    public void setSenderType(int senderType) {
+    private void setSenderType(int senderType) {
         this.senderType = senderType;
     }
     public String getExtraString2() {
         return extraString2;
     }
-    public void setExtraString2(String extraString2) {
+    private void setExtraString2(String extraString2) {
         this.extraString2 = extraString2;
     }
     public FirebaseEntity.EntityRole getRoleObject() {
         return roleObject;
     }
-    public void setRoleObject(FirebaseEntity.EntityRole roleObject) {
+    private void setRoleObject(FirebaseEntity.EntityRole roleObject) {
         this.roleObject = roleObject;
     }
     public FirebaseEntity.EntityStatus getStatusObject() {
         return statusObject;
     }
-    public void setStatusObject(FirebaseEntity.EntityStatus statusObject) {
+    private void setStatusObject(FirebaseEntity.EntityStatus statusObject) {
         this.statusObject = statusObject;
     }
-    public String getExtraString() {
+    private String getExtraString() {
         return extraString;
     }
     public void setExtraString(String extraString) {
         this.extraString = extraString;
     }
-    public String getTeamNameString() {
+    private String getTeamNameString() {
         return teamNameString;
     }
-    public void setTeamNameString(String teamNameString) {
+    private void setTeamNameString(String teamNameString) {
         this.teamNameString = teamNameString;
     }
     public String getMessageText() {
         return messageText;
     }
-    public void setMessageText(String messageText) {
+    private void setMessageText(String messageText) {
         this.messageText = messageText;
     }
-    public NotificationVerbType getVerbType() { return verbType; }
-    public void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }
-    public ArrayList<String> getReceiverUIDs() { return receiverUIDs; }
-    public void setReceiverUIDs(final ArrayList<String> receiverUIDs) { this.receiverUIDs = receiverUIDs; }
+    private NotificationVerbType getVerbType() { return verbType; }
+    private void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }
+    private ArrayList<String> getReceiverUIDs() { return receiverUIDs; }
+    private void setReceiverUIDs(final ArrayList<String> receiverUIDs) { this.receiverUIDs = receiverUIDs; }
     public NotificationObjectType getObjectType() { return objectType; }
-    public void setObjectType(final NotificationObjectType objectType) { this.objectType = objectType; }
+    private void setObjectType(final NotificationObjectType objectType) { this.objectType = objectType; }
     public NotificationSubjectType getSubjectType() { return subjectType; }
-    public void setSubjectType(final NotificationSubjectType subjectType) { this.subjectType = subjectType; }
+    private void setSubjectType(final NotificationSubjectType subjectType) { this.subjectType = subjectType; }
 }

@@ -47,17 +47,15 @@ public final class SettingsFragment extends PreferenceFragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
+                    if (!currentUser.getTeamUID().equals("")) {
                         Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     final Team teamItem = new Team(dataSnapshot);
-                                    if (teamItem != null) {
-                                        final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
-                                        if (actionBar != null) {
-                                            actionBar.setTitle(teamItem.getName());
-                                        }
+                                    final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                                    if (actionBar != null) {
+                                        actionBar.setTitle(teamItem.getName());
                                     }
                                 }
                             }
@@ -111,7 +109,7 @@ public final class SettingsFragment extends PreferenceFragment {
         signOutPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Backend.signOut((AppCompatActivity) activity,true);
+                Backend.signOut(activity,true);
                 return true;
             }
         });

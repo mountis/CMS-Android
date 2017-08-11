@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatButton;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -43,19 +44,14 @@ import static com.marionthefourth.augimas.helpers.FragmentHelper.buildProgressDi
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class SignInFragment extends Fragment {
-
     public SignInFragment() { /* Required empty public constructor */ }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return setupView(inflater.inflate(R.layout.fragment_sign_in, container, false));
     }
-
     private View setupView(final View view) {
         // Establish all View Elements
-        final ArrayList<Button> buttons = getAllButtonViews(view);
+        final ArrayList<AppCompatButton> buttons = getAllButtonViews(view);
 
         // Add all Inputs to an ArrayList
         final ArrayList<TextInputEditText> inputs = getAllEditTextViews(view);
@@ -65,45 +61,36 @@ public final class SignInFragment extends Fragment {
 
         final User user = new User();
         final Activity activity = getActivity();
-        // Check if user was already logged in
-//        checkIfUserIsLoggedIn(view,user);
 
         // Set OnFocusChangeListener to all Inputs & Add TextChangedListener to all Inputs
         setupTextInputsWithFocusAndTextChangedListeners(layouts,inputs);
-
         // Sign In Button (Connect to Firebase & Transition to Home)
-        setupSignInButtonsOnClickListener(activity,layouts,inputs,view,buttons.get(SIGN_IN_BUTTON),user);
-
+        setupSignInButtonsOnClickListener(user, layouts, inputs, buttons.get(SIGN_IN_BUTTON), view, activity);
         // Sign Up Button (Transition to Sign Up)
-        setupSignUpButtonsOnClickListener(activity,view,buttons.get(SIGN_UP_TEXT_BUTTON));
-
+        setupSignUpButtonsOnClickListener(buttons.get(SIGN_UP_TEXT_BUTTON), view, activity);
         // Forgot Password Button (Transition to Forgot Password Section)
-        setupForgotPasswordButtonsOnClickListener(activity,view,buttons.get(FORGOT_PASSWORD_BUTTON));
+        setupForgotPasswordButtonsOnClickListener(buttons.get(FORGOT_PASSWORD_BUTTON), view, activity);
 
-        //            initializeAdminSDK();
-
-        checkIfUserIsLoggedIn(activity,view,getCurrentUser());
+        checkIfUserIsLoggedIn(getCurrentUser(), view, activity);
 
         return view;
     }
-
-    private void checkIfUserIsLoggedIn(final Activity activity, final View view, final User user) {
-        // Attempt to get the current user if null, they aren't logged in
-        if (user != null) {
+    private void checkIfUserIsLoggedIn(final User currentUser, final View view, final Activity activity) {
+        if (currentUser != null && !currentUser.getUID().equals("")) {
             final ProgressDialog loadingProgress = buildProgressDialog(R.string.progress_signing_in, view);
             // Display Toast to the User, welcoming them back
             Backend.getReference(
                     R.string.firebase_users_directory, activity
-            ).child(user.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            ).child(currentUser.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     loadingProgress.dismiss();
                     final User currentUser = new User(dataSnapshot);
                     if (!currentUser.getTeamUID().equals("")) {
-                        OneSignal.sendTag(Constants.Strings.UIDs.TEAM_UID,user.getTeamUID());
+                        OneSignal.sendTag(Constants.Strings.UIDs.TEAM_UID,currentUser.getTeamUID());
                     }
-                    OneSignal.syncHashedEmail(user.getEmail());
-                    OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,user.getUID());
+                    OneSignal.syncHashedEmail(currentUser.getEmail());
+                    OneSignal.sendTag(Constants.Strings.UIDs.USER_UID,currentUser.getUID());
 
                     display(Constants.Ints.Views.Widgets.IDs.TOAST, R.string.welcome_back_text, currentUser.getUsername(), view);
                     final Intent homeIntent = new Intent(activity,HomeActivity.class);
@@ -122,7 +109,6 @@ public final class SignInFragment extends Fragment {
             });
         }
     }
-
     private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
         for (int i = 0; i < inputs.size();i++) {
             final int finalI = i;
@@ -137,25 +123,22 @@ public final class SignInFragment extends Fragment {
                     }
                 }
             });
-
             // Add TextChangedListener to all Inputs
             inputs.get(i).addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
                 @Override
                 public void afterTextChanged(Editable s) {
                     if (layouts.get(finalI).getError() != null) {
                         layouts.get(finalI).setError(null);
                     }
                 }
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
             });
         }
     }
-    private void setupSignUpButtonsOnClickListener(final Activity activity, final View view, final Button button) {
+    private void setupSignUpButtonsOnClickListener(final AppCompatButton button, final View view, final Activity activity) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,7 +147,7 @@ public final class SignInFragment extends Fragment {
             }
         });
     }
-    private ArrayList<Button> getAllButtonViews(final View view) {
+    private ArrayList<AppCompatButton> getAllButtonViews(final View view) {
         // Button IDs
         final int BUTTON_VIEW_IDS[] = {
                 R.id.button_sign_in,
@@ -172,22 +155,19 @@ public final class SignInFragment extends Fragment {
                 R.id.text_button_sign_up
         };
 
-        final ArrayList<Button> buttons = new ArrayList<>();
-        for (int i = 0; i < BUTTON_VIEW_IDS.length; i++) {
-            buttons.add((Button)view.findViewById(BUTTON_VIEW_IDS[i]));
+        final ArrayList<AppCompatButton> buttons = new ArrayList<>();
+        for(int ID:BUTTON_VIEW_IDS) {
+            buttons.add((AppCompatButton)view.findViewById(ID));
         }
 
         return buttons;
     }
-    private void setupSignInButtonsOnClickListener(final Activity activity, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final View view, final Button button, final User user) {
+    private void setupSignInButtonsOnClickListener(final User user, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs, final AppCompatButton button, final View view, final Activity activity) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (allTextFieldsAreFilled(view,layouts,inputs) || PROTOTYPE_MODE) {
-                    // Connect to Firebase & Attempt to Log In
+                if (allTextFieldsAreFilled(inputs, layouts, view) || PROTOTYPE_MODE) {
                     dismissKeyboard(view);
-
                     if (Constants.Bools.FeaturesAvailable.SIGN_IN) {
                         final User newUser = (User) getFirebaseContentFromFields(FIREBASE_USER);
                         user.setPassword(newUser.getPassword());
@@ -205,7 +185,7 @@ public final class SignInFragment extends Fragment {
             }
         });
     }
-    private boolean allTextFieldsAreFilled(final View view, final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
+    private boolean allTextFieldsAreFilled(final ArrayList<TextInputEditText> inputs, final ArrayList<TextInputLayout> layouts, final View view) {
         //Errors
         final int REQUIRED_IDS[] = {
                 R.string.required_username,
@@ -245,8 +225,8 @@ public final class SignInFragment extends Fragment {
         };
 
         final ArrayList<TextInputLayout> layouts = new ArrayList<>();
-        for (int i = 0; i < TEXT_INPUT_LAYOUT_IDS.length; i++) {
-            layouts.add((TextInputLayout)view.findViewById(TEXT_INPUT_LAYOUT_IDS[i]));
+        for(int ID: TEXT_INPUT_LAYOUT_IDS) {
+            layouts.add((TextInputLayout) view.findViewById(ID));
         }
 
         return layouts;
@@ -259,12 +239,12 @@ public final class SignInFragment extends Fragment {
         };
 
         final ArrayList<TextInputEditText> inputs = new ArrayList<>();
-        for (int i = 0; i < INPUT_VIEW_IDS.length; i++) {
-            inputs.add((TextInputEditText)view.findViewById(INPUT_VIEW_IDS[i]));
+        for(int ID: INPUT_VIEW_IDS) {
+            inputs.add((TextInputEditText) view.findViewById(ID));
         }
         return inputs;
     }
-    private void setupForgotPasswordButtonsOnClickListener(final Activity activity, final View view, final Button button) {
+    private void setupForgotPasswordButtonsOnClickListener(final Button button, final View view, final Activity activity) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -272,19 +252,17 @@ public final class SignInFragment extends Fragment {
             }
         });
     }
-    private FirebaseObject getFirebaseContentFromFields(int FIREBASE_CONTENT) {
-        // Edit Text View IDs
+    private FirebaseObject getFirebaseContentFromFields(int BACKEND_CONTENT) {
         final int INPUT_VIEW_IDS[] = {
                 R.id.input_username_or_email,
                 R.id.input_password
         };
 
         final ArrayList<String> fields = new ArrayList<>();
-        for (int i = 0; i < INPUT_VIEW_IDS.length; i++) {
-            fields.add(((EditText)getView().findViewById(INPUT_VIEW_IDS[i])).getText().toString());
+        for (int INPUT_VIEW_ID : INPUT_VIEW_IDS) {
+            fields.add(((EditText) getView().findViewById(INPUT_VIEW_ID)).getText().toString().trim());
         }
 
-        return FirebaseObject.getFromFields(fields,FIREBASE_CONTENT);
+        return FirebaseObject.getFromFields(fields,BACKEND_CONTENT);
     }
-
 }

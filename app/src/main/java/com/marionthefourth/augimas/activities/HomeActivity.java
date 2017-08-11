@@ -21,6 +21,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
 import com.marionthefourth.augimas.fragments.BrandingElementsFragment;
@@ -53,6 +54,34 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         final BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+        if (getIntent().getExtras() != null) {
+            final String recentActivityUID = getIntent().getExtras().getString(Constants.Strings.UIDs.RECENT_ACTIVITY_UID);
+
+            if (recentActivityUID != null && !recentActivityUID.equals("")) {
+                Backend.getReference(R.string.firebase_recent_activities_directory,this).child(recentActivityUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot recentActivitySnapshot) {
+                        if (recentActivitySnapshot.exists()) {
+                            final RecentActivity recentActivity = new RecentActivity(recentActivitySnapshot);
+                            recentActivity.navigate(HomeActivity.this);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            } else {
+                setupHomeActivity(manager,navigation);
+            }
+        } else {
+            setupHomeActivity(manager, navigation);
+        }
+
+
+    }
+    private void setupHomeActivity(final FragmentManager manager, final BottomNavigationView navigation) {
         if (getCurrentUser() != null && getCurrentUser().getUID() != null) {
             checkNavigationItem(getCurrentUser(),this);
             Backend.getReference(R.string.firebase_users_directory, HomeActivity.this).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -86,7 +115,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                             break;
                                     }
                                 }
-
                             } else {
                                 Backend.getReference(R.string.firebase_teams_directory, HomeActivity.this).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
