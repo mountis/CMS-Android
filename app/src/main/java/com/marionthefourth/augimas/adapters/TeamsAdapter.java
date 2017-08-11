@@ -17,11 +17,13 @@ import java.util.ArrayList;
 
 public class TeamsAdapter extends RecyclerView.Adapter<TeamsAdapter.ViewHolder> {
     private Activity activity;
-    private ArrayList<Team> teams;
+    private ArrayList<Team> teams = new ArrayList<>();
+    private Animation bounceFasterAnimation;
 //    Adapter Constructor
-    public TeamsAdapter(Activity activity, ArrayList<Team> teams) {
+    public TeamsAdapter(final ArrayList<Team> teams, final Activity activity) {
         this.teams = teams;
         this.activity = activity;
+        bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
     }
 //    Adapter Methods
     @Override
@@ -30,15 +32,10 @@ public class TeamsAdapter extends RecyclerView.Adapter<TeamsAdapter.ViewHolder> 
                 .inflate(R.layout.list_item_minimal_team, parent, false));
     }
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.teamItem = teams.get(position);
-
-        // Fill ViewHolder
         holder.mDisplayLabel.setText(holder.teamItem.getName());
-
-        final Animation bounceFasterAnimation = AnimationUtils.loadAnimation(activity, R.anim.bounce_faster);
         holder.mView.startAnimation(bounceFasterAnimation);
-
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,7 +51,7 @@ public class TeamsAdapter extends RecyclerView.Adapter<TeamsAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public Team teamItem;
         public final View mView;
-        public final AppCompatTextView mDisplayLabel;
+        final AppCompatTextView mDisplayLabel;
 
         public ViewHolder(View view) {
             super(view);

@@ -55,6 +55,8 @@ public final class RecentActivity extends FirebaseContent {
     private String subjectUID;
     private String messageText;
     private int senderType;
+    private String timestamp;
+    private String header;
     private ArrayList<String> seenUIDs = new ArrayList<>();
     private ArrayList<String> receiverUIDs = new ArrayList<>();
     private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
@@ -408,6 +410,12 @@ public final class RecentActivity extends FirebaseContent {
         if (nRef.hasChild(Constants.Strings.Fields.MESSAGE)) {
             setMessageText(nRef.child(Constants.Strings.Fields.MESSAGE).getValue().toString());
         }
+        if (nRef.hasChild(Constants.Strings.Fields.HEADER)) {
+            setHeader(nRef.child(Constants.Strings.Fields.HEADER).getValue().toString());
+        }
+        if (nRef.hasChild(Constants.Strings.Fields.TIMESTAMP)) {
+            setTimestamp(nRef.child(Constants.Strings.Fields.TIMESTAMP).getValue().toString());
+        }
 
         int index = 0;
         while (nRef.hasChild(Constants.Strings.UIDs.RECEIVER_UID + index)) {
@@ -756,6 +764,12 @@ public final class RecentActivity extends FirebaseContent {
         if (getUID() != null) {
             result.put(Constants.Strings.UIDs.UID, getUID());
         }
+        if (getTimestamp() != null) {
+            result.put(Constants.Strings.Fields.TIMESTAMP,getTimestamp());
+        }
+        if (getHeader() != null) {
+            result.put(Constants.Strings.Fields.HEADER,getHeader());
+        }
         if (getObject() != null) {
             result.put(Constants.Strings.UIDs.OBJECT_UID, getObjectUID());
         }
@@ -1074,6 +1088,9 @@ public final class RecentActivity extends FirebaseContent {
                             }
                         } else {
                             switch(verbType) {
+                                case ADD:
+                                    setMessageText(subjectPart + "added " + objectPart + " to the team!");
+                                    break;
                                 case APPROVE:
                                     setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
                                     break;
@@ -1096,8 +1113,32 @@ public final class RecentActivity extends FirebaseContent {
                                     return "missing [objectType]";
                             }
                         }
-
-
+                    } else {
+                        switch(verbType) {
+                            case ADD:
+                                setMessageText(subjectPart + "added " + objectPart + " to the team!");
+                                break;
+                            case APPROVE:
+                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
+                                break;
+                            case INVITE:
+                                if (getTeamNameString() != null && !getTeamNameString().equals("")) {
+                                    final String teamName = getTeamNameString();
+                                    if (getExtraString() != null && !getExtraString().equals("")) {
+                                        setMessageText(subjectPart + "from " + getExtraString() + ", invited " + objectPart + " to " + teamName + ".");
+                                    } else {
+                                        setMessageText(subjectPart + "invited " + objectPart + " to " + teamName + ".");
+                                    }
+                                } else {
+                                    setMessageText(subjectPart + "invited " + objectPart + " to the team!");
+                                }
+                                break;
+                            case BLOCK:
+                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
+                                break;
+                            default:
+                                return "missing [objectType]";
+                        }
                     }
                     break;
                 case TEAM:
@@ -1313,6 +1354,18 @@ public final class RecentActivity extends FirebaseContent {
         return getSubjectType();
     }
 
+    public String getHeader() {
+        return header;
+    }
+    public void setHeader(String header) {
+        this.header = header;
+    }
+    public String getTimestamp() {
+        return timestamp;
+    }
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
     public ArrayList<String> getSeenUIDs() {
         return seenUIDs;
     }

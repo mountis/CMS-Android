@@ -34,10 +34,10 @@ import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.communication.Message;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Device;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 import com.onesignal.OneSignal;
 
@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.Scanner;
 
 import static android.content.ContentValues.TAG;
@@ -306,13 +307,11 @@ public final class Backend {
 
     }
 //    RecentActivity Methods
-    public static void send(final RecentActivity recentActivity, final Activity activity) {
-        create(recentActivity, activity);
-//        sendPushNotification(activity,recentActivity);
-    }
     public static void sendUpstreamNotification(final RecentActivity recentActivity, final String receivingTeamUID, final String senderUID, final String header, final Activity activity, boolean shouldSave) {
         recentActivity.addReceiverUID(receivingTeamUID);
         if (shouldSave) {
+            recentActivity.setHeader(header);
+            recentActivity.setTimestamp(new Date().toString());
             create(recentActivity, activity);
         }
 

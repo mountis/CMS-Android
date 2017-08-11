@@ -99,7 +99,7 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 if (dataSnapshot.exists()) {
-                                                    addUserToTeam(activity,dialog,new Team(dataSnapshot), currentUserItem, invitedUserItem, memberRoleSpinner);
+                                                    addUserToTeam(invitedUserItem, currentUserItem, new Team(dataSnapshot), memberRoleSpinner, dialog, activity);
                                                 }
                                             }
                                             @Override
@@ -132,49 +132,52 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         inputLayout.addView(usernameEditText,0,layoutParams);
         layout.addView(inputLayout);
 
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    User currentUser = new User(dataSnapshot);
-                    ArrayList<FirebaseEntity.EntityRole> entityRoles = FirebaseEntity.EntityRole.getAllRoles();
-                    entityRoles.remove(FirebaseEntity.EntityRole.DEFAULT);
-                    memberRoleSpinner.setLayoutParams(layoutParams);
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        User currentUser = new User(dataSnapshot);
+                        ArrayList<FirebaseEntity.EntityRole> entityRoles = FirebaseEntity.EntityRole.getAllRoles();
+                        entityRoles.remove(FirebaseEntity.EntityRole.DEFAULT);
+                        memberRoleSpinner.setLayoutParams(layoutParams);
 
-                    if (currentUser.getType() != FirebaseEntity.EntityType.HOST) {
-                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
-
-                            if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.OWNER)) {
-                                entityRoles.remove(FirebaseEntity.EntityRole.OWNER);
+                        if (currentUser.getType() != FirebaseEntity.EntityType.HOST) {
+                            for(FirebaseEntity.EntityRole role:FirebaseEntity.EntityRole.getAllRoles()){
+                                if (role.toInt(false) >= FirebaseEntity.EntityRole.EDITOR.toInt(false)) {
+                                    if (!currentUser.hasInclusiveAccess(role)) {
+                                        entityRoles.remove(role);
+                                    }
+                                }
                             }
                         }
+
+                        ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1, entityRoles);
+                        memberRoleSpinner.setAdapter(adapter);
+                        layout.addView(memberRoleSpinner);
                     }
-
-                    ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1, FirebaseEntity.EntityRole.getAllRoles());
-                    memberRoleSpinner.setAdapter(adapter);
-                    layout.addView(memberRoleSpinner);
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
-
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
         setView(layout);
     }
 //    Functional Methods
-    private void addUserToTeam(final Activity activity, final DialogInterface dialog, final Team teamItem, final User currentUserItem, final User invitedUserItem, final AppCompatSpinner memberRoleSpinner) {
-        FirebaseEntity.EntityRole role = FirebaseEntity.EntityRole.NONE;
-        FirebaseEntity.EntityStatus status = FirebaseEntity.EntityStatus.AWAITING;
+    private void addUserToTeam(final User invitedUserItem, final User currentUserItem, final Team teamItem, final AppCompatSpinner memberRoleSpinner, final DialogInterface dialog, final Activity activity) {
+        final FirebaseEntity.EntityStatus status;
         final RecentActivity.NotificationVerbType verb;
 
-        if (currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.ADMIN)) {
+        if (currentUserItem.getType() == FirebaseEntity.EntityType.HOST || currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
             status = FirebaseEntity.EntityStatus.APPROVED;
-            verb = RecentActivity.NotificationVerbType.JOIN;
-            role = (FirebaseEntity.EntityRole) memberRoleSpinner.getSelectedItem();
+            verb = RecentActivity.NotificationVerbType.ADD;
         } else {
-            verb = RecentActivity.NotificationVerbType.REQUEST;
+            status = FirebaseEntity.EntityStatus.AWAITING;
+            verb = RecentActivity.NotificationVerbType.INVITE;
         }
+
+        final FirebaseEntity.EntityRole role = (FirebaseEntity.EntityRole) memberRoleSpinner.getSelectedItem();
 
         invitedUserItem.setType(currentUserItem.getType());
 
@@ -199,10 +202,9 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                             recentActivity.setMessage();
                         }
                         Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
-                        Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
+                        Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, false);
                     }
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });

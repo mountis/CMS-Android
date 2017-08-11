@@ -122,6 +122,15 @@ public abstract class FirebaseEntity extends FirebaseObject {
             return memberRoles;
         }
 
+        public static ArrayList<EntityRole> getAllRolesBefore(EntityRole role) {
+            final ArrayList<EntityRole> memberRoles = new ArrayList<>();
+            for (int i = role.toInt(false); i > 0; i--) {
+                memberRoles.add(getRole(i));
+            }
+
+            return memberRoles;
+        }
+
         public static EntityRole getRole(final int roleIndex) {
             switch (roleIndex) {
                 case Constants.Ints.EntityRoles.IDs.OWNER:

@@ -39,14 +39,11 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
     @Override
     public void onBindViewHolder(final RecentActivitiesAdapter.ViewHolder holder, int position) {
         holder.recentActivityItem = recentActivities.get(position);
-        if (holder.recentActivityItem.getMessageText() != null &&
+
+        if (holder.recentActivityItem != null && holder.recentActivityItem.getMessageText() != null &&
                 !holder.recentActivityItem.getMessageText().equals("")) {
             holder.mIconLetterMoniker.setText(holder.recentActivityItem.getMessageText().substring(0,1));
-
             holder.mNotificationText.setText(holder.recentActivityItem.getMessageText());
-
-            pullItemsData(holder);
-
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -115,9 +112,7 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                            if (elementItem != null) {
-                                holder.recentActivityItem.setObject(elementItem);
-                            }
+                            holder.recentActivityItem.setObject(elementItem);
                         }
                     }
 
@@ -178,9 +173,9 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
 //    View Holder Methods
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public RecentActivity recentActivityItem;
-        public final AppCompatTextView mNotificationText;
-        public final AppCompatButton mIconLetterMoniker;
+        RecentActivity recentActivityItem;
+        final AppCompatTextView mNotificationText;
+        final AppCompatButton mIconLetterMoniker;
 
         public ViewHolder(View view) {
             super(view);

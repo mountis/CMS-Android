@@ -1,5 +1,6 @@
 package com.marionthefourth.augimas.dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
@@ -32,9 +33,8 @@ public final class TeamAccessDialog extends Builder {
 //    Dialog Setup Methods
     private void setupDialog(final Team teamItem, final Activity activity) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
-        // ...Irrelevant code for customizing the buttons and title
         LayoutInflater inflater = activity.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.list_item_full_team, null);
+        @SuppressLint("InflateParams") View dialogView = inflater.inflate(R.layout.list_item_full_team, null);
         dialogBuilder.setView(dialogView);
 
         AlertDialog alertDialog = dialogBuilder.create();
@@ -84,5 +84,4 @@ public final class TeamAccessDialog extends Builder {
             });
         }
     }
-//    Transitional Method
 }

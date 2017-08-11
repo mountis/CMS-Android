@@ -401,6 +401,7 @@ public final class Constants {
             public static final String MESSAGE = "message";
             public static final String HEADER = "header";
             public static final String SELECTED_INDEX = "selectedIndex";
+            public static final String TIMESTAMP = "timestamp";
         }
 
         public static final class Server {

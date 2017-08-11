@@ -21,16 +21,14 @@ import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.RecentActivitiesAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
-import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public final class RecentActivitiesFragment extends Fragment {
 
@@ -52,55 +50,34 @@ public final class RecentActivitiesFragment extends Fragment {
         recyclerView.setVisibility(View.GONE);
 
         contentProgressBar.show();
-        if (PROTOTYPE_MODE) {
-            loadPrototypeNotifications(activity,recyclerView);
-        } else {
-            loadNotificationData(view,activity,recyclerView);
-        }
+        loadRecentActivityData(recyclerView, view, activity);
+
         recyclerView.setVisibility(View.VISIBLE);
 
         return view;
     }
 
-    private void loadNotificationData(final View view, final Activity activity, final RecyclerView recyclerView) {
+    private void loadRecentActivityData(final RecyclerView recyclerView, final View view, final Activity activity) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        final User currentUser = new User(dataSnapshot);
-
-                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    final Team teamItem = new Team(dataSnapshot);
-                                    final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
-                                    if (actionBar != null) {
-                                        actionBar.setTitle(teamItem.getName());
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User(userSnapshot);
+                        setupActionBarName(currentUser,activity);
                         if (!currentUser.getTeamUID().equals("") && currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                             Backend.getReference(R.string.firebase_recent_activities_directory, activity).addValueEventListener(new ValueEventListener() {
                                 @Override
-                                public void onDataChange(final DataSnapshot notificationSnapshot) {
-                                    if (notificationSnapshot.hasChildren()) {
+                                public void onDataChange(final DataSnapshot recentActivitySnapshot) {
+                                    if (recentActivitySnapshot.hasChildren()) {
                                         final ArrayList<RecentActivity> filteredRecentActivities = new ArrayList<>();
-                                        for (final RecentActivity recentActivityItem : RecentActivity.toArrayList(notificationSnapshot)) {
+                                        for (final RecentActivity recentActivityItem : RecentActivity.toArrayList(recentActivitySnapshot)) {
                                             if (recentActivityItem.goesToUID(currentUser.getTeamUID()) && !recentActivityItem.getSubjectUID().equals(currentUser.getTeamUID())) {
                                                 filteredRecentActivities.add(recentActivityItem);
                                             }
                                         }
 
                                         if (filteredRecentActivities.size() > 0) {
-
                                             Collections.reverse(filteredRecentActivities);
                                             view.findViewById(R.id.no_content).setVisibility(View.GONE);
                                             recyclerView.setAdapter(new RecentActivitiesAdapter(activity, filteredRecentActivities));
@@ -108,8 +85,6 @@ public final class RecentActivitiesFragment extends Fragment {
                                             recyclerView.setAdapter(null);
                                             view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
                                         }
-
-
                                     } else {
                                         recyclerView.setAdapter(null);
                                         view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
@@ -121,65 +96,37 @@ public final class RecentActivitiesFragment extends Fragment {
                                         contentLoadingProgressBar.setVisibility(View.GONE);
                                     }
                                 }
-
                                 @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
+                                public void onCancelled(DatabaseError databaseError) {}
                             });
                         } else {
-                            if (!currentUser.getTeamUID().equals("")) {
-                                Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        if (dataSnapshot.exists()) {
-                                            final Team teamItem = new Team(dataSnapshot);
-                                            final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
-                                            if (actionBar != null) {
-                                                actionBar.setTitle(teamItem.getName());
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-                            }
                             recyclerView.setAdapter(null);
                             view.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
-
                         }
                     }
-
-
                 }
-
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-
+                public void onCancelled(DatabaseError databaseError) {}
             });
         }
     }
 
-    private void loadPrototypeNotifications(final Activity activity, RecyclerView recyclerView) {
-        Team google = new Team("Google","google");
-        Team walmart = new Team("Walmart","walmart");
-        Team aol = new Team("AOL","aol");
+    private void setupActionBarName(final User currentUser, final Activity activity) {
+        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot teamSnapshot) {
+                if (teamSnapshot.exists()) {
+                    final Team teamItem = new Team(teamSnapshot);
+                    final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                    if (actionBar != null) {
+                        actionBar.setTitle(teamItem.getName());
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-        // Display a Requesting Approval RecentActivity
-        // Display a Updated Mission Statement RecentActivity
-        // Display a Client Approved Element RecentActivity
-
-        ArrayList<RecentActivity> recentActivities = new ArrayList<>();
-        recentActivities.add(new RecentActivity(google, RecentActivity.NotificationVerbType.APPROVE));
-        recentActivities.add(new RecentActivity(walmart, RecentActivity.NotificationVerbType.UPDATE, BrandingElement.ElementType.MISSION_STATEMENT));
-        recentActivities.add(new RecentActivity(aol, RecentActivity.NotificationVerbType.APPROVE, BrandingElement.ElementType.DOMAIN_NAME));
-
-        recyclerView.setAdapter(new RecentActivitiesAdapter(activity, recentActivities));
+            }
+        });
     }
-
 }

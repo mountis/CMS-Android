@@ -255,7 +255,6 @@ public class TeamManagementFragment extends Fragment {
 
                             inviteMembers.setLayoutParams(lp);
 
-                            loadTeamMembers(currentUser,teamItem, usernameEditText, teamNameEditText, recyclerView, activity);
                         }
 
                         if (!currentUser.isInTeam(teamItem)) {
@@ -265,6 +264,8 @@ public class TeamManagementFragment extends Fragment {
                             inviteMembers.setEnabled(false);
                             inviteMembers.setVisibility(View.GONE);
                         }
+
+                        loadTeamMembers(currentUser,teamItem, usernameEditText, teamNameEditText, recyclerView, activity);
                     }
                 }
 

@@ -16,68 +16,48 @@ import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
 import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.adapters.ChatListAdapter;
+import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.backend.Backend;
 
 import java.util.ArrayList;
 
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 
 public class ChatListFragment extends Fragment {
-
     private OnChatListFragmentInteractionListener mListener;
-
-    public ChatListFragment() {
-    }
-
+    public ChatListFragment() {}
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chats, container, false);
 
-        // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
             final Activity activity = getActivity();
-            if (PROTOTYPE_MODE) {
-                loadPrototypeChats(activity,recyclerView);
-            } else {
-                loadChats(activity, recyclerView);
-            }
+            loadChats(recyclerView, activity);
+
         }
         return view;
     }
 
-    private void loadPrototypeChats(final Activity activity,final RecyclerView recyclerView) {
-        final ArrayList<Chat> chats = new ArrayList<>();
-
-        final ArrayList<Team> teams = new ArrayList<>();
-        teams.add(new Team("Google","google"));
-        teams.add(new Team("AOL","aol") );
-        teams.add(new Team("Walmart","walmart"));
-
-        recyclerView.setAdapter(new ChatListAdapter(activity,chats,teams,mListener));
-    }
-
-    private void loadChats(final Activity activity,final RecyclerView recyclerView) {
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (currentUser != null && !currentUser.getTeamUID().equals("")) {
-                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    final Team currentTeam = new Team(dataSnapshot);
-                                    if (currentTeam != null) {
+    private void loadChats(final RecyclerView recyclerView, final Activity activity) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final User currentUser = new User(dataSnapshot);
+                        if (!currentUser.getTeamUID().equals("")) {
+                            Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        final Team currentTeam = new Team(dataSnapshot);
                                         Backend.getReference(R.string.firebase_chats_directory, activity).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -107,18 +87,18 @@ public class ChatListFragment extends Fragment {
                                         });
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {}
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
     }
 
     private void getCorrespondingTeamsForChats(final Activity activity, final RecyclerView recyclerView, final Team currentTeam, final ArrayList<Chat> chats) {
