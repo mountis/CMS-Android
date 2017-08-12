@@ -151,7 +151,7 @@ public class ChatListFragment extends Fragment {
     }
 
     public interface OnChatListFragmentInteractionListener {
-        void onChatListFragmentInteraction(Context context, Chat chatItem, Team teamItem);
+        void onChatListFragmentInteraction(Team teamItem, Chat chatItem, Context context);
     }
 
 }

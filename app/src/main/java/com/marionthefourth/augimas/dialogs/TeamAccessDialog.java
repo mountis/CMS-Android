@@ -21,6 +21,8 @@ import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
 
+import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
+
 /**
  * Created on 7/24/17.
  */
@@ -63,6 +65,8 @@ public final class TeamAccessDialog extends Builder {
             buttons.get(i).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    handleNonSupportFragmentRemoval(activity.getFragmentManager());
+
                     switch (buttonIndex) {
                         case 0:
                             if (teamItem.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {

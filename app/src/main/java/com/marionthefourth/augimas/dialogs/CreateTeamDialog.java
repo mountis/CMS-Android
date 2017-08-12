@@ -178,15 +178,11 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                                 Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
                                                 // Send Host Notifications
                                                 Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
-
-                                                final Intent homeIntent = new Intent(activity, HomeActivity.class);
-                                                activity.startActivity(homeIntent);
+                                                activity.startActivity(new Intent(activity, HomeActivity.class));
                                             }
 
                                             @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
+                                            public void onCancelled(DatabaseError databaseError) {}
                                         });
                                     }
                                 }
@@ -194,18 +190,13 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                         }
 
                         @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
+                        public void onCancelled(DatabaseError databaseError) {}
                     });
 
                 }
             }
-
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 }

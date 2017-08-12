@@ -1,7 +1,7 @@
 <resources>
     <!--App Strings -->
     <string name="app_name">Augimas</string>
-    <string name="app_build_version">0.1</string>
+    <string name="app_build_version">v0.0.2551</string>
     <string name="firebase_user_id">ID</string>
 
     <!-- Firebase Strings -->
@@ -334,4 +334,5 @@
     <string name="you_dont_have_access">You don\'t have access to this!</string>
     <string name="no_content">There is no content to view yet. Sorry!</string>
     <string name="start_the_conversation">Welcome! Feel free to start the conversation!</string>
+    <string name="action_refresh">Refresh</string>
 </resources>

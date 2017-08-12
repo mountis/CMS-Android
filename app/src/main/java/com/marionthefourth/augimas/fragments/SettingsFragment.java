@@ -26,8 +26,6 @@ import com.marionthefourth.augimas.dialogs.ChangePasswordDialog;
 import com.marionthefourth.augimas.dialogs.HostRequestDialog;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
-import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
-import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class SettingsFragment extends PreferenceFragment {
@@ -122,20 +120,7 @@ public final class SettingsFragment extends PreferenceFragment {
                 return true;
             }
         });
-        Preference questionnairePreference = findPreference(Constants.Strings.QUESTIONNAIRE_KEY);
-            questionnairePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (Constants.Bools.FeaturesAvailable.DISPLAY_QUESTIONNAIRE) {
-//                        Intent questionnaireHomeIntent = new Intent(activity, QuestionnaireActivity.class);
-//                        startActivity(questionnaireHomeIntent);
-                        return true;
-                    } else {
-                        display(TOAST, R.string.feature_unavailable, containingView);
-                        return false;
-                    }
-                }
-        });
+//
     }
 //    Transitional Methods
     private void transitionToTeamManagementScreen(final Activity activity) {

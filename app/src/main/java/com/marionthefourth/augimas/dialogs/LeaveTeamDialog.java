@@ -2,6 +2,7 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -10,12 +11,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
@@ -78,7 +80,6 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                         } else {
                                             leftRecentActivity.addReceiverUID(currentUserItem);
                                             Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
-
                                         }
 
                                         teamArrayMap.get(teamType).removeUser(currentUserItem);
@@ -124,6 +125,7 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
                                         });
                                     }
                                     dialog.dismiss();
+                                    activity.startActivity(new Intent(activity, HomeActivity.class));
                                 }
 
                                 @Override

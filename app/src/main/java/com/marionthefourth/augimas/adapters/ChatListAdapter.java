@@ -56,7 +56,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 if (mListener != null) {
-                    mListener.onChatListFragmentInteraction(activity, holder.chatItem, holder.teamItem);
+                    mListener.onChatListFragmentInteraction(holder.teamItem, holder.chatItem, activity);
                 }
             }
         });

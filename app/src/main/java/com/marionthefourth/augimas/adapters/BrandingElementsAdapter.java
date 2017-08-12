@@ -26,6 +26,7 @@ import com.marionthefourth.augimas.dialogs.BrandingElementStatusDialog;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
+import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class BrandingElementsAdapter extends RecyclerView.Adapter<BrandingElementsAdapter.ViewHolder> {
     private Team team;
@@ -87,6 +88,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
+                    handleNonSupportFragmentRemoval(activity.getFragmentManager());
                     mListener.OnBrandingElementsFragmentInteractionListener(activity,holder.elementItem,team);
                 }
             }

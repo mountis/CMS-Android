@@ -68,25 +68,18 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
                         case APPROVED:
                             buttons.get(0).setText(BLOCKED.toVerb());
                             buttons.get(0).setTextColor(Color.WHITE);
-                            setupButtonsOnClickListeners(buttons.get(0),0,teamItem,activity);
+                            setupButtonsOnClickListeners(buttons.get(0), teamItem,activity);
                             break;
                         case AWAITING:
-                            buttons.add(new AppCompatButton(activity));
+                            buttons.get(0).setText(APPROVED.toVerb());
+                            buttons.get(0).setTextColor(Color.WHITE);
+                            setupButtonsOnClickListeners(buttons.get(0), teamItem,activity);
 
-                            for (int i = 0; i < 2;i++) {
-                                switch (i) {
-                                    case 0: buttons.get(i).setText(APPROVED.toVerb()); break;
-                                    case 1: buttons.get(i).setText(BLOCKED.toVerb()); break;
-                                }
-
-                                buttons.get(i).setTextColor(Color.WHITE);
-                                setupButtonsOnClickListeners(buttons.get(i),i,teamItem,activity);
-                            }
                             break;
                         case BLOCKED:
                             buttons.get(0).setText(APPROVED.toVerb());
                             buttons.get(0).setTextColor(Color.WHITE);
-                            setupButtonsOnClickListeners(buttons.get(0),0,teamItem,activity);
+                            setupButtonsOnClickListeners(buttons.get(0), teamItem,activity);
                             break;
                     }
 
@@ -105,7 +98,7 @@ public final class TeamStatusDialog extends AlertDialog.Builder {
 
 
     }
-    private void setupButtonsOnClickListeners(final AppCompatButton button, final int buttonIndex, final Team teamItem, final Activity activity) {
+    private void setupButtonsOnClickListeners(final AppCompatButton button, final Team teamItem, final Activity activity) {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

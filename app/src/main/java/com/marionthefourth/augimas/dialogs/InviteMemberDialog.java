@@ -32,23 +32,23 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 
 public final class InviteMemberDialog extends AlertDialog.Builder {
 //    Dialog Constructor
-    public InviteMemberDialog(final View containingView, final Activity activity) {
+    public InviteMemberDialog(final Team teamItem, final View containingView, final Activity activity) {
         super(containingView.getContext());
-        setupDialog(activity, containingView);
+        setupDialog(teamItem,containingView, activity);
     }
 //    Dialog Setup Methods
-    private void setupDialog(final Activity activity, final View containingView) {
+    private void setupDialog(final Team teamItem, final View containingView, final Activity activity) {
         setTitle(getContext().getString(R.string.title_invite_member));
 
         final TextInputEditText usernameOrEmailEditText = new TextInputEditText(getContext());
         final AppCompatSpinner memberRoleSpinner = new AppCompatSpinner(containingView.getContext());
         setupDialogLayout(memberRoleSpinner, new TextInputLayout(getContext()), usernameOrEmailEditText, containingView, activity);
 
-        setupPositiveButton(memberRoleSpinner, usernameOrEmailEditText, activity);
+        setupPositiveButton(teamItem,memberRoleSpinner, usernameOrEmailEditText, activity);
 
         show();
     }
-    private void setupPositiveButton(final AppCompatSpinner memberRoleSpinner, final TextInputEditText usernameOrEmailEditText, final Activity activity) {
+    private void setupPositiveButton(final Team teamItem, final AppCompatSpinner memberRoleSpinner, final TextInputEditText usernameOrEmailEditText, final Activity activity) {
         setPositiveButton(R.string.invite, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
@@ -89,17 +89,16 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                 if (invitedUser == null) {
                                     dialog.dismiss();
                                     FragmentHelper.display(TOAST, R.string.no_user_found, activity.findViewById(R.id.container));
-                                    return;
                                 } else {
                                     final User currentUserItem = currentUser;
                                     final User invitedUserItem = invitedUser;
 
                                     if (currentUserItem != null) {
-                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        Backend.getReference(R.string.firebase_teams_directory, activity).child(teamItem.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    addUserToTeam(invitedUserItem, currentUserItem, new Team(dataSnapshot), memberRoleSpinner, dialog, activity);
+                                            public void onDataChange(DataSnapshot teamSnapshot) {
+                                                if (teamSnapshot.exists()) {
+                                                    addUserToTeam(invitedUserItem, currentUserItem, new Team(teamSnapshot), memberRoleSpinner, dialog, activity);
                                                 }
                                             }
                                             @Override
@@ -109,7 +108,6 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                 }
                             }
                         }
-
                         @Override
                         public void onCancelled(DatabaseError databaseError) {}
                     });

@@ -2,6 +2,7 @@ package com.marionthefourth.augimas.dialogs;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.util.ArrayMap;
@@ -14,6 +15,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
@@ -115,13 +117,10 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
 
-
-
         dialog.dismiss();
+        activity.startActivity(new Intent(activity, HomeActivity.class));
     }
 }
