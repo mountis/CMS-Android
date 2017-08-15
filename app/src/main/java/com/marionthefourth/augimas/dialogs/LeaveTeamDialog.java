@@ -53,93 +53,94 @@ public final class LeaveTeamDialog extends AlertDialog.Builder {
         setPositiveButton(R.string.leave_team_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                // Read Data of Team
+            // Read Data of Team
+            if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
                 Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        final User currentUserItem = new User(dataSnapshot);
+                    public void onDataChange(DataSnapshot userSnapshot) {
+                        final User currentUserItem = new User(userSnapshot);
                         if (!currentUserItem.getTeamUID().equals("")) {
                             Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUserItem.getTeamUID());
+                                public void onDataChange(DataSnapshot teamSnapshot) {
+                                    if (teamSnapshot.exists()) {
+                                        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(teamSnapshot,currentUserItem.getTeamUID());
                                         final FirebaseEntity.EntityType teamType = currentUserItem.getType();
 
-                                        final RecentActivity leftRecentActivity = new RecentActivity(currentUserItem,teamArrayMap.get(teamType), RecentActivity.NotificationVerbType.LEFT);
-                                        if (teamArrayMap.size() == 2) {
-                                            leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
-
-                                            if (teamType != FirebaseEntity.EntityType.HOST) {
-                                                leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
-                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
-                                            } else {
-                                                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
-                                            }
-
-                                        } else {
-                                            leftRecentActivity.addReceiverUID(currentUserItem);
-                                            Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
-                                        }
+                                        sendNotification(currentUserItem,teamType,teamArrayMap,activity);
 
                                         teamArrayMap.get(teamType).removeUser(currentUserItem);
                                         update(currentUserItem, activity);
                                         Backend.unSubscribeFrom(teamArrayMap.get(teamType).getUID());
                                         FragmentHelper.display(TOAST, R.string.left_team, activity.findViewById(R.id.container));
 
-                                        Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.hasChildren()) {
-                                                    final ArrayList<User> usersInTeam = User.toFilteredArrayList(dataSnapshot, Constants.Strings.UIDs.TEAM_UID,teamArrayMap.get(teamType).getUID());
-
-                                                    if (usersInTeam.size() > 0) {
-                                                        // Elevate Highest Tier Group to Owner Status to Ensure Continuity of Team
-                                                        final ArrayMap<FirebaseEntity.EntityRole,ArrayList<User>> userArrayMap = User.toRoleFilteredArrayMap(usersInTeam);
-
-                                                        for(FirebaseEntity.EntityRole role: FirebaseEntity.EntityRole.getAllRoles()) {
-                                                            ArrayList<User> userGroup = userArrayMap.get(role);
-                                                            if (userGroup.size() > 0) {
-                                                                if (role == FirebaseEntity.EntityRole.OWNER) {
-                                                                    return;
-                                                                } else {
-                                                                    for(final User user:userGroup) {
-                                                                        user.setRole(FirebaseEntity.EntityRole.OWNER);
-                                                                        user.setStatus(FirebaseEntity.EntityStatus.APPROVED);
-                                                                        update(user, activity);
-                                                                    }
-                                                                    return;
-                                                                }
-                                                            }
-                                                        }
-                                                    } else {
-                                                        delete(teamArrayMap.get(teamType), activity);
-                                                    }
-                                                } else {
-                                                    delete(teamArrayMap.get(teamType), activity);
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
+                                        handleUserLeaving(teamType,teamArrayMap,activity);
                                     }
                                     dialog.dismiss();
                                     activity.startActivity(new Intent(activity, HomeActivity.class));
                                 }
-
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) { }
                             });
-
                         }
-
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) { }
                 });
             }
+            }
         });
+    }
+    private void handleUserLeaving(final FirebaseEntity.EntityType teamType, final ArrayMap<FirebaseEntity.EntityType, Team> teamArrayMap, final Activity activity) {
+        Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot userSnapshot) {
+                if (userSnapshot.hasChildren()) {
+                    final ArrayList<User> usersInTeam = User.toFilteredArrayList(userSnapshot, Constants.Strings.UIDs.TEAM_UID,teamArrayMap.get(teamType).getUID());
+
+                    if (usersInTeam.size() > 0) {
+                        // Elevate Highest Tier Group to Owner Status to Ensure Continuity of Team
+                        final ArrayMap<FirebaseEntity.EntityRole,ArrayList<User>> userArrayMap = User.toRoleFilteredArrayMap(usersInTeam);
+
+                        for(FirebaseEntity.EntityRole role: FirebaseEntity.EntityRole.getAllRoles()) {
+                            ArrayList<User> userGroup = userArrayMap.get(role);
+                            if (userGroup.size() > 0) {
+                                if (role == FirebaseEntity.EntityRole.OWNER) {
+                                    return;
+                                } else {
+                                    for(final User user:userGroup) {
+                                        user.setRole(FirebaseEntity.EntityRole.OWNER);
+                                        user.setStatus(FirebaseEntity.EntityStatus.APPROVED);
+                                        update(user, activity);
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                    } else {
+                        delete(teamArrayMap.get(teamType), activity);
+                    }
+                } else {
+                    delete(teamArrayMap.get(teamType), activity);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+    }
+    private void sendNotification(final User currentUserItem, final FirebaseEntity.EntityType teamType, final ArrayMap<FirebaseEntity.EntityType, Team> teamArrayMap, final Activity activity) {
+        final RecentActivity leftRecentActivity = new RecentActivity(currentUserItem,teamArrayMap.get(teamType), RecentActivity.ActivityVerbType.LEFT);
+        if (teamArrayMap.size() == 2) {
+            leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+            if (teamType != FirebaseEntity.EntityType.HOST) {
+                leftRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
+                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_LEFT, activity, true);
+            } else {
+                Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
+            }
+        } else {
+            leftRecentActivity.addReceiverUID(currentUserItem);
+            Backend.sendUpstreamNotification(leftRecentActivity,teamArrayMap.get(teamType).getUID(), currentUserItem.getUID(),Constants.Strings.Headers.USER_LEFT, activity, true);
+        }
     }
 }

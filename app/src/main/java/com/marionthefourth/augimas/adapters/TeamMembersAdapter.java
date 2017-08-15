@@ -253,19 +253,19 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                                                 final RecentActivity clientRecentActivity;
 
                                                 if (currentUser.getType() == HOST) {
-                                                    hostRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,teamArrayMap.get(CLIENT).getName());
+                                                    hostRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.ActivityVerbType.UPDATE_ROLE,selectedRole,teamArrayMap.get(CLIENT).getName());
 
                                                     if (modifyingUserItem.getType() == HOST) {
                                                         Backend.sendUpstreamNotification(hostRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                     } else {
-                                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(HOST),modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(HOST),modifyingUserItem, RecentActivity.ActivityVerbType.UPDATE_ROLE,selectedRole,null);
 
                                                         Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                         Backend.sendUpstreamNotification(clientRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                     }
                                                 } else {
-                                                    hostRecentActivity = new RecentActivity(teamArrayMap.get(CLIENT),modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
-                                                    clientRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.NotificationVerbType.UPDATE_ROLE,selectedRole,null);
+                                                    hostRecentActivity = new RecentActivity(teamArrayMap.get(CLIENT),modifyingUserItem, RecentActivity.ActivityVerbType.UPDATE_ROLE,selectedRole,null);
+                                                    clientRecentActivity = new RecentActivity(currentUser,modifyingUserItem, RecentActivity.ActivityVerbType.UPDATE_ROLE,selectedRole,null);
 
                                                     Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(HOST).getUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);
                                                     Backend.sendUpstreamNotification(clientRecentActivity,modifyingUserItem.getTeamUID(),currentUser.getUID(), Constants.Strings.Headers.USER_ROLE_CHANGED,activity, true);

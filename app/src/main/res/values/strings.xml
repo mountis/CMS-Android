@@ -53,12 +53,12 @@
     <!--XML Preferences Strings -->
     <string name="pref_signout">Sign Out</string>
     <string name="pref_manage_team">Manage Team</string>
-    <string name="pref_update_account_info">Update Account Info</string>
+    <string name="pref_my_account">My Account</string>
 
     <!-- XML Preference Key Strings -->
     <string name="key_signout">signout</string>
     <string name="key_manage_team">manageTeam</string>
-    <string name="key_update_account_info">updateAccountInfo</string>
+    <string name="key_my_account">myAccount</string>
     <string name="key_build_information">buildInformation</string>
 
     <!-- XML Field Strings -->
@@ -335,4 +335,12 @@
     <string name="no_content">There is no content to view yet. Sorry!</string>
     <string name="start_the_conversation">Welcome! Feel free to start the conversation!</string>
     <string name="action_refresh">Refresh</string>
+    <string name="update_username_text">Change Username</string>
+    <string name="update_full_name_text">Change Full Name</string>
+    <string name="update_email_text">Change Email</string>
+    <string name="error_invalid_username">Invalid Username!</string>
+    <string name="error_invalid_name">Invalid Name!</string>
+    <string name="name_updated">You updated your name!</string>
+    <string name="username_updated">You updated your username!</string>
+    <string name="email_updated">You updated your email!</string>
 </resources>

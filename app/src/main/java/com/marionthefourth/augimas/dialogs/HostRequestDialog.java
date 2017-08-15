@@ -39,26 +39,19 @@ public final class HostRequestDialog extends AlertDialog.Builder {
 //    Dialog Setup Methods
     private void setupDialog(final View containingView, final Activity activity) {
         setTitle(getContext().getString(R.string.title_admin_request));
-
         setIcon(R.drawable.ic_person);
-
-        final ArrayList<TextInputLayout> layouts = new ArrayList<>();
         final ArrayList<TextInputEditText> inputs = new ArrayList<>();
-
-        setupHostRequestDialogLayouts(layouts,inputs);
+        setupHostRequestDialogLayouts(new ArrayList<TextInputLayout>(),inputs);
         setupHostRequestPositiveButton(inputs, containingView, activity);
-
         show();
     }
-    private void setupHostRequestDialogLayouts(final ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
+    private void setupHostRequestDialogLayouts(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {
         final LinearLayoutCompat layout = new LinearLayoutCompat(getContext());
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
         layout.setOrientation(LinearLayout.VERTICAL);
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+        final LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
-
         layouts.add(new TextInputLayout(getContext()));
         inputs.add(new TextInputEditText(getContext()));
         layouts.get(0).addView(inputs.get(0), 0, lp);
@@ -97,26 +90,21 @@ public final class HostRequestDialog extends AlertDialog.Builder {
 
                                             display(TOAST, R.string.welcome_to_augimas, containingView);
                                         }
-
                                         @Override
                                         public void onCancelled(DatabaseError databaseError) {}
                                     });
                                 }
                             }
-
                             @Override
                             public void onCancelled(DatabaseError databaseError) {}
                         });
                     } else {
                         display(TOAST, R.string.failed_request, containingView);
                     }
-                } else {
-
                 }
             }
 
         });
-
     }
     //    Functional Methods
     private void createHostTeam(final User currentUser, final Activity activity) {
@@ -135,11 +123,11 @@ public final class HostRequestDialog extends AlertDialog.Builder {
         if (inputs.get(0).getText().toString().equals(HOST_REQUEST_CODE)) {
             // Requesting Addition to Admin Team
             hostTeam.addUser(currentUser, FirebaseEntity.EntityRole.NONE, FirebaseEntity.EntityStatus.AWAITING);
-            Backend.sendUpstreamNotification(sendNotification(hostTeam, currentUser, RecentActivity.NotificationVerbType.REQUEST,activity), hostTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.USER_REQUEST, activity, true);
+            Backend.sendUpstreamNotification(sendNotification(hostTeam, currentUser, RecentActivity.ActivityVerbType.REQUEST,activity), hostTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.USER_REQUEST, activity, true);
         } else {
             // Bypass, Adds to Admin Team as Owner
             hostTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.APPROVED);
-            sendNotification(hostTeam, currentUser, RecentActivity.NotificationVerbType.JOIN, activity);
+            sendNotification(hostTeam, currentUser, RecentActivity.ActivityVerbType.JOIN, activity);
         }
 
         update(hostTeam, activity);

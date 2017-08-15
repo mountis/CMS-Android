@@ -15,9 +15,9 @@ import com.marionthefourth.augimas.adapters.BrandingElementsAdapter;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 
 import java.util.ArrayList;
 
@@ -42,16 +42,16 @@ public final class BrandingElementStatusDialog extends AlertDialog.Builder {
         }
 
         setupButtons(buttons, holder, activity);
-        setupLayout(view,buttons);
+        setupLayout(buttons, view);
 
         show();
     }
-    private void setupLayout(final View view, final ArrayList<AppCompatButton> buttons) {
+    private void setupLayout(final ArrayList<AppCompatButton> buttons, final View view) {
         final LinearLayout layout = new LinearLayout(view.getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT,GENERAL_PADDING_AMOUNT);
 
-        for(AppCompatButton button:buttons) {
+        for(final AppCompatButton button:buttons) {
             layout.addView(button);
         }
 
@@ -77,12 +77,11 @@ public final class BrandingElementStatusDialog extends AlertDialog.Builder {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-
                                 elementItem.setStatus(BrandingElement.ElementStatus.fromVerb(buttons.get(finalI).getText().toString()));
                                 holder.elementItem = elementItem;
 
                                 update(elementItem, activity);
-                                sendStatusDialogNotifications(holder.elementItem, activity);
+                                setupNotificationStage(holder.elementItem, activity);
                                 dialog.dismiss();
                             }
 
@@ -90,53 +89,51 @@ public final class BrandingElementStatusDialog extends AlertDialog.Builder {
                             public void onCancelled(DatabaseError databaseError) {}
                         });
                     }
-
                 }
             });
         }
     }
 //    Functional Methods
-    private void sendStatusDialogNotifications(final BrandingElement elementItem, final Activity activity) {
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    if (!currentUser.getTeamUID().equals("")) {
-                        final RecentActivity.NotificationVerbType verb = RecentActivity.NotificationVerbType.toVerbType(elementItem.getStatus());
-
-                        // Send modifying notification to both Teams
-                        Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists() && dataSnapshot.hasChildren()) {
-                                    final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,elementItem.getTeamUID());
-
-                                    final RecentActivity hostRecentActivity;
-                                    final RecentActivity clientRecentActivity;
-
-                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                        hostRecentActivity = new RecentActivity(currentUser,elementItem,verb,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getName());
-                                        clientRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
-                                    } else {
-                                        hostRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
-                                        clientRecentActivity = new RecentActivity(currentUser,elementItem,verb);
+    private void setupNotificationStage(final BrandingElement elementItem, final Activity activity) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) !=null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User(userSnapshot);
+                        if (!currentUser.getTeamUID().equals("")) {
+                            final RecentActivity.ActivityVerbType verb = RecentActivity.ActivityVerbType.toVerbType(elementItem.getStatus());
+                            // Send modifying notification to both Teams
+                            Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot teamSnapshot) {
+                                    if (teamSnapshot.exists() && teamSnapshot.hasChildren()) {
+                                        sendNotification(teamSnapshot,currentUser,elementItem,verb,activity);
                                     }
-
-                                    Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
-                                    Backend.sendUpstreamNotification(clientRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
                                 }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {}
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                        }
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+    }
+    private void sendNotification(final DataSnapshot teamSnapshot, final User currentUser, final BrandingElement elementItem, final RecentActivity.ActivityVerbType verb, final Activity activity) {
+        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(teamSnapshot,elementItem.getTeamUID());
+        final RecentActivity hostRecentActivity;
+        final RecentActivity clientRecentActivity;
+        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+            hostRecentActivity = new RecentActivity(currentUser,elementItem,verb,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getName());
+            clientRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+        } else {
+            hostRecentActivity = new RecentActivity(teamArrayMap.get(currentUser.getType()),elementItem,verb);
+            clientRecentActivity = new RecentActivity(currentUser,elementItem,verb);
+        }
+        Backend.sendUpstreamNotification(hostRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
+        Backend.sendUpstreamNotification(clientRecentActivity,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT).getUID(), currentUser.getUID(), elementItem.getType().toString(), activity, true);
     }
 }

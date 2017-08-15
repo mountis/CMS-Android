@@ -89,7 +89,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
             public void onClick(View v) {
                 if (null != mListener) {
                     handleNonSupportFragmentRemoval(activity.getFragmentManager());
-                    mListener.OnBrandingElementsFragmentInteractionListener(activity,holder.elementItem,team);
+                    mListener.OnBrandingElementsFragmentInteractionListener(holder.elementItem, team, activity);
                 }
             }
         });
@@ -125,7 +125,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
     }
 //    Listener Methods
     public interface OnBrandingElementsFragmentInteractionListener {
-        void OnBrandingElementsFragmentInteractionListener(Context context, BrandingElement elementItem, Team teamItem);
+        void OnBrandingElementsFragmentInteractionListener(BrandingElement elementItem, Team teamItem, Context context);
     }
 //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {

@@ -108,7 +108,7 @@ public final class JoinTeamDialog extends AlertDialog.Builder {
                 if (dataSnapshot.exists()) {
                     final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,currentUser.getTeamUID());
 
-                    final RecentActivity recentActivity = new RecentActivity(currentUser,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT),RecentActivity.NotificationVerbType.REQUEST_JOIN);
+                    final RecentActivity recentActivity = new RecentActivity(currentUser,teamArrayMap.get(FirebaseEntity.EntityType.CLIENT), RecentActivity.ActivityVerbType.REQUEST_JOIN);
                     recentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
                     recentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.CLIENT));
                     Backend.sendUpstreamNotification(recentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_USER, activity, true);

@@ -22,7 +22,6 @@ import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.dialogs.ChangePasswordDialog;
 import com.marionthefourth.augimas.dialogs.HostRequestDialog;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
@@ -92,11 +91,11 @@ public final class SettingsFragment extends PreferenceFragment {
                 return true;
             }
         });
-        Preference updateAccountInfoPreference = findPreference(Constants.Strings.UPDATE_ACCOUNT_INFO_KEY);
-        updateAccountInfoPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference myAccountPreference = findPreference(Constants.Strings.MY_ACCOUNT_KEY);
+        myAccountPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new ChangePasswordDialog(containingView);
+                transitionToAccountScreen(activity);
                 return true;
             }
         });
@@ -122,9 +121,29 @@ public final class SettingsFragment extends PreferenceFragment {
         });
 //
     }
-//    Transitional Methods
+
+    private void transitionToAccountScreen(final Activity activity) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            ((HomeActivity)activity)
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .replace(R.id.container,AccountFragment.newInstance(getCurrentUser().getUID()))
+                    .addToBackStack(Constants.Strings.Fragments.SETTINGS)
+                    .commit();
+            handleNonSupportFragmentRemoval(getFragmentManager());
+        }
+    }
+
+    //    Transitional Methods
     private void transitionToTeamManagementScreen(final Activity activity) {
-        ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,new TeamManagementFragment(),Constants.Strings.Fragments.TEAM_MANAGEMENT).addToBackStack(Constants.Strings.Fragments.SETTINGS).commit();
+        ((AppCompatActivity)activity)
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.container,new TeamManagementFragment(),Constants.Strings.Fragments.TEAM_MANAGEMENT)
+                .addToBackStack(Constants.Strings.Fragments.SETTINGS)
+                .commit();
         handleNonSupportFragmentRemoval(getFragmentManager());
     }
 }

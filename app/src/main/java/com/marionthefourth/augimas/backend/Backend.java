@@ -371,7 +371,7 @@ public final class Backend {
             }
         });
     }
-    public static RecentActivity sendNotification(final FirebaseObject object, final FirebaseObject subject, final RecentActivity.NotificationVerbType verbType, final Activity activity) {
+    public static RecentActivity sendNotification(final FirebaseObject object, final FirebaseObject subject, final RecentActivity.ActivityVerbType verbType, final Activity activity) {
         final RecentActivity recentActivity = new RecentActivity(subject,object,verbType);
         create(recentActivity, activity);
         return recentActivity;
@@ -423,7 +423,7 @@ public final class Backend {
         });
     }
 //    Updating Account Information Methods [Unused]
-    public static void updateEmail(final Activity activity, final String email) {
+    public static void updateEmail(final String email, final View view, final Activity activity) {
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (FragmentHelper.isValidEmail(email)) {
             user.updateEmail(email)
@@ -439,11 +439,15 @@ public final class Backend {
                                         currentUser.setEmail(email);
                                         OneSignal.syncHashedEmail(email);
                                         update(currentUser, activity);
+                                        FragmentHelper.display(SNACKBAR,R.string.email_updated,view);
+
                                     }
                                     @Override
                                     public void onCancelled(DatabaseError databaseError) {}
                                 });
                                 Log.d(TAG, "User email address updated.");
+                            } else {
+                                FragmentHelper.display(SNACKBAR,R.string.error_invalid_email,view);
                             }
                         }
                     });

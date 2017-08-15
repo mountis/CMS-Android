@@ -39,13 +39,10 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
 //    Dialog Setup Methods
     private void setupDialog(final Team teamItem, final View containingView, final Activity activity) {
         setTitle(getContext().getString(R.string.title_invite_member));
-
         final TextInputEditText usernameOrEmailEditText = new TextInputEditText(getContext());
         final AppCompatSpinner memberRoleSpinner = new AppCompatSpinner(containingView.getContext());
         setupDialogLayout(memberRoleSpinner, new TextInputLayout(getContext()), usernameOrEmailEditText, containingView, activity);
-
         setupPositiveButton(teamItem,memberRoleSpinner, usernameOrEmailEditText, activity);
-
         show();
     }
     private void setupPositiveButton(final Team teamItem, final AppCompatSpinner memberRoleSpinner, final TextInputEditText usernameOrEmailEditText, final Activity activity) {
@@ -61,28 +58,28 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
                                 User invitedUser = null;
 
                                 for(final User userItem:User.toArrayList(dataSnapshot)) {
-
-                                    if (getCurrentUser().getUID().equals(userItem.getUID())) {
-                                        currentUser = userItem;
+                                    if ((getCurrentUser() != null ? getCurrentUser().getUID():null)!= null) {
+                                        if (getCurrentUser().getUID().equals(userItem.getUID())) {
+                                            currentUser = userItem;
 //                                        You Cannot Invite Yourself!
-                                        if(currentUser.usernameOrEmailMatches(usernameOrEmailEditText.getText().toString())) {
-                                            dialog.dismiss();
-                                            FragmentHelper.display(TOAST, R.string.you_cant_invite_yourself, activity.findViewById(R.id.container));
-                                            return;
+                                            if(currentUser.usernameOrEmailMatches(usernameOrEmailEditText.getText().toString())) {
+                                                dialog.dismiss();
+                                                FragmentHelper.display(TOAST, R.string.you_cant_invite_yourself, activity.findViewById(R.id.container));
+                                                return;
+                                            }
+                                        } else if (userItem.usernameOrEmailMatches(usernameOrEmailEditText.getText().toString())) {
+                                            // Add User to Team
+                                            if (!userItem.getTeamUID().equals("")) {
+                                                dialog.dismiss();
+                                                FragmentHelper.display(TOAST, R.string.this_user_is_already_in_a_team, activity.findViewById(R.id.container));
+                                                return;
+                                            } else {
+                                                invitedUser = userItem;
+                                            }
+                                        } else if (invitedUser != null && currentUser != null) {
+                                            break;
                                         }
-                                    } else if (userItem.usernameOrEmailMatches(usernameOrEmailEditText.getText().toString())) {
-                                        // Add User to Team
-                                        if (!userItem.getTeamUID().equals("")) {
-                                            dialog.dismiss();
-                                            FragmentHelper.display(TOAST, R.string.this_user_is_already_in_a_team, activity.findViewById(R.id.container));
-                                            return;
-                                        } else {
-                                            invitedUser = userItem;
-                                        }
-                                    } else if (invitedUser != null && currentUser != null) {
-                                        break;
                                     }
-
                                 }
 
                                 // No User Found
@@ -165,14 +162,14 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
 //    Functional Methods
     private void addUserToTeam(final User invitedUserItem, final User currentUserItem, final Team teamItem, final AppCompatSpinner memberRoleSpinner, final DialogInterface dialog, final Activity activity) {
         final FirebaseEntity.EntityStatus status;
-        final RecentActivity.NotificationVerbType verb;
+        final RecentActivity.ActivityVerbType verb;
 
         if (currentUserItem.getType() == FirebaseEntity.EntityType.HOST || currentUserItem.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
             status = FirebaseEntity.EntityStatus.APPROVED;
-            verb = RecentActivity.NotificationVerbType.ADD;
+            verb = RecentActivity.ActivityVerbType.ADD;
         } else {
             status = FirebaseEntity.EntityStatus.AWAITING;
-            verb = RecentActivity.NotificationVerbType.INVITE;
+            verb = RecentActivity.ActivityVerbType.INVITE;
         }
 
         final FirebaseEntity.EntityRole role = (FirebaseEntity.EntityRole) memberRoleSpinner.getSelectedItem();
@@ -181,9 +178,12 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
 
         teamItem.addUser(invitedUserItem, role, status);
         Backend.update(invitedUserItem, activity);
-
         FragmentHelper.display(TOAST, R.string.you_added_to_the_team, activity.findViewById(R.id.container));
 
+        sendNotification(currentUserItem,invitedUserItem,verb,teamItem,activity);
+        dialog.dismiss();
+    }
+    private void sendNotification(final User currentUserItem, final User invitedUserItem, final RecentActivity.ActivityVerbType verb, final Team teamItem, final Activity activity) {
         final RecentActivity recentActivity;
         recentActivity = new RecentActivity(currentUserItem,invitedUserItem,verb,teamItem.getName());
         recentActivity.addReceiverUID(invitedUserItem.getTeamUID());
@@ -209,7 +209,5 @@ public final class InviteMemberDialog extends AlertDialog.Builder {
         } else {
             Backend.sendUpstreamNotification(recentActivity, teamItem.getUID(), currentUserItem.getUID(), Constants.Strings.Headers.USER_INVITATION, activity, true);
         }
-
-        dialog.dismiss();
     }
 }

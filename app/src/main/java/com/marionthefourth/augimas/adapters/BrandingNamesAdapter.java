@@ -192,7 +192,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                                     holder.hideView();
                                     brandingName.getData().remove(POSITION);
 
-                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 }
                             }
                         }
@@ -230,11 +230,11 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             if (!holder.mNameEditText.getText().toString().equals("")) {
                                 if (POSITION == brandingName.getData().size()) {
                                     brandingName.getData().remove(holder.mNameEditText.getText().toString());
-                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
                                 } else {
                                     final String previousName = brandingName.getData().get(position);
                                     brandingName.getData().remove(POSITION);
-                                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.REMOVE,previousName, null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,previousName, null);
                                 }
                             }
 
@@ -246,7 +246,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         });
     }
 
-    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.NotificationVerbType verbType, final String extraString, final String extraString2) {
+    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.ActivityVerbType verbType, final String extraString, final String extraString2) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -310,12 +310,12 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         if (BrandingElement.checkInput(holder.mNameEditText.getText().toString().trim(), brandingName.getType())) {
             if (position == brandingName.getData().size()) {
                 brandingName.getData().add(holder.mNameEditText.getText().toString().trim());
-                sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.ADD,holder.mNameEditText.getText().toString().trim(), null);
+                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mNameEditText.getText().toString().trim(), null);
             } else if (position < brandingName.getData().size()){
                 if (!holder.mNameEditText.getText().toString().trim().equals(brandingName.getData().get(position))) {
                     final String previousName = brandingName.getData().get(position).trim();
                     brandingName.getData().set(position,holder.mNameEditText.getText().toString().trim());
-                    sendBrandingElementNotification(brandingName, RecentActivity.NotificationVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString().trim());
+                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString().trim());
                 }
             }
             holder.creating = false;

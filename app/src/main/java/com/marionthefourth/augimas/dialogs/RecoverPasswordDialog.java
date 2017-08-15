@@ -35,14 +35,10 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
 //    Dialog Setup Methods
     private void setupDialog(final View containingView, final Activity activity) {
         setTitle(getContext().getString(R.string.title_recover_password));
-
         final TextInputEditText usernameOrEmail = new TextInputEditText(getContext());
         setupLayout(usernameOrEmail, new TextInputLayout(getContext()));
-
         setIcon(R.drawable.ic_lock_open);
-
         setupPositiveButton(usernameOrEmail, containingView, activity);
-
         show();
     }
     private void setupLayout(final TextInputEditText usernameOrEmail, final TextInputLayout usernameLayout) {
@@ -78,7 +74,7 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
                 });
     }
 //    Functional Methods
-    private void sendPasswordResetEmail(String email, final View view) {
+    private void sendPasswordResetEmail(final String email, final View view) {
     FirebaseAuth.getInstance().sendPasswordResetEmail(email)
             .addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
@@ -88,21 +84,21 @@ public final class RecoverPasswordDialog extends AlertDialog.Builder {
             });
 }
     private void searchForUser(final TextInputEditText usernameOrEmail, final View containingView, final Activity activity) {
-    Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            if (dataSnapshot.hasChildren()) {
-                for (final User userItem: User.toArrayList(dataSnapshot)) {
-                    if (userItem.usernameOrEmailMatches(usernameOrEmail.getText().toString())){
-                        sendPasswordResetEmail(userItem.getEmail(), containingView);
-                        return;
+        Backend.getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot userSnapshot) {
+                if (userSnapshot.hasChildren()) {
+                    for (final User userItem: User.toArrayList(userSnapshot)) {
+                        if (userItem.usernameOrEmailMatches(usernameOrEmail.getText().toString())){
+                            sendPasswordResetEmail(userItem.getEmail(), containingView);
+                            return;
+                        }
                     }
+                    display(SNACKBAR, R.string.error_user_not_found, containingView);
                 }
-                display(SNACKBAR, R.string.error_user_not_found, containingView);
             }
-        }
-        @Override
-        public void onCancelled(DatabaseError error) {}
-    });
-}
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
 }

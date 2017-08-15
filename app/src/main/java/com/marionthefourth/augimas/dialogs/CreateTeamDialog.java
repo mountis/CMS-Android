@@ -22,9 +22,9 @@ import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
+import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
-import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
 import java.util.ArrayList;
@@ -71,10 +71,8 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
                                     }
                                 }
                             }
-
                             createTeamAndAddUserToTeam(editTexts, activity);
                         }
-
                         @Override
                         public void onCancelled(DatabaseError databaseError) {}
                     });
@@ -112,14 +110,13 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
     }
 //    Functional Methods
     private void createElements(final Team newClientTeam, final Activity activity) {
-//        TODO - Extend to Add More Element Types
         for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
             final BrandingElement elementItem = new BrandingElement(BrandingElement.ElementType.getType(i));
             elementItem.setTeamUID(newClientTeam.getUID());
             Backend.create(elementItem, activity);
         }
     }
-    private void createChannels(Chat connectedChat, Team newClientTeam, Team hostTeam, final Activity activity) {
+    private void createChannels(final Chat connectedChat, final Team newClientTeam, final Team hostTeam, final Activity activity) {
         for (int i = 0; i < 3; i++) {
             final Channel channel = new Channel(connectedChat);
             switch(i) {
@@ -137,66 +134,67 @@ public final class CreateTeamDialog extends AlertDialog.Builder {
     }
     private void createTeamAndAddUserToTeam(final ArrayList<TextInputEditText> editTexts, final Activity activity) {
         // Get Full User Data
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User(dataSnapshot);
-                    Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.hasChildren()) {
-                                Team adminTeam;
-                                for(final Team teamItem:Team.toArrayList(dataSnapshot)) {
-                                    if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                                        adminTeam = teamItem;
-                                        final Team newTeam = new Team(editTexts.get(0).getText().toString(),editTexts.get(1).getText().toString());
-                                        Backend.create(newTeam, activity);
-
-                                        newTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.AWAITING);
-                                        currentUser.setTeamUID(newTeam.getUID());
-                                        update(currentUser, activity);
-
-//                                        Create Team Branding Elements
-                                        createElements(newTeam, activity);
-                                        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,teamItem.getUID());
-
-//                                        Create Chat between the two chats
-                                        final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
-                                        Backend.create(connectedChat, activity);
-//                                        Create Channels
-                                        createChannels(connectedChat, newTeam, teamItem, activity);
-//                                        Create and Send Notifications
-
-                                        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(dataSnapshot,newTeam.getUID());
-                                                // Send Client Notifications
-                                                final RecentActivity clientTeamCreatedRecentActivity = new RecentActivity(currentUser,newTeam, RecentActivity.NotificationVerbType.CREATE);
-                                                clientTeamCreatedRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
-                                                Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
-                                                // Send Host Notifications
-                                                Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
-                                                activity.startActivity(new Intent(activity, HomeActivity.class));
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {}
-                                        });
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User(userSnapshot);
+                        Backend.getReference(R.string.firebase_teams_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot teamSnapshot) {
+                                if (teamSnapshot.hasChildren()) {
+                                    for(final Team teamItem:Team.toArrayList(teamSnapshot)) {
+                                        if (teamItem.getType().equals(FirebaseEntity.EntityType.HOST)) {
+                                            handleTeamUpdate(teamItem,currentUser,editTexts,activity);
+                                            return;
+                                        }
                                     }
                                 }
                             }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {}
+                        });
+                    }
                 }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+    }
+    private void handleTeamUpdate(final Team teamItem, final User currentUser, final ArrayList<TextInputEditText> editTexts, final Activity activity) {
+        final Team adminTeam = teamItem;
+        final Team newTeam = new Team(editTexts.get(0).getText().toString(),editTexts.get(1).getText().toString());
+        Backend.create(newTeam, activity);
+        newTeam.addUser(currentUser, FirebaseEntity.EntityRole.OWNER, FirebaseEntity.EntityStatus.AWAITING);
+        currentUser.setTeamUID(newTeam.getUID());
+        update(currentUser, activity);
+//                                          Create Team Branding Elements
+        createElements(newTeam, activity);
+        Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,newTeam.getUID());
+//                                        Create Chat between the two teams
+        final Chat connectedChat = new Chat(adminTeam, newTeam, FirebaseCommunication.CommunicationType.B);
+        Backend.create(connectedChat, activity);
+//                                                Create Channels
+        createChannels(connectedChat, newTeam, teamItem, activity);
+//                                        Create and Send Notifications
+        Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot teamsSnapshot) {
+                sendNotification(teamsSnapshot,newTeam,currentUser,activity);
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
+    }
+    private void sendNotification(final DataSnapshot teamsSnapshot, final Team newTeam, final User currentUser, final Activity activity) {
+        final ArrayMap<FirebaseEntity.EntityType,Team> teamArrayMap = Team.toClientAndHostTeamMap(teamsSnapshot,newTeam.getUID());
+        // Send Client Notifications
+        final RecentActivity clientTeamCreatedRecentActivity = new RecentActivity(currentUser,newTeam, RecentActivity.ActivityVerbType.CREATE);
+        clientTeamCreatedRecentActivity.addReceiverUID(teamArrayMap.get(FirebaseEntity.EntityType.HOST));
+        Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, newTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, true);
+        // Send Host Notifications
+        Backend.sendUpstreamNotification(clientTeamCreatedRecentActivity, teamArrayMap.get(FirebaseEntity.EntityType.HOST).getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_TEAM, activity, false);
+        activity.startActivity(new Intent(activity, HomeActivity.class));
     }
 }

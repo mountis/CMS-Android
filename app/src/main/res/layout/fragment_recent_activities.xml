@@ -35,7 +35,7 @@
         android:background="#fff"
         android:layout_marginBottom="55dp"
         tools:context="com.marionthefourth.augimas.activities.HomeActivity"
-        tools:listitem="@layout/list_item_notification" />
+        tools:listitem="@layout/list_item_recent_activity" />
 
 
 

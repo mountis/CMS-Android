@@ -29,68 +29,50 @@ import com.marionthefourth.augimas.classes.objects.entities.Team;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.create;
-import static com.marionthefourth.augimas.classes.constants.Constants.Bools.PROTOTYPE_MODE;
 
 public final class BrandingElementsFragment extends Fragment implements BrandingElementsAdapter.OnBrandingElementsFragmentInteractionListener {
-
     public BrandingElementsFragment(){}
-
     public static BrandingElementsFragment newInstance(String teamUID) {
-
         Bundle args = new Bundle();
         args.putString(Constants.Strings.UIDs.TEAM_UID,teamUID);
-        
         BrandingElementsFragment fragment = new BrandingElementsFragment();
         fragment.setArguments(args);
-
         return fragment;
     }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_branding_elements, container, false);
-
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.branding_elements_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-
         final Activity activity = getActivity();
-        if (PROTOTYPE_MODE) {
-            Team team = new Team("Google","google");
-            loadPrototypeBrandingElements(activity,recyclerView,team);
-        } else {
-            if (getArguments() != null) {
-
-                // Load Branding Elements && Setup Action Bar Name
-                final String teamUID = getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
-                if (teamUID != null) {
-                    Backend.getReference(R.string.firebase_teams_directory, activity).child(teamUID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final Team teamItem = new Team(dataSnapshot);
-                                final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
-                                if (actionBar != null) {
-                                    if (teamItem.getName().endsWith("s")) {
-                                        actionBar.setTitle(teamItem.getName() +"' " + Constants.Strings.Titles.BRANDING_ELEMENTS);
-                                    } else {
-                                        actionBar.setTitle(teamItem.getName() +"'s " + Constants.Strings.Titles.BRANDING_ELEMENTS);
-                                    }
+        if (getArguments() != null) {
+            // Load Branding Elements && Setup Action Bar Name
+            final String teamUID = getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
+            if (teamUID != null) {
+                Backend.getReference(R.string.firebase_teams_directory, activity).child(teamUID).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final Team teamItem = new Team(dataSnapshot);
+                            final ActionBar actionBar = ((HomeActivity)activity).getSupportActionBar();
+                            if (actionBar != null) {
+                                if (teamItem.getName().endsWith("s")) {
+                                    actionBar.setTitle(teamItem.getName() +"' " + Constants.Strings.Titles.BRANDING_ELEMENTS);
+                                } else {
+                                    actionBar.setTitle(teamItem.getName() +"'s " + Constants.Strings.Titles.BRANDING_ELEMENTS);
                                 }
-                                loadBrandingElements(activity,recyclerView,teamItem);
                             }
+                            loadBrandingElements(activity,recyclerView,teamItem);
                         }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                }
-
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                });
             }
         }
         return view;
     }
-
     private void loadBrandingElements(final Activity activity, final RecyclerView recyclerView, final Team team) {
         Backend.getReference(R.string.firebase_branding_elements_directory, activity).addValueEventListener(new ValueEventListener() {
             @Override
@@ -103,7 +85,6 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                             elements.add(new BrandingElement(brandingElementReference));
                         }
                     }
-
                     if (elements.size() < BrandingElement.ElementType.getNumberOfElementTypes()) {
                         // Create Missing Elements
                         createMissingElements(activity,elements,team);
@@ -114,25 +95,19 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                     createMissingElements(activity,new ArrayList<BrandingElement>(),team);
                 }
             }
-
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
-
     private void createMissingElements(final Activity activity, final ArrayList<BrandingElement> elements, final Team team) {
         // Find each element type that you are missing
         final ArrayList<Boolean> typesMade = new ArrayList<>(BrandingElement.ElementType.getNumberOfElementTypes());
-
         for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
             for (int j = 0; j < elements.size(); j++) {
                 if (elements.get(j).getType().equals(BrandingElement.ElementType.getType(i))) {
                     typesMade.add(true);
                 }
             }
-
             if (typesMade.size() == i) {
                 typesMade.add(false);
                 elements.add(new BrandingElement(BrandingElement.ElementType.getType(i)));
@@ -140,9 +115,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 create(elements.get(elements.size()-1), activity);
             }
         }
-
     }
-
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
@@ -154,17 +127,8 @@ public final class BrandingElementsFragment extends Fragment implements Branding
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private void loadPrototypeBrandingElements(final Activity activity, RecyclerView recyclerView, Team team) {
-        ArrayList<BrandingElement> elements = new ArrayList<>();
-        elements.add(new BrandingElement(BrandingElement.ElementType.DOMAIN_NAME));
-        elements.add(new BrandingElement(BrandingElement.ElementType.SOCIAL_MEDIA_NAME));
-        elements.add(new BrandingElement(BrandingElement.ElementType.MISSION_STATEMENT));
-        recyclerView.setAdapter(new BrandingElementsAdapter(activity,elements,team,BrandingElementsFragment.this));
-    }
-
     @Override
-    public void OnBrandingElementsFragmentInteractionListener(Context context, BrandingElement elementItem, Team teamItem) {
+    public void OnBrandingElementsFragmentInteractionListener(final BrandingElement elementItem,final Team teamItem,final Context context) {
         Bundle brandingElementBundle = new Bundle();
         brandingElementBundle.putSerializable(Constants.Strings.TEAM, teamItem);
         brandingElementBundle.putString(Constants.Strings.UIDs.TEAM_UID, teamItem.getUID());

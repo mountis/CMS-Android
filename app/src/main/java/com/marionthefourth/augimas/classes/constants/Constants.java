@@ -520,7 +520,7 @@ public final class Constants {
         // Preference Key Items
         public static final String SIGN_OUT_KEY = "signout";
         public static final String MANAGE_TEAM_KEY = "manageTeam";
-        public static final String UPDATE_ACCOUNT_INFO_KEY = "updateAccountInfo";
+        public static final String MY_ACCOUNT_KEY = "myAccount";
         public static final String BUILD_VERSION_KEY = "buildInformation";
 
         public static final String HOST_ACCESS_CODE = "N3V3R-0N3-0F-7H3M";

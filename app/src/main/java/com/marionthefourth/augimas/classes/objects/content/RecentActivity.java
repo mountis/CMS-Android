@@ -1,11 +1,9 @@
 package com.marionthefourth.augimas.classes.objects.content;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,7 +35,7 @@ import java.util.Map;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
-import static com.marionthefourth.augimas.classes.objects.content.RecentActivity.NotificationObjectType.BRANDING_ELEMENT;
+import static com.marionthefourth.augimas.classes.objects.content.RecentActivity.ActivityObjectType.BRANDING_ELEMENT;
 
 public final class RecentActivity extends FirebaseContent {
     @Exclude
@@ -59,37 +57,37 @@ public final class RecentActivity extends FirebaseContent {
     private String header;
     private ArrayList<String> seenUIDs = new ArrayList<>();
     private ArrayList<String> receiverUIDs = new ArrayList<>();
-    private NotificationVerbType verbType = NotificationVerbType.DEFAULT;
-    private NotificationObjectType objectType = NotificationObjectType.DEFAULT;
-    private NotificationSubjectType subjectType = NotificationSubjectType.DEFAULT;
-    private NotificationObjectType extraObjectType = NotificationObjectType.DEFAULT;
+    private ActivityVerbType verbType = ActivityVerbType.DEFAULT;
+    private ActivityObjectType objectType = ActivityObjectType.DEFAULT;
+    private ActivitySubjectType subjectType = ActivitySubjectType.DEFAULT;
+    private ActivityObjectType extraObjectType = ActivityObjectType.DEFAULT;
 
-    public RecentActivity(FirebaseObject subject, FirebaseObject object, NotificationVerbType verbType, String teamNameString) {
+    public RecentActivity(FirebaseObject subject, FirebaseObject object, ActivityVerbType verbType, String teamNameString) {
         this(subject,object,verbType);
         setTeamNameString(teamNameString);
         setMessage();
     }
 
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString) {
-        this(subject,object,verbType,extraString);
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final String extraString) {
+        this(subject,object,verbType,teamNameString);
         setExtraString(extraString);
         setMessage();
     }
 
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
         this(subject,object,verbType,teamNameString,extraString);
         setExtraString2(extraString2);
         setMessage();
     }
 
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType verbType, final String teamNameString, final int senderType) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final int senderType) {
         this(subject,object,verbType,teamNameString);
         setSenderType(senderType);
         setMessage();
     }
 
     //    Class Enums
-    public enum NotificationSubjectType {
+    public enum ActivitySubjectType {
         MEMBER, TEAM, DEFAULT;
 
         @Override
@@ -117,7 +115,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationSubjectType getType(int type) {
+        public static ActivitySubjectType getType(int type) {
             switch (type) {
                 case Constants.Ints.NotificationTypes.Subjects.IDs.MEMBER:
                 case Constants.Ints.NotificationTypes.Subjects.Indices.MEMBER:
@@ -129,7 +127,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationSubjectType getType(String type) {
+        public static ActivitySubjectType getType(String type) {
             for (int i = 0; i < getNumberOfNotificationSubjectTypes(); i++) {
                 if (type.equals(getType(i).toString()) || type.equals(getType(i).toMapStyleString())) {
                     return getType(i);
@@ -139,13 +137,13 @@ public final class RecentActivity extends FirebaseContent {
             return DEFAULT;
         }
 
-        public static ArrayList<NotificationSubjectType> getAllNotificationSubjectTypes() {
-            final ArrayList<NotificationSubjectType> notificationSubjectTypes = new ArrayList<>();
+        public static ArrayList<ActivitySubjectType> getAllNotificationSubjectTypes() {
+            final ArrayList<ActivitySubjectType> activitySubjectTypes = new ArrayList<>();
             for (int i = 0 ; i < getNumberOfNotificationSubjectTypes(); i++) {
-                notificationSubjectTypes.add(getType(i));
+                activitySubjectTypes.add(getType(i));
             }
 
-            return notificationSubjectTypes;
+            return activitySubjectTypes;
         }
 
         public static int getNumberOfNotificationSubjectTypes() {
@@ -153,7 +151,7 @@ public final class RecentActivity extends FirebaseContent {
         }
 
     }
-    public enum NotificationVerbType {
+    public enum ActivityVerbType {
         ADD, APPROVE, AWAIT, CREATE , CHAT, DISAPPROVE, INVITE, JOIN, LEFT, RECEIVE,
         REQUEST, REQUEST_ACCESS, REQUEST_APPROVAL, REQUEST_JOIN, UPDATE, UPDATE_ROLE, UPDATE_USERNAME,
         UPDATE_TEAM_NAME, DEFAULT, BLOCK, REMOVE;
@@ -167,18 +165,18 @@ public final class RecentActivity extends FirebaseContent {
             return String.valueOf(this.toInt(true));
         }
 
-        public static NotificationVerbType toVerbType(BrandingElement.ElementStatus status) {
+        public static ActivityVerbType toVerbType(BrandingElement.ElementStatus status) {
             switch (status) {
                 case APPROVED:
-                    return NotificationVerbType.APPROVE;
+                    return ActivityVerbType.APPROVE;
                 case AWAITING:
-                    return NotificationVerbType.AWAIT;
+                    return ActivityVerbType.AWAIT;
                 case INCOMPLETE:
-                    return NotificationVerbType.DISAPPROVE;
+                    return ActivityVerbType.DISAPPROVE;
                 case NONE:
-                    return NotificationVerbType.AWAIT;
+                    return ActivityVerbType.AWAIT;
                 default:
-                    return NotificationVerbType.DEFAULT;
+                    return ActivityVerbType.DEFAULT;
 
             }
 
@@ -235,7 +233,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationVerbType getType(int type) {
+        public static ActivityVerbType getType(int type) {
             switch (type) {
                 case Constants.Ints.NotificationTypes.Verbs.IDs.ADD:
                 case Constants.Ints.NotificationTypes.Verbs.Indices.ADD:
@@ -280,7 +278,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationVerbType getType(String type) {
+        public static ActivityVerbType getType(String type) {
             for (int i = 0; i < getNumberOfNotificationVerbTypes(); i++) {
                 if (type.equals(getType(i).toString()) || type.equals(getType(i).toMapStyleString())) {
                     return getType(i);
@@ -290,13 +288,13 @@ public final class RecentActivity extends FirebaseContent {
             return DEFAULT;
         }
 
-        public static ArrayList<NotificationVerbType> getAllNotificationVerbTypes() {
-            final ArrayList<NotificationVerbType> notificationVerbTypes = new ArrayList<>();
+        public static ArrayList<ActivityVerbType> getAllNotificationVerbTypes() {
+            final ArrayList<ActivityVerbType> activityVerbTypes = new ArrayList<>();
             for (int i = 0 ; i < getNumberOfNotificationVerbTypes(); i++) {
-                notificationVerbTypes.add(getType(i));
+                activityVerbTypes.add(getType(i));
             }
 
-            return notificationVerbTypes;
+            return activityVerbTypes;
         }
 
         public static int getNumberOfNotificationVerbTypes() {
@@ -304,7 +302,7 @@ public final class RecentActivity extends FirebaseContent {
         }
 
     }
-    public enum NotificationObjectType {
+    public enum ActivityObjectType {
         BRANDING_ELEMENT, MESSAGE, MEMBER, TEAM, DEFAULT;
 
         @Override
@@ -336,7 +334,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationObjectType getType(int type) {
+        public static ActivityObjectType getType(int type) {
             switch (type) {
                 case Constants.Ints.NotificationTypes.Objects.IDs.BRANDING_ELEMENT:
                 case Constants.Ints.NotificationTypes.Objects.Indices.BRANDING_ELEMENT:
@@ -354,7 +352,7 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
 
-        public static NotificationObjectType getType(String type) {
+        public static ActivityObjectType getType(String type) {
             for (int i = 0; i < getNumberOfNotificationObjectTypes(); i++) {
                 if (type.equals(getType(i).toString()) || type.equals(getType(i).toMapStyleString())) {
                     return getType(i);
@@ -364,13 +362,13 @@ public final class RecentActivity extends FirebaseContent {
             return DEFAULT;
         }
 
-        public static ArrayList<NotificationObjectType> getAllNotificationObjectTypes() {
-            final ArrayList<NotificationObjectType> notificationObjectTypes = new ArrayList<>();
+        public static ArrayList<ActivityObjectType> getAllNotificationObjectTypes() {
+            final ArrayList<ActivityObjectType> activityObjectTypes = new ArrayList<>();
             for (int i = 0 ; i < getNumberOfNotificationObjectTypes(); i++) {
-                notificationObjectTypes.add(getType(i));
+                activityObjectTypes.add(getType(i));
             }
 
-            return notificationObjectTypes;
+            return activityObjectTypes;
         }
 
         public static int getNumberOfNotificationObjectTypes() {
@@ -393,13 +391,13 @@ public final class RecentActivity extends FirebaseContent {
             setUID(nRef.child(Constants.Strings.UIDs.UID).getValue().toString());
         }
         if (nRef.hasChild(Constants.Strings.Fields.SUBJECT_TYPE)) {
-            setSubjectType(NotificationSubjectType.getType(nRef.child(Constants.Strings.Fields.SUBJECT_TYPE).getValue().toString()));
+            setSubjectType(ActivitySubjectType.getType(nRef.child(Constants.Strings.Fields.SUBJECT_TYPE).getValue().toString()));
         }
         if (nRef.hasChild(Constants.Strings.Fields.VERB_TYPE)) {
-            setVerbType(NotificationVerbType.getType(nRef.child(Constants.Strings.Fields.VERB_TYPE).getValue().toString()));
+            setVerbType(ActivityVerbType.getType(nRef.child(Constants.Strings.Fields.VERB_TYPE).getValue().toString()));
         }
         if (nRef.hasChild(Constants.Strings.Fields.OBJECT_TYPE)) {
-            setObjectType(NotificationObjectType.getType(nRef.child(Constants.Strings.Fields.OBJECT_TYPE).getValue().toString()));
+            setObjectType(ActivityObjectType.getType(nRef.child(Constants.Strings.Fields.OBJECT_TYPE).getValue().toString()));
         }
         if (nRef.hasChild(Constants.Strings.UIDs.SUBJECT_UID)) {
             setSubjectUID(nRef.child(Constants.Strings.UIDs.SUBJECT_UID).getValue().toString());
@@ -430,34 +428,34 @@ public final class RecentActivity extends FirebaseContent {
         }
         return recentActivities;
     }
-    public RecentActivity(final FirebaseObject subject, final NotificationVerbType vType) {
+    public RecentActivity(final FirebaseObject subject, final ActivityVerbType vType) {
         setVerbType(vType);
         setSubject(subject);
     }
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType vType) {
         this(subject,vType);
         setObject(object);
         setMessage();
     }
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityRole roleObject, String teamNameString) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType vType, FirebaseEntity.EntityRole roleObject, String teamNameString) {
         this(subject,object,vType);
         setRoleObject(roleObject);
         setTeamNameString(teamNameString);
         setMessage();
     }
-    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final NotificationVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
+    public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType vType, FirebaseEntity.EntityStatus statusObject, String extraString) {
         this(subject,object,vType);
         setStatusObject(statusObject);
         setExtraString(extraString);
         setMessage();
     }
 
-    public RecentActivity(final NotificationSubjectType sType, final NotificationVerbType vType, final NotificationObjectType oType){
+    public RecentActivity(final ActivitySubjectType sType, final ActivityVerbType vType, final ActivityObjectType oType){
         setVerbType(vType);
         setObjectType(oType);
         setSubjectType(sType);
     }
-    public RecentActivity(final FirebaseObject subject, final NotificationVerbType vType, final BrandingElement.ElementType brandingElementType) {
+    public RecentActivity(final FirebaseObject subject, final ActivityVerbType vType, final BrandingElement.ElementType brandingElementType) {
         this(subject,vType);
     }
 //    Functional Methods
@@ -538,7 +536,7 @@ public final class RecentActivity extends FirebaseContent {
         + "}";
         */
     }
-    public void navigate(final Activity activity) {
+    public void navigate(final HomeActivity activity) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -546,14 +544,14 @@ public final class RecentActivity extends FirebaseContent {
                     final User currentUser = new User(dataSnapshot);
 
                     final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
-
                     switch (getObjectType()) {
                         case BRANDING_ELEMENT:
                             Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
-//                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                    activity.shouldHandleNavigation = false;
+                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
 
                                     navigation.post(new Runnable() {
                                         @Override
@@ -567,15 +565,14 @@ public final class RecentActivity extends FirebaseContent {
                                                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                                     .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
                                                     .commit();
+                                            activity.shouldHandleNavigation = true;
                                         }
                                     });
 
                                 }
 
                                 @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
+                                public void onCancelled(DatabaseError databaseError) {}
                             });
                             break;
                         case MESSAGE:
@@ -583,17 +580,15 @@ public final class RecentActivity extends FirebaseContent {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final Message messageItem = new Message(dataSnapshot);
-
-//                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-//                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
-//                                    } else {
-//                                        navigation.setSelectedItemId(R.id.navigation_chat);
-//                                    }
-
+                                    activity.shouldHandleNavigation = false;
+                                    if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                    } else {
+                                        navigation.setSelectedItemId(R.id.navigation_chat);
+                                    }
 
                                     // Get Sender UID to find out what team the sender was if the host
                                     // Get the Current User UID to pass in to get the Chat
-
                                     if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
                                         Backend.getReference(R.string.firebase_channels_directory,activity).child(messageItem.getChannelUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
@@ -606,12 +601,12 @@ public final class RecentActivity extends FirebaseContent {
                                                             if (chatSnapshot.exists()) {
                                                                 final Chat currentChat = new Chat(chatSnapshot);
                                                                 final String teamUID;
+                                                                activity.shouldHandleNavigation = true;
                                                                 if (currentChat.getTeamUIDs().get(0).equals(currentUser.getTeamUID())) {
                                                                     teamUID = currentChat.getTeamUIDs().get(1);
                                                                 } else {
                                                                     teamUID = currentChat.getTeamUIDs().get(0);
                                                                 }
-
 
                                                                 Backend.getReference(R.string.firebase_teams_directory,activity).child(teamUID).addListenerForSingleValueEvent(new ValueEventListener() {
                                                                     @Override
@@ -627,9 +622,7 @@ public final class RecentActivity extends FirebaseContent {
                                                                     }
 
                                                                     @Override
-                                                                    public void onCancelled(DatabaseError databaseError) {
-
-                                                                    }
+                                                                    public void onCancelled(DatabaseError databaseError) {}
                                                                 });
 
                                                             }
@@ -653,19 +646,7 @@ public final class RecentActivity extends FirebaseContent {
                                             }
                                         });
                                     }
-//                                    navigation.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            ((AppCompatActivity)activity)
-//                                                    .getSupportFragmentManager()
-//                                                    .beginTransaction()
-//                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-//                                                    .replace(R.id.container, ChatFragment.newInstance(messageItem.getChannelUID()))
-//                                                    .commit();
-//                                        }
-//                                    });
                                 }
-
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) {}
                             });
@@ -681,33 +662,33 @@ public final class RecentActivity extends FirebaseContent {
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             final Team teamElement = new Team(dataSnapshot);
 
-//                                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-//                                                if (userObjectElement.getType() == FirebaseEntity.EntityType.HOST) {
-//                                                    navigation.setSelectedItemId(R.id.navigation_settings);
-//                                                } else {
-//                                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
-//                                                }
-//                                            } else {
-//                                                navigation.setSelectedItemId(R.id.navigation_settings);
-//                                            }
+                                            activity.shouldHandleNavigation = false;
+                                            if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                                if (userObjectElement.getType() == FirebaseEntity.EntityType.HOST) {
+                                                    navigation.setSelectedItemId(R.id.navigation_settings);
+                                                } else {
+                                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                                }
+                                            } else {
+                                                navigation.setSelectedItemId(R.id.navigation_settings);
+                                            }
 
                                             navigation.post(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    ((AppCompatActivity)activity)
+                                                    (activity)
                                                             .getSupportFragmentManager()
                                                             .beginTransaction()
                                                             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                                             .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
                                                             .commit();
+                                                    activity.shouldHandleNavigation = true;
                                                 }
                                             });
                                         }
 
                                         @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-
-                                        }
+                                        public void onCancelled(DatabaseError databaseError) {}
                                     });
 
                                 }
@@ -722,21 +703,23 @@ public final class RecentActivity extends FirebaseContent {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final Team teamElement = new Team(dataSnapshot);
 
-//                                    if (currentUser.getTeamUID().equals(subjectTeamUID)) {
-//                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
-//                                    } else {
-//                                        navigation.setSelectedItemId(R.id.navigation_settings);
-//                                    }
+                                    activity.shouldHandleNavigation = false;
+                                    if (currentUser.getTeamUID().equals(teamElement.getUID())) {
+                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                    } else {
+                                        navigation.setSelectedItemId(R.id.navigation_settings);
+                                    }
 
                                     navigation.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            ((AppCompatActivity)activity)
+                                            (activity)
                                                     .getSupportFragmentManager()
                                                     .beginTransaction()
                                                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                                     .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
                                                     .commit();
+                                            activity.shouldHandleNavigation = true;
                                         }
                                     });
 
@@ -747,16 +730,11 @@ public final class RecentActivity extends FirebaseContent {
                             });
                             break;
                     }
-
                 }
-
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
+                public void onCancelled(DatabaseError databaseError) {}
             });
         }
-
     }
     @Override
     public Map<String, String> toMap() {
@@ -801,7 +779,6 @@ public final class RecentActivity extends FirebaseContent {
                 return true;
             }
         }
-
         return false;
     }
     //    Parcel Details
@@ -841,7 +818,6 @@ public final class RecentActivity extends FirebaseContent {
                 return null;
         }
     }
-
     public boolean hasBeenSeenBy(final User user) {
         for(String seenUID:getSeenUIDs()) {
             if (seenUID.equals(user.getUID())) return true;
@@ -1215,15 +1191,12 @@ public final class RecentActivity extends FirebaseContent {
         }
 
     }
-
-    public NotificationObjectType getExtraObjectType() {
+    public ActivityObjectType getExtraObjectType() {
         return extraObjectType;
     }
-
-    public void setExtraObjectType(NotificationObjectType extraObjectType) {
+    public void setExtraObjectType(ActivityObjectType extraObjectType) {
         this.extraObjectType = extraObjectType;
     }
-
     public void addReceiverUID(final FirebaseObject object) {
         if (getReceiverUIDs().size() > 0) {
             for(String uid:getReceiverUIDs()) {
@@ -1253,7 +1226,6 @@ public final class RecentActivity extends FirebaseContent {
             }
         }
     }
-
     public void addReceiverUID(final String toUID) {
         if (getReceiverUIDs().size() > 0) {
             for(String uid:getReceiverUIDs()) {
@@ -1263,8 +1235,7 @@ public final class RecentActivity extends FirebaseContent {
 
         getReceiverUIDs().add(toUID);
     }
-
-    private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, NotificationVerbType vType) {
+    private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, ActivityVerbType vType) {
         if (subject instanceof FirebaseEntity) {
             if (subject instanceof User) {
                 getReceiverUIDs().add(((User) subject).getTeamUID());
@@ -1305,7 +1276,6 @@ public final class RecentActivity extends FirebaseContent {
 
         }
     }
-
     public void addSeenUID(final User user) {
         if (getSeenUIDs().size() > 0) {
             for (final String seenUID : getSeenUIDs()) {
@@ -1318,21 +1288,21 @@ public final class RecentActivity extends FirebaseContent {
     public String getObjectUID() { return objectUID; }
     private void setObjectUID(final String objectUID) { this.objectUID = objectUID; }
     private FirebaseObject getObject() { return object; }
-    public NotificationObjectType setObject(final FirebaseObject object) {
+    public ActivityObjectType setObject(final FirebaseObject object) {
         this.object = object;
         if (object != null) {
             setObjectUID(object.getUID());
         }
         if (object instanceof Message) {
-            setObjectType(NotificationObjectType.MESSAGE);
+            setObjectType(ActivityObjectType.MESSAGE);
         } else if (object instanceof BrandingElement) {
             setObjectType(BRANDING_ELEMENT);
         } else if (object instanceof User) {
-            setObjectType(NotificationObjectType.MEMBER);
+            setObjectType(ActivityObjectType.MEMBER);
         } else if (object instanceof Team) {
-            setObjectType(NotificationObjectType.TEAM);
+            setObjectType(ActivityObjectType.TEAM);
         } else {
-            return NotificationObjectType.DEFAULT;
+            return ActivityObjectType.DEFAULT;
         }
 
         return getObjectType();
@@ -1340,15 +1310,15 @@ public final class RecentActivity extends FirebaseContent {
     public String getSubjectUID() { return subjectUID; }
     private void setSubjectUID(final String subjectUID) { this.subjectUID = subjectUID; }
     private FirebaseObject getSubject() { return subject; }
-    public NotificationSubjectType setSubject(final FirebaseObject subject) {
+    public ActivitySubjectType setSubject(final FirebaseObject subject) {
         this.subject = subject;
         setSubjectUID(subject.getUID());
         if (subject instanceof User) {
-            setSubjectType(NotificationSubjectType.MEMBER);
+            setSubjectType(ActivitySubjectType.MEMBER);
         } else if (subject instanceof Team) {
-            setSubjectType(NotificationSubjectType.TEAM);
+            setSubjectType(ActivitySubjectType.TEAM);
         } else {
-            return NotificationSubjectType.DEFAULT;
+            return ActivitySubjectType.DEFAULT;
         }
 
         return getSubjectType();
@@ -1414,12 +1384,12 @@ public final class RecentActivity extends FirebaseContent {
     private void setMessageText(String messageText) {
         this.messageText = messageText;
     }
-    private NotificationVerbType getVerbType() { return verbType; }
-    private void setVerbType(final NotificationVerbType verbType) { this.verbType = verbType; }
+    private ActivityVerbType getVerbType() { return verbType; }
+    private void setVerbType(final ActivityVerbType verbType) { this.verbType = verbType; }
     private ArrayList<String> getReceiverUIDs() { return receiverUIDs; }
     private void setReceiverUIDs(final ArrayList<String> receiverUIDs) { this.receiverUIDs = receiverUIDs; }
-    public NotificationObjectType getObjectType() { return objectType; }
-    private void setObjectType(final NotificationObjectType objectType) { this.objectType = objectType; }
-    public NotificationSubjectType getSubjectType() { return subjectType; }
-    private void setSubjectType(final NotificationSubjectType subjectType) { this.subjectType = subjectType; }
+    public ActivityObjectType getObjectType() { return objectType; }
+    private void setObjectType(final ActivityObjectType objectType) { this.objectType = objectType; }
+    public ActivitySubjectType getSubjectType() { return subjectType; }
+    private void setSubjectType(final ActivitySubjectType subjectType) { this.subjectType = subjectType; }
 }

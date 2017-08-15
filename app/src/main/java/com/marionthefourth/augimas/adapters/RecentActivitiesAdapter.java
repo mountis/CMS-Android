@@ -12,6 +12,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.marionthefourth.augimas.R;
+import com.marionthefourth.augimas.activities.HomeActivity;
 import com.marionthefourth.augimas.backend.Backend;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
 import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
@@ -33,7 +34,7 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
     @Override
     public RecentActivitiesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_notification, parent, false);
+                .inflate(R.layout.list_item_recent_activity, parent, false);
         return new RecentActivitiesAdapter.ViewHolder(view);
     }
     @Override
@@ -47,7 +48,7 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    holder.recentActivityItem.navigate(activity);
+                    holder.recentActivityItem.navigate((HomeActivity) activity);
                 }
             });
         } else {
@@ -67,17 +68,13 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final User teamMember = new User(dataSnapshot);
-                            if (teamMember != null) {
-                                holder.recentActivityItem.setSubject(teamMember);
-                                pullObjectItemData(holder);
-                            }
+                            holder.recentActivityItem.setSubject(teamMember);
+                            pullObjectItemData(holder);
                         }
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
                 break;
             case TEAM:

@@ -40,7 +40,7 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 
 public final class ChatFragment extends Fragment implements MessageListAdapter.OnMessageListFragmentInteractionListener {
-
+    public ChatFragment() {}
     public static ChatFragment newInstance(final String channelUID) {
         final Bundle args = new Bundle();
         args.putString(Constants.Strings.UIDs.CHANNEL_UID,channelUID);
@@ -49,64 +49,54 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
         fragment.setArguments(args);
         return fragment;
     }
-
-    public ChatFragment() {}
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chat, container, false);
-
+        final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.message_list_recycler_view);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-
         final TextInputEditText inputField = (TextInputEditText)view.findViewById(R.id.input_message_text);
         final AppCompatImageButton sendButton = (AppCompatImageButton)view.findViewById(R.id.button_send);
-
         final Activity activity = getActivity();
-        determineToDisplayChatInputSection(activity,view);
-
+        determineToDisplayChatInputSection(view, activity);
         if (getArguments() != null) {
-            setupSendButtonClickListener(activity,sendButton, inputField,view);
+            setupSendButtonClickListener(sendButton, inputField, view, activity);
             loadMessages(activity,recyclerView,view);
         }
-
         return view;
     }
-
-    private void determineToDisplayChatInputSection(final Activity activity, final View view) {
+    private void determineToDisplayChatInputSection(final View view, final Activity activity) {
         final LinearLayoutCompat chatInputSection = (LinearLayoutCompat)view.findViewById(R.id.chat_input_section);
-        Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final User currentUser = new User (dataSnapshot);
-                    if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
-                        chatInputSection.setVisibility(View.VISIBLE);
-                    } else {
-                        chatInputSection.setVisibility(View.GONE);
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot userSnapshot) {
+                    if (userSnapshot.exists()) {
+                        final User currentUser = new User (userSnapshot);
+                        if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
+                            chatInputSection.setVisibility(View.VISIBLE);
+                        } else {
+                            chatInputSection.setVisibility(View.GONE);
+                        }
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                chatInputSection.setVisibility(View.GONE);
-            }
-        });
-
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    chatInputSection.setVisibility(View.GONE);
+                }
+            });
+        }
     }
-
-    private void setupSendButtonClickListener(final Activity activity, final AppCompatImageButton sendButton, final TextInputEditText inputField, final View containingView) {
+    private void setupSendButtonClickListener(final AppCompatImageButton sendButton, final TextInputEditText inputField, final View containingView, final Activity activity) {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
                 Backend.getReference(R.string.firebase_users_directory, activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            final User currentUser = new User(dataSnapshot);
+                    public void onDataChange(DataSnapshot userSnapshot) {
+                        if (userSnapshot.exists()) {
+                            final User currentUser = new User(userSnapshot);
                             if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.CHATTER)) {
                                 if (!inputField.getText().toString().equals("")) {
                                     // Get Channel UID
@@ -119,77 +109,53 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                                     message.setTimestamp(new Date().toString());
                                     // Save Message to Firebase
                                     create(message, activity);
+                                    final String channelUID = getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID);
+                                    if (channelUID != null) {
+                                        Backend.getReference(R.string.firebase_channels_directory,activity).child(channelUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot channelSnapshot) {
+                                                final Channel channelItem = new Channel(channelSnapshot);
+                                                Backend.getReference(R.string.firebase_chats_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot chatReference) {
+                                                        if (chatReference.hasChildren()) {
+                                                            for(final Chat chatItem:Chat.toArrayList(chatReference)) {
+                                                                if (channelItem.getChatUID().equals(chatItem.getUID())) {
+                                                                    Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(DataSnapshot teamSnapshot) {
+                                                                            if (teamSnapshot.hasChildren()) {
 
-                                    Backend.getReference(R.string.firebase_channels_directory,activity).child(getArguments().getString(Constants.Strings.UIDs.CHANNEL_UID)).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                                sendNotification(chatItem,channelItem,teamSnapshot,currentUser,message,activity);
 
-                                            final Channel channelItem = new Channel(dataSnapshot);
-
-                                            Backend.getReference(R.string.firebase_chats_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                                    if (dataSnapshot.hasChildren()) {
-                                                        for(final Chat chatItem:Chat.toArrayList(dataSnapshot)) {
-                                                            if (channelItem.getChatUID().equals(chatItem.getUID())) {
-                                                                Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                    @Override
-                                                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                        if (dataSnapshot.hasChildren()) {
-                                                                            Team otherTeam = null;
-                                                                            Team yourTeam = null;
-
-                                                                            for(final Team teamItem:Team.toFilteredArrayList(Team.toArrayList(dataSnapshot),Constants.Strings.UIDs.CHAT_UID,chatItem.getTeamUIDs())) {
-                                                                                if (currentUser.isInTeam(teamItem)) {
-                                                                                    yourTeam = teamItem;
-                                                                                } else {
-                                                                                    otherTeam = teamItem;
-                                                                                }
+                                                                                DeviceHelper.dismissKeyboard(containingView);
                                                                             }
-
-                                                                            final RecentActivity hostRecentActivity;
-                                                                            final RecentActivity clientRecentActivity;
-
-                                                                            if (channelItem.getName().equals("")) {
-                                                                                // Client And Host RecentActivity
-                                                                                hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT,otherTeam.getName(),Constants.Ints.Sender.TO);
-                                                                                clientRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT,yourTeam.getName(),Constants.Ints.Sender.FROM);
-                                                                                Backend.sendUpstreamNotification(hostRecentActivity,yourTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
-                                                                                Backend.sendUpstreamNotification(clientRecentActivity,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
-                                                                            } else {
-                                                                                // Your Team RecentActivity
-                                                                                hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.NotificationVerbType.CHAT);
-                                                                                Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
-                                                                            }
-
-                                                                            DeviceHelper.dismissKeyboard(containingView);
                                                                         }
-                                                                    }
 
-                                                                    @Override
-                                                                    public void onCancelled(DatabaseError databaseError) {}
-                                                                });
+                                                                        @Override
+                                                                        public void onCancelled(DatabaseError databaseError) {}
+                                                                    });
+                                                                }
+
+
                                                             }
-
-
                                                         }
                                                     }
-                                                }
 
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
+                                                    @Override
+                                                    public void onCancelled(DatabaseError databaseError) {
 
-                                                }
-                                            });
+                                                    }
+                                                });
 
-                                        }
+                                            }
 
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
 
-                                        }
-                                    });
-
+                                            }
+                                        });
+                                    }
 
                                     // Clear input text
                                     inputField.setText("");
@@ -205,7 +171,37 @@ public final class ChatFragment extends Fragment implements MessageListAdapter.O
                     public void onCancelled(DatabaseError databaseError) {}
                 });
             }
+            }
         });
+    }
+
+    private void sendNotification(final Chat chatItem, final Channel channelItem, final DataSnapshot teamSnapshot, final User currentUser, final Message message, final Activity activity) {
+        Team otherTeam = null;
+        Team yourTeam = null;
+
+        for(final Team teamItem:Team.toFilteredArrayList(Team.toArrayList(teamSnapshot),Constants.Strings.UIDs.CHAT_UID,chatItem.getTeamUIDs())) {
+            if (currentUser.isInTeam(teamItem)) {
+                yourTeam = teamItem;
+            } else {
+                otherTeam = teamItem;
+            }
+        }
+
+
+        final RecentActivity hostRecentActivity;
+        final RecentActivity clientRecentActivity;
+
+        if (channelItem.getName().equals("")) {
+            // Client And Host RecentActivity
+            hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.ActivityVerbType.CHAT,otherTeam.getName(),Constants.Ints.Sender.TO);
+            clientRecentActivity = new RecentActivity(currentUser,message, RecentActivity.ActivityVerbType.CHAT,yourTeam.getName(),Constants.Ints.Sender.FROM);
+            Backend.sendUpstreamNotification(hostRecentActivity,yourTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+            Backend.sendUpstreamNotification(clientRecentActivity,otherTeam.getUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+        } else {
+            // Your Team RecentActivity
+            hostRecentActivity = new RecentActivity(currentUser,message, RecentActivity.ActivityVerbType.CHAT);
+            Backend.sendUpstreamNotification(hostRecentActivity,currentUser.getTeamUID(), currentUser.getUID(),Constants.Strings.Headers.NEW_MESSAGE, activity, true);
+        }
     }
 
     private void loadMessages(final Activity activity, final RecyclerView recyclerView, final View containingView) {

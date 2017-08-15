@@ -39,11 +39,8 @@ public final class TeamAccessDialog extends Builder {
         LayoutInflater inflater = activity.getLayoutInflater();
         @SuppressLint("InflateParams") View dialogView = inflater.inflate(R.layout.list_item_full_team, null);
         dialogBuilder.setView(dialogView);
-
         AlertDialog alertDialog = dialogBuilder.create();
-
         setupLayout(teamItem, alertDialog, dialogView, (AppCompatActivity) activity);
-
         alertDialog.show();
     }
     private void setupLayout(final Team teamItem, final AlertDialog dialogBuilder, final View dialogView, final AppCompatActivity activity) {
@@ -66,7 +63,6 @@ public final class TeamAccessDialog extends Builder {
                 @Override
                 public void onClick(View v) {
                     handleNonSupportFragmentRemoval(activity.getFragmentManager());
-
                     switch (buttonIndex) {
                         case 0:
                             if (teamItem.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {
@@ -88,7 +84,6 @@ public final class TeamAccessDialog extends Builder {
                             activity.getSupportFragmentManager().beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,TeamManagementFragment.newInstance(teamItem),Constants.Strings.Fragments.TEAM_MANAGEMENT).addToBackStack(Constants.Strings.Fragments.TEAMS).commit();
                             break;
                     }
-
                     dialogBuilder.dismiss();
                 }
             });
