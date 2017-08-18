@@ -487,6 +487,10 @@ public final class Constants {
             public static final String DOMAIN_NAME = "domainName";
             public static final String SOCIAL_MEDIA_NAME = "socialMediaName";
             public static final String MISSION_STATEMENT = "missionStatement";
+            public static final String TARGET_AUDIENCE = "targetAudience";
+            public static final String STYLE_GUIDE = "styleGuide";
+            public static final String LOGO = "logo";
+            public static final String PRODUCTS_SERVICES = "productsServices";
         }
         public static final class Questionnaire {
             public static final class Questions {

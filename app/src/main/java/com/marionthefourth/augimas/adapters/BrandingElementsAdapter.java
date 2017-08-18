@@ -54,25 +54,46 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         switch(BrandingElement.ElementType.getType(position)) {
             case DOMAIN_NAME:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.postage_stamp));
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_domain));
                 }
                 holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader() + "s");
                 break;
             case SOCIAL_MEDIA_NAME:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.social_paper));
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_social));
+                }
+                holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader() + "s");
+                break;
+            case MISSION_STATEMENT:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_mission_statement));
+                }
+                holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader() + "s");
+                break;
+            case TARGET_AUDIENCE:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_target_audience));
                 }
                 holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader());
                 break;
-            case MISSION_STATEMENT:
-                break;
-            case TARGET_AUDIENCE:
-                break;
             case STYLE_GUIDE:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_palette));
+                }
+                holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader() + "s");
                 break;
             case LOGO:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_logo));
+                }
+                holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader() + "s");
                 break;
             case PRODUCTS_SERVICES:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_product_service));
+                }
+                holder.mBrandingElementNameLabel.setText("Products and Services");
+
                 break;
             case DEFAULT:
                 break;
@@ -89,7 +110,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
             public void onClick(View v) {
                 if (null != mListener) {
                     handleNonSupportFragmentRemoval(activity.getFragmentManager());
-                    mListener.OnBrandingElementsFragmentInteractionListener(holder.elementItem, team, activity);
+                    mListener.OnBrandingElementInteractionListener(holder.elementItem, team, activity);
                 }
             }
         });
@@ -125,15 +146,15 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
     }
 //    Listener Methods
     public interface OnBrandingElementsFragmentInteractionListener {
-        void OnBrandingElementsFragmentInteractionListener(BrandingElement elementItem, Team teamItem, Context context);
+        void OnBrandingElementInteractionListener(BrandingElement elementItem, Team teamItem, Context context);
     }
 //    View Holder Class
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View mView;
+        final View mView;
         public BrandingElement elementItem;
 //        public final AppCompatButton mBrandingAddItemButton;
 //        public final AppCompatButton getmBrandingCloseItemsButton;
-        public final AppCompatTextView mBrandingElementNameLabel;
+        final AppCompatTextView mBrandingElementNameLabel;
         public final AppCompatImageButton mBrandingElementStatus;
 
         public ViewHolder(View view) {

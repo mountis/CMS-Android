@@ -74,26 +74,28 @@ public final class BrandingElementsFragment extends Fragment implements Branding
         return view;
     }
     private void loadBrandingElements(final Activity activity, final RecyclerView recyclerView, final Team team) {
-        Backend.getReference(R.string.firebase_branding_elements_directory, activity).addValueEventListener(new ValueEventListener() {
+        Backend.getReference(R.string.firebase_branding_elements_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                final ArrayList<BrandingElement> elements = new ArrayList<>();
+
                 if (dataSnapshot.hasChildren()) {
-                    final ArrayList<BrandingElement> elements = new ArrayList<>();
                     for (DataSnapshot brandingElementReference:dataSnapshot.getChildren()) {
                         final BrandingElement elementItem = new BrandingElement(brandingElementReference);
                         if (elementItem.getTeamUID().equals(team.getUID())) {
                             elements.add(new BrandingElement(brandingElementReference));
                         }
                     }
-                    if (elements.size() < BrandingElement.ElementType.getNumberOfElementTypes()) {
+                    if (elements.size() != BrandingElement.ElementType.getNumberOfElementTypes()) {
                         // Create Missing Elements
                         createMissingElements(activity,elements,team);
-                    } else {
-                        recyclerView.setAdapter(new BrandingElementsAdapter(activity,elements,team,BrandingElementsFragment.this));
                     }
                 } else {
-                    createMissingElements(activity,new ArrayList<BrandingElement>(),team);
+                    createMissingElements(activity,elements,team);
                 }
+
+                recyclerView.setAdapter(new BrandingElementsAdapter(activity,elements,team,BrandingElementsFragment.this));
+
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {}
@@ -101,18 +103,15 @@ public final class BrandingElementsFragment extends Fragment implements Branding
     }
     private void createMissingElements(final Activity activity, final ArrayList<BrandingElement> elements, final Team team) {
         // Find each element type that you are missing
-        final ArrayList<Boolean> typesMade = new ArrayList<>(BrandingElement.ElementType.getNumberOfElementTypes());
         for (int i = 0; i < BrandingElement.ElementType.getNumberOfElementTypes(); i++) {
-            for (int j = 0; j < elements.size(); j++) {
-                if (elements.get(j).getType().equals(BrandingElement.ElementType.getType(i))) {
-                    typesMade.add(true);
-                }
-            }
-            if (typesMade.size() == i) {
-                typesMade.add(false);
+            if (elements.size() < i+1) {
                 elements.add(new BrandingElement(BrandingElement.ElementType.getType(i)));
-                elements.get(elements.size()-1).setTeamUID(team.getUID());
-                create(elements.get(elements.size()-1), activity);
+                elements.get(i).setTeamUID(team.getUID());
+                create(elements.get(i), activity);
+            }
+
+            if (elements.size() == BrandingElement.ElementType.getNumberOfElementTypes()) {
+                return;
             }
         }
     }
@@ -128,7 +127,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
         }
     }
     @Override
-    public void OnBrandingElementsFragmentInteractionListener(final BrandingElement elementItem,final Team teamItem,final Context context) {
+    public void OnBrandingElementInteractionListener(final BrandingElement elementItem, final Team teamItem, final Context context) {
         Bundle brandingElementBundle = new Bundle();
         brandingElementBundle.putSerializable(Constants.Strings.TEAM, teamItem);
         brandingElementBundle.putString(Constants.Strings.UIDs.TEAM_UID, teamItem.getUID());

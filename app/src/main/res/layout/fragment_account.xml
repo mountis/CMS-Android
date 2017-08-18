@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -11,7 +12,7 @@
         android:layout_height="match_parent">
         <android.support.v7.widget.AppCompatImageView
             android:layout_gravity="center"
-            android:src="@drawable/ic_person"
+            app:srcCompat="@drawable/ic_person"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#cfd8dc"
@@ -22,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <android.support.design.widget.TextInputEditText
-                android:drawableLeft="@drawable/ic_person"
+                android:drawableStart="@drawable/ic_person"
                 android:focusableInTouchMode="true"
                 android:id="@+id/input_username"
                 android:inputType="text"
@@ -45,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <android.support.design.widget.TextInputEditText
-                android:drawableLeft="@drawable/ic_person"
+                android:drawableStart="@drawable/ic_person"
                 android:focusableInTouchMode="true"
                 android:id="@+id/input_full_name"
                 android:inputType="text"
@@ -68,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <android.support.design.widget.TextInputEditText
-                android:drawableLeft="@drawable/ic_email"
+                android:drawableStart="@drawable/ic_email"
                 android:focusableInTouchMode="true"
                 android:id="@+id/input_email"
                 android:inputType="text"

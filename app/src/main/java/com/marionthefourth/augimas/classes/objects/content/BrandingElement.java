@@ -146,7 +146,7 @@ public class BrandingElement extends FirebaseContent {
         }
 
         public static int getNumberOfElementTypes() {
-            return 2;
+            return 7;
         }
     }
     public enum ElementStatus {
@@ -281,7 +281,7 @@ public class BrandingElement extends FirebaseContent {
         this();
         setType(type);
         setHeader(type.toString());
-        initContents(type);
+//        initContents(type);
     }
     public BrandingElement(final DataSnapshot brandingElementSnapshot) {
         this();
@@ -380,9 +380,7 @@ public class BrandingElement extends FirebaseContent {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex)) {
                         final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.DOMAIN_NAME + currentIndex).getValue();
                         if ((contentObject != null ? contentObject.toString(): null) != null) {
-                            if (regularData) {
-                                getContents().set(currentIndex,contentObject.toString());
-                            } else {
+                            if (!regularData) {
                                 getData().add(contentObject.toString());
                             }
                         }
@@ -395,26 +393,78 @@ public class BrandingElement extends FirebaseContent {
                     if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex)) {
                         final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.SOCIAL_MEDIA_NAME + currentIndex).getValue();
                         if ((contentObject != null ? contentObject.toString(): null) != null) {
-                            if (regularData) {
-                                getContents().set(currentIndex,contentObject.toString());
-                            } else {
+                            if (!regularData) {
                                 getData().add(contentObject.toString());
                             }
                         }
-
                     }
                     currentIndex++;
                 }
                 break;
             case MISSION_STATEMENT:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.MISSION_STATEMENT + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.MISSION_STATEMENT + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.MISSION_STATEMENT + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (!regularData) {
+                                getData().add(contentObject.toString());
+                            }
+                        }
+                    }
+                    currentIndex++;
+                }
                 break;
             case TARGET_AUDIENCE:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.TARGET_AUDIENCE + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.TARGET_AUDIENCE + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.TARGET_AUDIENCE + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (!regularData) {
+                                getData().add(contentObject.toString());
+                            }
+                        }
+                    }
+                    currentIndex++;
+                }
                 break;
             case STYLE_GUIDE:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (!regularData) {
+                                getData().add(contentObject.toString());
+                            }
+                        }
+                    }
+                    currentIndex++;
+                }
                 break;
             case LOGO:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.LOGO + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.LOGO + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.LOGO + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (!regularData) {
+                                getData().add(contentObject.toString());
+                            }
+                        }
+                    }
+                    currentIndex++;
+                }
                 break;
             case PRODUCTS_SERVICES:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.PRODUCTS_SERVICES + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.PRODUCTS_SERVICES + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.PRODUCTS_SERVICES + currentIndex).getValue();
+                        if ((contentObject != null ? contentObject.toString(): null) != null) {
+                            if (!regularData) {
+                                getData().add(contentObject.toString());
+                            }
+                        }
+                    }
+                    currentIndex++;
+                }
                 break;
             case DEFAULT:
                 break;
@@ -427,20 +477,8 @@ public class BrandingElement extends FirebaseContent {
                     if (input.endsWith(tld.toString())) return true;
                 }
                 break;
-            case SOCIAL_MEDIA_NAME:
+            default:
                 return true;
-            case MISSION_STATEMENT:
-                break;
-            case TARGET_AUDIENCE:
-                break;
-            case STYLE_GUIDE:
-                break;
-            case LOGO:
-                break;
-            case PRODUCTS_SERVICES:
-                break;
-            case DEFAULT:
-                break;
         }
 
         return false;

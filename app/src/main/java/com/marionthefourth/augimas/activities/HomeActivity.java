@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -95,6 +96,11 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         }
         return super.onOptionsItemSelected(item);
     }
+    private void setupActionBar(final ActionBar actionBar, final String title) {
+        if (actionBar != null) {
+            actionBar.setTitle(title);
+        }
+    }
     private void setupHomeActivity(final FragmentManager manager, final BottomNavigationView navigation) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             checkNavigationItem(getCurrentUser(),this);
@@ -149,6 +155,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                                 navigation.setSelectedItemId(R.id.navigation_settings);
                                             }
                                         }
+                                        setupActionBar(getSupportActionBar(),currentTeam.getName());
                                     }
 
                                     @Override

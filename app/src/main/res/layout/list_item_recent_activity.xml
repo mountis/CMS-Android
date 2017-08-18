@@ -2,31 +2,28 @@
 <android.support.v7.widget.LinearLayoutCompat
     android:layout_height="75dp"
     android:orientation="horizontal"
-    android:layout_marginLeft="15dp"
-    android:layout_marginRight="5dp"
+    android:layout_marginStart="15dp"
+    android:layout_marginEnd="5dp"
     android:layout_marginBottom="10dp"
     android:layout_width="match_parent"
     android:id="@+id/notification_view_id"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
     <android.support.v7.widget.AppCompatButton
         android:layout_weight="0"
         android:layout_gravity="center"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:text="a"
+        android:text="@string/a_text"
         android:textColor="#fff"
         android:background="@drawable/circle"
         android:clickable="false"
         android:id="@+id/item_team_icon_letter_moniker"/>
-
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_weight="1"
-        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
         <android.support.v7.widget.AppCompatTextView
             android:layout_weight="1"
             android:gravity="center_vertical"

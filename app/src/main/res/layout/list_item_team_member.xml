@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/team_member_view_id"
     android:layout_margin="2dp">
-
     <android.support.v7.widget.LinearLayoutCompat
         android:id="@+id/item_linear_layout"
         android:orientation="horizontal"
@@ -13,28 +11,26 @@
         android:backgroundTint="#2a97d1"
         android:background="@drawable/their_circle"
         android:layout_height="wrap_content">
-
         <android.support.v7.widget.AppCompatTextView
-            android:paddingLeft="-5dp"
+            android:paddingStart="-5dp"
             android:padding="8dp"
             android:enabled="false"
             android:textSize="15sp"
-            android:gravity="left"
+            android:gravity="start"
             android:textColor="#fff"
             android:text="@string/team_member_name"
-            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:layout_gravity="bottom"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/list_item_label_team_member_name"/>
-
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/list_item_team_member_role"
             android:layout_width="match_parent"
             android:backgroundTint="#fff"
             android:paddingTop="3.5dp"
-            android:gravity="right|center_vertical"
-            android:layout_gravity="right|center_vertical"
+            android:gravity="end|center_vertical"
+            android:layout_gravity="end|center_vertical"
             android:layout_height="match_parent"/>
     </android.support.v7.widget.LinearLayoutCompat>
 </android.support.design.widget.CoordinatorLayout>

@@ -343,4 +343,14 @@
     <string name="name_updated">You updated your name!</string>
     <string name="username_updated">You updated your username!</string>
     <string name="email_updated">You updated your email!</string>
+    <string name="product_service_text">product or service</string>
+    <string name="team_member_text">team member</string>
+    <string name="tagline_text">tagline</string>
+    <string name="brand_style_text">brand style</string>
+    <string name="target_audience_text">target audience</string>
+    <string name="education_text">education</string>
+    <string name="income_text">income</string>
+    <string name="question_mark">\?</string>
+    <string name="plus_sign">+</string>
+    <string name="a_text">a</string>
 </resources>

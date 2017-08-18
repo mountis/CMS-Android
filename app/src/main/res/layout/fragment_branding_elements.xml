@@ -7,12 +7,10 @@
     android:orientation="vertical"
     android:name="com.marionthefourth.augimas.fragments.BrandingElementsFragment"
     tools:context="com.marionthefourth.augimas.activities.HomeActivity">
-
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <android.support.v7.widget.RecyclerView
             android:id="@+id/branding_elements_recycler_view"
             android:layout_width="match_parent"
@@ -20,10 +18,8 @@
             android:layout_weight="1"
             android:background="#fff"
             android:fitsSystemWindows="true"
-            android:padding="10dp"
             app:layoutManager="LinearLayoutManager"
+            android:layout_marginBottom="50dp"
             tools:listitem="@layout/list_item_packed_branding_element"/>
-
     </android.support.v7.widget.LinearLayoutCompat>
-
 </android.support.design.widget.CoordinatorLayout>

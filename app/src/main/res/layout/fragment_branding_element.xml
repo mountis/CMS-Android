@@ -20,7 +20,6 @@
         android:visibility="gone"
         android:id="@+id/branding_element_domain_name_layout"
         android:layout_height="match_parent">
-
         <android.support.v7.widget.RecyclerView
             android:layout_gravity="top"
             android:id="@+id/domain_name_recycler_view"
@@ -30,7 +29,6 @@
             tools:listitem="@layout/list_item_domain_name_single"
             android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
-
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -46,35 +44,34 @@
             tools:listitem="@layout/list_item_social_media_name_single"
             android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
-
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:visibility="gone"
         android:id="@+id/branding_element_mission_statement_layout"
         android:layout_height="match_parent">
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_mission_statement"
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/mission_statement_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <android.support.design.widget.TextInputEditText
-                android:focusableInTouchMode="true"
-                android:id="@+id/input_mission_statement"
-                android:inputType="text"
-                android:maxLines="5"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/mission_statement_text"/>
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.v7.widget.AppCompatButton
-            android:text="@string/update_text"
-            android:id="@+id/branding_mission_statement_update_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_mission_statements_single"
+            android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
-
+    <android.support.v7.widget.LinearLayoutCompat
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:id="@+id/branding_element_product_service_layout"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/product_service_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_product_service_single"
+            android:layout_marginBottom="65dp"/>
+    </android.support.v7.widget.LinearLayoutCompat>
 </android.support.design.widget.CoordinatorLayout>

@@ -23,7 +23,7 @@
             android:layout_height="55dp"
             android:layout_gravity="center"
             android:layout_marginLeft="5dp"
-            android:background="@drawable/postage_stamp"
+            android:background="@drawable/icon_domain"
             android:clickable="false"
             android:id="@+id/item_branding_element_status"/>
     </android.support.v7.widget.LinearLayoutCompat>
@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:maxLines="1"
-            android:textSize="35sp"
+            android:textSize="25sp"
             android:textColor="#7e1c15"
             android:text="@string/branding_element_name"
             android:textAppearance="?attr/textAppearanceListItem"/>
