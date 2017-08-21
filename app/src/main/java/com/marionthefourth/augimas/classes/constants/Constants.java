@@ -210,6 +210,9 @@ public final class Constants {
                 public static final int NONE        = 0x9D7E2;
             }
         }
+        public static final class Results {
+            public static final int RESULT_LOAD_IMG = 12;
+        }
         public static final class Firebase {
             public static final int FIREBASE_CONTENT_CHAT     = 0x0000011;
             public static final int FIREBASE_CONTENT_MESSAGE  = 0x0000012;
@@ -309,7 +312,7 @@ public final class Constants {
                 public static final int SOCIAL_MEDIA_NAME   = 1;
                 public static final int MISSION_STATEMENT   = 2;
                 public static final int TARGET_AUDIENCE     = 3;
-                public static final int STYLE_GUIDE         = 4;
+                public static final int BRAND_STYLE = 4;
                 public static final int LOGO                = 5;
                 public static final int PRODUCTS_SERVICES   = 6;
             }
@@ -318,7 +321,7 @@ public final class Constants {
                 public static final int SOCIAL_MEDIA_NAME = 0x736ABBC;
                 public static final int MISSION_STATEMENT = 0x644FCBA;
                 public static final int TARGET_AUDIENCE = 0x552EDBF;
-                public static final int STYLE_GUIDE = 0x460DEBD;
+                public static final int BRAND_STYLE = 0x460DEBD;
                 public static final int LOGO = 0x378CFBB;
                 public static final int PRODUCTS_SERVICES = 0x289BABA;
             }
@@ -444,7 +447,10 @@ public final class Constants {
 
         }
         public static final class Elements {
+            public static final String VIEW = "view";
             public static final String BUTTONS = "buttons";
+            public static final String IMAGE_BUTTON = "imageButton";
+            public static final String IMAGE_VIEW = "imageView";
             public static final String TEXT_INPUT_EDIT_TEXTS = "textInputEditTexts";
             public static final String TEXT_INPUT_LAYOUTS = "textInputLayout";
         }
@@ -488,7 +494,7 @@ public final class Constants {
             public static final String SOCIAL_MEDIA_NAME = "socialMediaName";
             public static final String MISSION_STATEMENT = "missionStatement";
             public static final String TARGET_AUDIENCE = "targetAudience";
-            public static final String STYLE_GUIDE = "styleGuide";
+            public static final String BRAND_STYLE = "brandStyle";
             public static final String LOGO = "logo";
             public static final String PRODUCTS_SERVICES = "productsServices";
         }

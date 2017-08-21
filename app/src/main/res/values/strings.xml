@@ -1,7 +1,7 @@
 <resources>
     <!--App Strings -->
     <string name="app_name">Augimas</string>
-    <string name="app_build_version">v0.0.2551</string>
+    <string name="app_build_version">v0.0.2554</string>
     <string name="firebase_user_id">ID</string>
 
     <!-- Firebase Strings -->
@@ -353,4 +353,9 @@
     <string name="question_mark">\?</string>
     <string name="plus_sign">+</string>
     <string name="a_text">a</string>
+    <string name="title_update_color">Update Color</string>
+    <string name="title_create_color">Create Color</string>
+    <string name="hex_text">hexcode</string>
+    <string name="button_text_update">Update</string>
+    <string name="button_text_create">Create</string>
 </resources>

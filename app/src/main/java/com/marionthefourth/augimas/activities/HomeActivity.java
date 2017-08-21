@@ -3,16 +3,21 @@ package com.marionthefourth.augimas.activities;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,6 +28,7 @@ import com.marionthefourth.augimas.classes.constants.Constants;
 import com.marionthefourth.augimas.classes.objects.FirebaseEntity;
 import com.marionthefourth.augimas.classes.objects.communication.Channel;
 import com.marionthefourth.augimas.classes.objects.communication.Chat;
+import com.marionthefourth.augimas.classes.objects.content.BrandingElement;
 import com.marionthefourth.augimas.classes.objects.content.RecentActivity;
 import com.marionthefourth.augimas.classes.objects.entities.Team;
 import com.marionthefourth.augimas.classes.objects.entities.User;
@@ -32,8 +38,14 @@ import com.marionthefourth.augimas.fragments.RecentActivitiesFragment;
 import com.marionthefourth.augimas.fragments.SettingsFragment;
 import com.marionthefourth.augimas.fragments.TeamManagementFragment;
 import com.marionthefourth.augimas.fragments.TeamsFragment;
+import com.marionthefourth.augimas.helpers.DeviceHelper;
 import com.marionthefourth.augimas.helpers.FragmentHelper;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
@@ -41,20 +53,23 @@ import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.marionthefourth.augimas.classes.constants.Constants.Strings.Fragments.BRANDING_ELEMENTS;
 import static com.marionthefourth.augimas.classes.objects.communication.Channel.sortChannels;
+import static com.marionthefourth.augimas.helpers.DeviceHelper.encodeToBase64;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.display;
 import static com.marionthefourth.augimas.helpers.FragmentHelper.handleNonSupportFragmentRemoval;
 
 public final class HomeActivity extends AppCompatActivity implements ChatListFragment.OnChatListFragmentInteractionListener {
     public boolean shouldHandleNavigation = true;
+    public BottomNavigationView navigation = null;
     private int selectedTopFragment = Constants.Ints.Fragments.DASHBOARD;
 //    Activity Methods
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
         final FragmentManager manager = getSupportFragmentManager();
-        final BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         final Bundle bundle = getIntent().getExtras();
@@ -184,7 +199,64 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         }
     }
 //    Navigation Methods
-    private void setupItemNavigation(final MenuItem item) {
+    private void checkNavigationItem(final User currentUser, final Activity activity) {
+    Backend.getReference(R.string.firebase_users_directory, activity).child(currentUser.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot userSnapshot) {
+            final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+
+            final Menu menu = navigationView.getMenu();
+            final User currentUser = new User(userSnapshot);
+
+            if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
+                menu.removeItem(R.id.navigation_chat);
+                if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                    menu.removeItem(R.id.navigation_dashboard);
+                    menu.removeItem(R.id.navigation_recent_activities);
+                }
+            } else {
+                if (!currentUser.getTeamUID().equals("")) {
+                    Backend.getReference(R.string.firebase_teams_directory,HomeActivity.this).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot teamSnapshot) {
+                            if (teamSnapshot.exists()) {
+                                final Team currentTeam = new Team(teamSnapshot);
+                                if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {
+                                    menu.removeItem(R.id.navigation_dashboard);
+                                }
+
+                                if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
+                                    navigationView.setSelectedItemId(R.id.navigation_settings);
+                                    menu.removeItem(R.id.navigation_chat);
+                                    menu.removeItem(R.id.navigation_recent_activities);
+
+                                    final android.app.FragmentManager manager = getFragmentManager();
+                                    handleSettingsNavigation(manager);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+                } else {
+                    navigationView.setSelectedItemId(R.id.navigation_settings);
+                    menu.removeItem(R.id.navigation_chat);
+                    menu.removeItem(R.id.navigation_dashboard);
+                    menu.removeItem(R.id.navigation_recent_activities);
+
+                    final android.app.FragmentManager manager = getFragmentManager();
+                    handleSettingsNavigation(manager);
+                }
+            }
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {}
+    });
+}
+    private void handleItemNavigation(final MenuItem item) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
             Backend.getReference(R.string.firebase_users_directory, this).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -199,25 +271,26 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                     final FragmentManager manager = getSupportFragmentManager();
                                     final android.app.FragmentManager rManager = getFragmentManager();
                                     if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.BLOCKED) {
-
-                                        switch (item.getItemId()) {
-                                            case R.id.navigation_dashboard:
-                                                handleNonSupportFragmentRemoval(rManager);
-                                                if (currentTeam.getStatus() == FirebaseEntity.EntityStatus.APPROVED) {
-                                                    handleDashboardNavigation(currentUser,manager);
-                                                }
-                                                break;
-                                            case R.id.navigation_chat:
-                                                handleNonSupportFragmentRemoval(rManager);
-                                                handleChatNavigation(currentUser, manager);
-                                                break;
-                                            case R.id.navigation_recent_activities:
-                                                handleNonSupportFragmentRemoval(rManager);
-                                                handleRecentActivitiesNavigation(currentUser,manager);
-                                                break;
-                                            case R.id.navigation_settings:
-                                                handleSettingsNavigation(rManager);
-                                                break;
+                                        if (shouldHandleNavigation) {
+                                            switch (item.getItemId()) {
+                                                case R.id.navigation_dashboard:
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                    if (currentTeam.getStatus() == FirebaseEntity.EntityStatus.APPROVED) {
+                                                        handleDashboardNavigation(currentUser,manager);
+                                                    }
+                                                    break;
+                                                case R.id.navigation_chat:
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                    handleChatNavigation(currentUser, manager);
+                                                    break;
+                                                case R.id.navigation_recent_activities:
+                                                    handleNonSupportFragmentRemoval(rManager);
+                                                    handleRecentActivitiesNavigation(currentUser,manager);
+                                                    break;
+                                                case R.id.navigation_settings:
+                                                    handleSettingsNavigation(rManager);
+                                                    break;
+                                            }
                                         }
                                     } else {
                                         FragmentHelper.display(SNACKBAR,R.string.you_dont_have_access,item.getActionView());
@@ -230,70 +303,12 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         });
                     }
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });
         } else {
             startActivity(new Intent(HomeActivity.this,SignInActivity.class));
         }
-    }
-    private void checkNavigationItem(final User currentUser, final Activity activity) {
-        Backend.getReference(R.string.firebase_users_directory, activity).child(currentUser.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot userSnapshot) {
-                final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
-
-                final Menu menu = navigationView.getMenu();
-                final User currentUser = new User(userSnapshot);
-
-                if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
-                    menu.removeItem(R.id.navigation_chat);
-                    if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                        menu.removeItem(R.id.navigation_dashboard);
-                        menu.removeItem(R.id.navigation_recent_activities);
-                    }
-                } else {
-                    if (!currentUser.getTeamUID().equals("")) {
-                        Backend.getReference(R.string.firebase_teams_directory,HomeActivity.this).child(currentUser.getTeamUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot teamSnapshot) {
-                                if (teamSnapshot.exists()) {
-                                    final Team currentTeam = new Team(teamSnapshot);
-                                    if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {
-                                        menu.removeItem(R.id.navigation_dashboard);
-                                    }
-
-                                    if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-                                        navigationView.setSelectedItemId(R.id.navigation_settings);
-                                        menu.removeItem(R.id.navigation_chat);
-                                        menu.removeItem(R.id.navigation_recent_activities);
-
-                                        final android.app.FragmentManager manager = getFragmentManager();
-                                        handleSettingsNavigation(manager);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {}
-                        });
-                    } else {
-                        navigationView.setSelectedItemId(R.id.navigation_settings);
-                        menu.removeItem(R.id.navigation_chat);
-                        menu.removeItem(R.id.navigation_dashboard);
-                        menu.removeItem(R.id.navigation_recent_activities);
-
-                        final android.app.FragmentManager manager = getFragmentManager();
-                        handleSettingsNavigation(manager);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
     }
     private void handleRecentActivitiesNavigation(final User currentUser, final FragmentManager manager) {
         if (Constants.Bools.FeaturesAvailable.DISPLAY_NOTIFICATIONS) {
@@ -516,9 +531,115 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
-            setupItemNavigation(item);
+            handleItemNavigation(item);
             return true;
         }
-
     };
+
+    @Override
+    protected void onActivityResult(int reqCode, int resultCode, final Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+        if (reqCode == Constants.Ints.Results.RESULT_LOAD_IMG) {
+            if (resultCode == RESULT_OK) {
+                try {
+                    try {
+                        final Uri imageUri = data.getData();
+                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                        final JSONObject object = DeviceHelper.readFromJSONFile(HomeActivity.this);
+                        final String myBase64Image = encodeToBase64(selectedImage, Bitmap.CompressFormat.JPEG, 100);
+                        final String brandingElementUID = object.getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID);
+                        final int itemPosition = object.getInt(Constants.Strings.Fields.SELECTED_INDEX);
+                        if (brandingElementUID != null && !brandingElementUID.equals("") && itemPosition != -1) {
+                            Backend.getReference(R.string.firebase_branding_elements_directory,this).child(brandingElementUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        final BrandingElement element = new BrandingElement(dataSnapshot);
+                                        if (element.getData().size() > itemPosition) {
+                                            if (!element.getData().get(itemPosition).equals(myBase64Image)) {
+                                                element.getData().set(itemPosition,myBase64Image);
+                                                sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.UPDATE);
+                                            }
+                                        } else {
+                                            element.getData().add(myBase64Image);
+                                            sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.ADD);
+                                        }
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+                }
+            }else {
+                Toast.makeText(this, "You haven't picked Image",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.ActivityVerbType verbType) {
+        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
+            Backend.getReference(R.string.firebase_teams_directory,this).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,brandingName.getTeamUID());
+                    Backend.getReference(R.string.firebase_users_directory,HomeActivity.this).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            final User currentUser = new User(dataSnapshot);
+
+                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
+                                final RecentActivity hostRecentActivity;
+                                final RecentActivity clientRecentActivity;
+
+                                switch (verbType) {
+                                    case UPDATE:
+                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName());
+                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType);
+                                        } else {
+                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType);
+                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType);
+                                        }
+                                        break;
+                                    default:
+                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
+                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName());
+                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType);
+                                        } else {
+                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType);
+                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType);
+                                        }
+                                        break;
+                                }
+
+                                Backend.sendUpstreamNotification(hostRecentActivity,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),HomeActivity.this, true);
+                                Backend.sendUpstreamNotification(clientRecentActivity,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),HomeActivity.this, true);
+
+                                Backend.update(brandingName, HomeActivity.this);
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        }
+    }
+
+    public boolean shouldHandleNavigation() {
+        return shouldHandleNavigation;
+    }
+
+    public void setShouldHandleNavigation(boolean shouldHandleNavigation) {
+        this.shouldHandleNavigation = shouldHandleNavigation;
+    }
 }

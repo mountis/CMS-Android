@@ -83,11 +83,8 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final Team teamItem = new Team(dataSnapshot);
-                            if (teamItem != null) {
-                                holder.recentActivityItem.setSubject(teamItem);
-
-                                pullObjectItemData(holder);
-                            }
+                            holder.recentActivityItem.setSubject(teamItem);
+                            pullObjectItemData(holder);
                         }
                     }
 
@@ -123,9 +120,7 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final Chat chatItem = new Chat(dataSnapshot);
-                            if (chatItem != null) {
-                                holder.recentActivityItem.setObject(chatItem);
-                            }
+                            holder.recentActivityItem.setObject(chatItem);
                         }
                     }
 
@@ -153,9 +148,7 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             final Team teamItem = new Team(dataSnapshot);
-                            if (teamItem != null) {
-                                holder.recentActivityItem.setObject(teamItem);
-                            }
+                            holder.recentActivityItem.setObject(teamItem);
                         }
                     }
 

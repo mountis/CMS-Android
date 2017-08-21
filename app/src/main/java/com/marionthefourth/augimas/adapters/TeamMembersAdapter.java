@@ -98,7 +98,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
     private void setupSpinner(final ViewHolder holder) {
         final ArrayList<FirebaseEntity.EntityRole> roles = FirebaseEntity.EntityRole.getAllRoles();
         roles.remove(FirebaseEntity.EntityRole.DEFAULT);
-        final ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<FirebaseEntity.EntityRole>(activity,R.layout.spinner_item_team_member,R.id.team_member_role, roles) {
+        final ArrayAdapter<FirebaseEntity.EntityRole> adapter = new ArrayAdapter<FirebaseEntity.EntityRole>(activity,R.layout.spinner_layout,R.id.spinner_text_item, roles) {
             public boolean areAllItemsEnabled() {
                 return false;
             }

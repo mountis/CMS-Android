@@ -63,6 +63,66 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:visibility="gone"
+        android:id="@+id/branding_element_target_audience_layout"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/target_audience_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_target_audience_single"
+            android:layout_marginBottom="65dp"/>
+    </android.support.v7.widget.LinearLayoutCompat>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:id="@+id/branding_element_logo_layout"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/logo_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_logo_single"
+            android:layout_marginBottom="65dp"/>
+    </android.support.v7.widget.LinearLayoutCompat>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:id="@+id/branding_element_team_members_layout"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/team_members_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_team_members_single"
+            android:layout_marginBottom="65dp"/>
+    </android.support.v7.widget.LinearLayoutCompat>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:id="@+id/branding_element_brand_style_layout"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="top"
+            android:id="@+id/brand_style_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/list_item_brand_style_single"
+            android:layout_marginBottom="65dp"/>
+    </android.support.v7.widget.LinearLayoutCompat>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:visibility="gone"
         android:id="@+id/branding_element_product_service_layout"
         android:layout_height="match_parent">
         <android.support.v7.widget.RecyclerView

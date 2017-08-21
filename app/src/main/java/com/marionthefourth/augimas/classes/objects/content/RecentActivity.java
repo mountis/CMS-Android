@@ -35,7 +35,6 @@ import java.util.Map;
 
 import static com.marionthefourth.augimas.backend.Backend.getCurrentUser;
 import static com.marionthefourth.augimas.classes.constants.Constants.Ints.DEFAULT_ID;
-import static com.marionthefourth.augimas.classes.objects.content.RecentActivity.ActivityObjectType.BRANDING_ELEMENT;
 
 public final class RecentActivity extends FirebaseContent {
     @Exclude
@@ -67,19 +66,16 @@ public final class RecentActivity extends FirebaseContent {
         setTeamNameString(teamNameString);
         setMessage();
     }
-
     public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final String extraString) {
         this(subject,object,verbType,teamNameString);
         setExtraString(extraString);
         setMessage();
     }
-
     public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final String extraString, final String extraString2) {
         this(subject,object,verbType,teamNameString,extraString);
         setExtraString2(extraString2);
         setMessage();
     }
-
     public RecentActivity(final FirebaseObject subject, final FirebaseObject object, final ActivityVerbType verbType, final String teamNameString, final int senderType) {
         this(subject,object,verbType,teamNameString);
         setSenderType(senderType);
@@ -543,34 +539,36 @@ public final class RecentActivity extends FirebaseContent {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     final User currentUser = new User(dataSnapshot);
 
-                    final BottomNavigationView navigation = (BottomNavigationView) activity.findViewById(R.id.navigation);
+                    final BottomNavigationView navigation = activity.navigation;
                     switch (getObjectType()) {
                         case BRANDING_ELEMENT:
                             Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(getObjectUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
-                                    activity.shouldHandleNavigation = false;
-                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
-
-                                    navigation.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Bundle bundle = new Bundle();
-                                            bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
-                                            bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
-                                            ((HomeActivity)activity)
-                                                    .getSupportFragmentManager()
-                                                    .beginTransaction()
-                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                                    .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
-                                                    .commit();
-                                            activity.shouldHandleNavigation = true;
-                                        }
-                                    });
-
+                                    if (dataSnapshot.exists()) {
+                                        final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                navigation.getMenu().getItem(0).setChecked(true);
+                                            }
+                                        });
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Bundle bundle = new Bundle();
+                                                bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
+                                                bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
+                                                (activity)
+                                                        .getSupportFragmentManager()
+                                                        .beginTransaction()
+                                                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                        .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
+                                                        .commit();
+                                            }
+                                        });
+                                    }
                                 }
-
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) {}
                             });
@@ -580,13 +578,21 @@ public final class RecentActivity extends FirebaseContent {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final Message messageItem = new Message(dataSnapshot);
-                                    activity.shouldHandleNavigation = false;
                                     if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                navigation.getMenu().getItem(0).setChecked(true);
+                                            }
+                                        });
                                     } else {
-                                        navigation.setSelectedItemId(R.id.navigation_chat);
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                navigation.getMenu().getItem(2).setChecked(true);
+                                            }
+                                        });
                                     }
-
                                     // Get Sender UID to find out what team the sender was if the host
                                     // Get the Current User UID to pass in to get the Chat
                                     if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
@@ -601,7 +607,7 @@ public final class RecentActivity extends FirebaseContent {
                                                             if (chatSnapshot.exists()) {
                                                                 final Chat currentChat = new Chat(chatSnapshot);
                                                                 final String teamUID;
-                                                                activity.shouldHandleNavigation = true;
+                                                                activity.setShouldHandleNavigation(true);
                                                                 if (currentChat.getTeamUIDs().get(0).equals(currentUser.getTeamUID())) {
                                                                     teamUID = currentChat.getTeamUIDs().get(1);
                                                                 } else {
@@ -661,16 +667,30 @@ public final class RecentActivity extends FirebaseContent {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
                                             final Team teamElement = new Team(dataSnapshot);
-
-                                            activity.shouldHandleNavigation = false;
+                                            activity.setShouldHandleNavigation(false);
                                             if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
                                                 if (userObjectElement.getType() == FirebaseEntity.EntityType.HOST) {
-                                                    navigation.setSelectedItemId(R.id.navigation_settings);
+                                                    navigation.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            navigation.getMenu().getItem(3).setChecked(true);
+                                                        }
+                                                    });
                                                 } else {
-                                                    navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                                    navigation.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            navigation.getMenu().getItem(0).setChecked(true);
+                                                        }
+                                                    });
                                                 }
                                             } else {
-                                                navigation.setSelectedItemId(R.id.navigation_settings);
+                                                navigation.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        navigation.getMenu().getItem(3).setChecked(true);
+                                                    }
+                                                });
                                             }
 
                                             navigation.post(new Runnable() {
@@ -682,7 +702,7 @@ public final class RecentActivity extends FirebaseContent {
                                                             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                                             .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
                                                             .commit();
-                                                    activity.shouldHandleNavigation = true;
+                                                    activity.setShouldHandleNavigation(true);
                                                 }
                                             });
                                         }
@@ -703,11 +723,21 @@ public final class RecentActivity extends FirebaseContent {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final Team teamElement = new Team(dataSnapshot);
 
-                                    activity.shouldHandleNavigation = false;
+                                    activity.setShouldHandleNavigation(false);
                                     if (currentUser.getTeamUID().equals(teamElement.getUID())) {
-                                        navigation.setSelectedItemId(R.id.navigation_dashboard);
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                navigation.getMenu().getItem(0).setChecked(true);
+                                            }
+                                        });
                                     } else {
-                                        navigation.setSelectedItemId(R.id.navigation_settings);
+                                        navigation.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                navigation.getMenu().getItem(3).setChecked(true);
+                                            }
+                                        });
                                     }
 
                                     navigation.post(new Runnable() {
@@ -719,7 +749,7 @@ public final class RecentActivity extends FirebaseContent {
                                                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                                                     .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
                                                     .commit();
-                                            activity.shouldHandleNavigation = true;
+                                            activity.setShouldHandleNavigation(true);
                                         }
                                     });
 
@@ -825,117 +855,6 @@ public final class RecentActivity extends FirebaseContent {
 
         return false;
     }
-    public String getRelativeMessage(final String relativeUID) {
-        String subjectPart = "";
-        String verbPart = "";
-        String objectPart = "";
-        String extraObjectPart = "";
-
-        if (getSubject() != null && getObject() != null) {
-            switch (subjectType) {
-                case MEMBER:
-                case TEAM:
-                    if (subjectUID.equals(relativeUID)) {
-                        subjectPart = "You ";
-                    } else {
-                        subjectPart = ((FirebaseEntity)getSubject()).getName() + " ";
-                    }
-                    break;
-                default:
-                    subjectPart = "[subjectPart] ";
-            }
-
-            switch (objectType) {
-                case BRANDING_ELEMENT:
-                    String objectType = ((BrandingElement) getObject()).getType().toString() + ".";
-                    switch (verbType) {
-                        case ADD:
-                            setMessageText(subjectPart + "added a new item to " + objectType);
-                            break;
-                        case APPROVE:
-                            setMessageText(subjectPart + "approved the " + objectType);
-                            break;
-                        case UPDATE:
-                            setMessageText(subjectPart + "updated a " + objectType + " item.");
-                            break;
-                        case AWAIT:
-                            if (subjectUID.equals(relativeUID)) {
-                                setMessageText(subjectPart + "are awaiting approval of the " + objectType);
-                            } else {
-                                setMessageText(subjectPart + "is awaiting approval of the " + objectType);
-                            }
-                            break;
-                        case DISAPPROVE:
-                            setMessageText(subjectPart + "disapproved the current " + objectType);
-                            break;
-                        case REMOVE:
-                            setMessageText(subjectPart + "removed an item from the " + objectType);
-                            break;
-                        default:
-                            return "missing [objectType]";
-                    }
-                    break;
-                case MESSAGE:
-                    setMessageText(subjectPart + "said, \"" + ((Message) object).getText() + "\"");
-                    break;
-                case MEMBER:
-                    if (roleObject != null) {
-                        setMessageText(subjectPart + "updated " + objectPart + "'s role to " + roleObject.toString() + ".");
-                    } else if (statusObject != null) {
-                        switch(verbType) {
-                            case APPROVE:
-                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
-                                break;
-                            case INVITE:
-                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
-                                break;
-                            case BLOCK:
-                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
-                                break;
-                            default:
-                                return "missing [objectType]";
-                        }
-
-                    }
-                    break;
-                case TEAM:
-                    objectPart = ((FirebaseEntity)getObject()).getName();
-                    if (statusObject != null) {
-                        switch(verbType) {
-                            case APPROVE:
-                                setMessageText(subjectPart + "accepted " + objectPart + " into the team!");
-                                break;
-                            case INVITE:
-                                setMessageText(subjectPart + "invited " + objectPart + " to the team!");
-                                break;
-                            case BLOCK:
-                                setMessageText(subjectPart + "blocked " + objectPart + " from the team!");
-                                break;
-                        }
-                    } else {
-                        if (extraString != null) {
-                            switch(verbType) {
-                                case UPDATE_USERNAME:
-                                    setMessageText(subjectPart + "changed " + objectPart + "'s username to " + extraString);
-                                    break;
-                                case UPDATE_TEAM_NAME:
-                                    setMessageText(subjectPart + "changed " + objectPart + "'s name to " + extraString);
-                                    break;
-                            }
-                        }
-                    }
-
-                    break;
-                default:
-                    return " missing [objectPart]";
-            }
-
-            return getMessageText();
-        } else {
-            setMessageText(subjectPart + " " + verbPart + " " + objectPart + ".");
-            return getMessageText();
-        }
-    }
     public String setMessage() {
         String subjectPart = "";
         String verbPart = "";
@@ -965,6 +884,17 @@ public final class RecentActivity extends FirebaseContent {
                             case ADD:
                                 if (extraString != null && !extraString.equals("")) {
                                     setMessageText(subjectPart + "added " + extraString + " to " + teamName + objectType);
+                                } else {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "added a color to " + teamName + objectType);
+                                            break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "added a logo in " + teamName + objectType);
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                                 break;
                             case APPROVE:
@@ -973,6 +903,17 @@ public final class RecentActivity extends FirebaseContent {
                             case UPDATE:
                                 if (extraString != null && extraString2 != null && !extraString.equals("") && !extraString2.equals("")) {
                                     setMessageText(subjectPart + "changed " + extraString + " to " + extraString2 + " in " + teamName + objectType);
+                                } else {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "replaced a color to " + teamName + objectType);
+                                            break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "replaced a logo in " + teamName + objectType);
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                                 break;
                             case AWAIT:
@@ -983,7 +924,25 @@ public final class RecentActivity extends FirebaseContent {
                                 break;
                             case REMOVE:
                                 if (extraString != null && !extraString.equals("")) {
-                                    setMessageText(subjectPart + "removed " + extraString + " from " + teamName + objectType);
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "removed a brand style from " + teamName + objectType);
+                                            break;
+                                        default:
+                                            setMessageText(subjectPart + "removed " + extraString + " from " + teamName + objectType);
+                                            break;
+                                    }
+                                } else {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "removed a color from " + teamName + objectType);
+                                            break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "removed a logo from " + teamName + objectType);
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                                 break;
                             default:
@@ -992,7 +951,17 @@ public final class RecentActivity extends FirebaseContent {
                     } else {
                         switch (verbType) {
                             case ADD:
-                                setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
+                                switch(((BrandingElement)object).getType()) {
+                                    case BRAND_STYLE:
+                                        setMessageText(subjectPart + "added a color to the " + objectType);
+                                        break;
+                                    case LOGO:
+                                        setMessageText(subjectPart + "added a logo in the " + objectType);
+                                        break;
+                                    default:
+                                        setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
+                                        break;
+                                }
                                 break;
                             case APPROVE:
                                 setMessageText(subjectPart + "approved the " + objectType);
@@ -1000,6 +969,18 @@ public final class RecentActivity extends FirebaseContent {
                             case UPDATE:
                                 if (extraString != null && extraString2 != null && !extraString.equals("") && !extraString2.equals("")) {
                                     setMessageText(subjectPart + "changed " + extraString + " to " + extraString2 + " in the " + objectType);
+                                } else {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "updated a color in the " + objectType);
+                                            break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "updated a logo in the " + objectType);
+                                            break;
+                                        default:
+                                            setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
+                                            break;
+                                    }
                                 }
                                 break;
                             case AWAIT:
@@ -1009,7 +990,27 @@ public final class RecentActivity extends FirebaseContent {
                                 setMessageText(subjectPart + "disapproved the current " + objectType);
                                 break;
                             case REMOVE:
-                                setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
+                                if (extraString != null && !extraString.equals("")) {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "removed a brand style from " + objectType);
+                                            break;
+                                        default:
+                                            setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
+                                            break;
+                                    }
+                                } else {
+                                    switch(((BrandingElement)object).getType()) {
+                                        case BRAND_STYLE:
+                                            setMessageText(subjectPart + "removed a color from " + objectType);
+                                            break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "removed a logo from " + objectType);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
                                 break;
                             default:
                                 return "missing [objectType]";
@@ -1194,9 +1195,6 @@ public final class RecentActivity extends FirebaseContent {
     public ActivityObjectType getExtraObjectType() {
         return extraObjectType;
     }
-    public void setExtraObjectType(ActivityObjectType extraObjectType) {
-        this.extraObjectType = extraObjectType;
-    }
     public void addReceiverUID(final FirebaseObject object) {
         if (getReceiverUIDs().size() > 0) {
             for(String uid:getReceiverUIDs()) {
@@ -1235,47 +1233,6 @@ public final class RecentActivity extends FirebaseContent {
 
         getReceiverUIDs().add(toUID);
     }
-    private void setReceiverUIDs(FirebaseObject subject, FirebaseObject object, ActivityVerbType vType) {
-        if (subject instanceof FirebaseEntity) {
-            if (subject instanceof User) {
-                getReceiverUIDs().add(((User) subject).getTeamUID());
-                if (object instanceof FirebaseEntity) {
-                    if (object instanceof User) {
-                        getReceiverUIDs().add(((User) object).getTeamUID());
-                    } else if (object instanceof Team) {
-                        getReceiverUIDs().add(object.getUID());
-                    }
-                } else if (object instanceof FirebaseContent) {
-                    if (object instanceof BrandingElement) {
-                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
-                    }
-                }
-            } else if (subject instanceof Team){
-                getReceiverUIDs().add(object.getUID());
-                if (object instanceof FirebaseEntity) {
-                    if (object instanceof User) {
-                        getReceiverUIDs().add(((User) object).getTeamUID());
-                    } else if (object instanceof Team) {
-                        getReceiverUIDs().add(object.getUID());
-                    }
-                } else if (object instanceof FirebaseContent) {
-                    if (object instanceof BrandingElement) {
-                        getReceiverUIDs().add(((BrandingElement) object).getTeamUID());
-                    }
-                }
-            }
-        }
-
-        if (object instanceof FirebaseEntity) {
-            if (subject instanceof User) {
-
-            } else  if (subject instanceof Team){
-                getReceiverUIDs().add(subject.getUID());
-            }
-        } else if (object instanceof FirebaseContent) {
-
-        }
-    }
     public void addSeenUID(final User user) {
         if (getSeenUIDs().size() > 0) {
             for (final String seenUID : getSeenUIDs()) {
@@ -1296,7 +1253,7 @@ public final class RecentActivity extends FirebaseContent {
         if (object instanceof Message) {
             setObjectType(ActivityObjectType.MESSAGE);
         } else if (object instanceof BrandingElement) {
-            setObjectType(BRANDING_ELEMENT);
+            setObjectType(ActivityObjectType.BRANDING_ELEMENT);
         } else if (object instanceof User) {
             setObjectType(ActivityObjectType.MEMBER);
         } else if (object instanceof Team) {

@@ -21,7 +21,7 @@
         <android.support.v7.widget.AppCompatTextView
             android:text="@string/username_or_email_text"
             android:id="@+id/item_label_username_or_email"
-            android:paddingLeft="65dp"
+            android:paddingStart="65dp"
             android:paddingBottom="3dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -32,12 +32,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <android.support.v7.widget.AppCompatButton
-                android:text="a"
+                android:text="@string/a_text"
                 android:clickable="false"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:textColor="#fff"
-                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:layout_gravity="bottom"
                 android:background="@drawable/circle"
                 android:id="@+id/item_icon_letter_moniker"/>
@@ -48,7 +48,7 @@
                 android:gravity="center"
                 android:textColor="#252525"
                 android:text="@string/message_text"
-                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_gravity="bottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -8,7 +8,6 @@
     android:id="@+id/brand_name_content"
     android:background="@drawable/team_item_circle"
     android:layout_height="75dp">
-
     <android.support.v7.widget.AppCompatButton
         android:background="@drawable/circle"
         android:layout_gravity="center"
@@ -24,7 +23,6 @@
         android:layout_marginLeft="5dp"
         app:pressedTranslationZ="12dp"
         android:id="@+id/item_create_element"/>
-
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_weight="1"
         android:background="@drawable/team_item_circle"
@@ -55,6 +53,4 @@
                 android:hint="@string/domain_name_text"/>
         </android.support.design.widget.TextInputLayout>
     </android.support.v7.widget.LinearLayoutCompat>
-
-
 </android.support.v7.widget.LinearLayoutCompat>

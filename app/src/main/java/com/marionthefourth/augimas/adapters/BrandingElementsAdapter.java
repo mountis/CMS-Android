@@ -50,7 +50,6 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.elementItem = elements.get(position);
-        //holder.elementItem.getStatus().toDrawable(activity)
         switch(BrandingElement.ElementType.getType(position)) {
             case DOMAIN_NAME:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -76,7 +75,7 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
                 }
                 holder.mBrandingElementNameLabel.setText(holder.elementItem.getHeader());
                 break;
-            case STYLE_GUIDE:
+            case BRAND_STYLE:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_palette));
                 }
@@ -93,7 +92,6 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
                     holder.mBrandingElementStatus.setBackgroundDrawable(activity.getDrawable(R.drawable.icon_product_service));
                 }
                 holder.mBrandingElementNameLabel.setText("Products and Services");
-
                 break;
             case DEFAULT:
                 break;
@@ -152,16 +150,12 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
     public class ViewHolder extends RecyclerView.ViewHolder {
         final View mView;
         public BrandingElement elementItem;
-//        public final AppCompatButton mBrandingAddItemButton;
-//        public final AppCompatButton getmBrandingCloseItemsButton;
         final AppCompatTextView mBrandingElementNameLabel;
         public final AppCompatImageButton mBrandingElementStatus;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-//            mBrandingAddItemButton = (AppCompatButton) view.findViewById(R.id.item_button_add_item);
-//            getmBrandingCloseItemsButton = (AppCompatButton) view.findViewById(R.id.item_button_close_list);
             mBrandingElementStatus = (AppCompatImageButton) view.findViewById(R.id.item_branding_element_status);
             mBrandingElementNameLabel = (AppCompatTextView) view.findViewById(R.id.item_label_branding_element_name);
         }

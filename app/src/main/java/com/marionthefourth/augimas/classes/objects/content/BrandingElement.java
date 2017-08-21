@@ -30,7 +30,7 @@ public class BrandingElement extends FirebaseContent {
     private ArrayList<String> data = new ArrayList<>();
 //    Class Enums
     public enum ElementType {
-        DOMAIN_NAME,SOCIAL_MEDIA_NAME,MISSION_STATEMENT,TARGET_AUDIENCE,STYLE_GUIDE,LOGO,PRODUCTS_SERVICES,DEFAULT;
+        DOMAIN_NAME,SOCIAL_MEDIA_NAME,MISSION_STATEMENT,TARGET_AUDIENCE,BRAND_STYLE,LOGO,PRODUCTS_SERVICES,DEFAULT;
 
         @Override
         public String toString() {
@@ -40,7 +40,6 @@ public class BrandingElement extends FirebaseContent {
                 return elementName.substring(0,1) + elementName.substring(1).toLowerCase();
             } else {
                 final ArrayList<String> words = new ArrayList<>();
-
                 do {
                     if (words.size() != 0) {
                         elementName = elementName.substring(elementName.indexOf("_")+1);
@@ -54,7 +53,6 @@ public class BrandingElement extends FirebaseContent {
                     }
                 } while (elementName.contains("_"));
 
-
                 String finalElement = "";
                 for (int j = 0; j < words.size(); j++) {
                     finalElement += words.get(j).substring(0,1) + words.get(j).substring(1).toLowerCase();
@@ -63,11 +61,8 @@ public class BrandingElement extends FirebaseContent {
                         finalElement += " ";
                     }
                 }
-
                 return finalElement;
-
             }
-
         }
 
         public String toMapStyleString() {
@@ -81,7 +76,7 @@ public class BrandingElement extends FirebaseContent {
                     case SOCIAL_MEDIA_NAME: return Constants.Ints.BrandingElementTypes.IDs.SOCIAL_MEDIA_NAME;
                     case MISSION_STATEMENT: return Constants.Ints.BrandingElementTypes.IDs.MISSION_STATEMENT;
                     case TARGET_AUDIENCE: return Constants.Ints.BrandingElementTypes.IDs.TARGET_AUDIENCE;
-                    case STYLE_GUIDE: return Constants.Ints.BrandingElementTypes.IDs.STYLE_GUIDE;
+                    case BRAND_STYLE: return Constants.Ints.BrandingElementTypes.IDs.BRAND_STYLE;
                     case LOGO: return Constants.Ints.BrandingElementTypes.IDs.LOGO;
                     case PRODUCTS_SERVICES: return Constants.Ints.BrandingElementTypes.IDs.PRODUCTS_SERVICES;
                     default: return DEFAULT_ID;
@@ -92,7 +87,7 @@ public class BrandingElement extends FirebaseContent {
                     case SOCIAL_MEDIA_NAME: return Constants.Ints.BrandingElementTypes.Indices.SOCIAL_MEDIA_NAME;
                     case MISSION_STATEMENT: return Constants.Ints.BrandingElementTypes.Indices.MISSION_STATEMENT;
                     case TARGET_AUDIENCE: return Constants.Ints.BrandingElementTypes.Indices.TARGET_AUDIENCE;
-                    case STYLE_GUIDE: return Constants.Ints.BrandingElementTypes.Indices.STYLE_GUIDE;
+                    case BRAND_STYLE: return Constants.Ints.BrandingElementTypes.Indices.BRAND_STYLE;
                     case LOGO: return Constants.Ints.BrandingElementTypes.Indices.LOGO;
                     case PRODUCTS_SERVICES: return Constants.Ints.BrandingElementTypes.Indices.PRODUCTS_SERVICES;
                     default: return DEFAULT_ID;
@@ -123,9 +118,9 @@ public class BrandingElement extends FirebaseContent {
                 case Constants.Ints.BrandingElementTypes.Indices.TARGET_AUDIENCE:
                 case Constants.Ints.BrandingElementTypes.IDs.TARGET_AUDIENCE:
                     return TARGET_AUDIENCE;
-                case Constants.Ints.BrandingElementTypes.Indices.STYLE_GUIDE:
-                case Constants.Ints.BrandingElementTypes.IDs.STYLE_GUIDE:
-                    return STYLE_GUIDE;
+                case Constants.Ints.BrandingElementTypes.Indices.BRAND_STYLE:
+                case Constants.Ints.BrandingElementTypes.IDs.BRAND_STYLE:
+                    return BRAND_STYLE;
                 case Constants.Ints.BrandingElementTypes.Indices.LOGO:
                 case Constants.Ints.BrandingElementTypes.IDs.LOGO:
                     return LOGO;
@@ -356,7 +351,7 @@ public class BrandingElement extends FirebaseContent {
                 break;
             case TARGET_AUDIENCE:
                 break;
-            case STYLE_GUIDE:
+            case BRAND_STYLE:
                 break;
             case LOGO:
                 break;
@@ -427,10 +422,10 @@ public class BrandingElement extends FirebaseContent {
                     currentIndex++;
                 }
                 break;
-            case STYLE_GUIDE:
-                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex)) {
-                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex)) {
-                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.STYLE_GUIDE + currentIndex).getValue();
+            case BRAND_STYLE:
+                while (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.BRAND_STYLE + currentIndex)) {
+                    if (brandingElementSnapshot.hasChild(Constants.Strings.BrandingTypes.BRAND_STYLE + currentIndex)) {
+                        final Object contentObject = brandingElementSnapshot.child(Constants.Strings.BrandingTypes.BRAND_STYLE + currentIndex).getValue();
                         if ((contentObject != null ? contentObject.toString(): null) != null) {
                             if (!regularData) {
                                 getData().add(contentObject.toString());
@@ -525,19 +520,23 @@ public class BrandingElement extends FirebaseContent {
                         result.put(Constants.Strings.BrandingTypes.MISSION_STATEMENT+currentIndex,contents.get(currentIndex));
                         break;
                     case TARGET_AUDIENCE:
+                        result.put(Constants.Strings.BrandingTypes.TARGET_AUDIENCE+currentIndex,contents.get(currentIndex));
                         break;
-                    case STYLE_GUIDE:
+                    case BRAND_STYLE:
+                        result.put(Constants.Strings.BrandingTypes.BRAND_STYLE +currentIndex,contents.get(currentIndex));
                         break;
                     case LOGO:
+                        result.put(Constants.Strings.BrandingTypes.LOGO+currentIndex,contents.get(currentIndex));
                         break;
                     case PRODUCTS_SERVICES:
+                        result.put(Constants.Strings.BrandingTypes.PRODUCTS_SERVICES+currentIndex,contents.get(currentIndex));
                         break;
-                    case DEFAULT:
+                    default:
                         break;
                 }
                 currentIndex++;
 
-                if (currentIndex == contents.size()) {
+                if (currentIndex == getContents().size()) {
                     return;
                 }
             }
@@ -554,14 +553,18 @@ public class BrandingElement extends FirebaseContent {
                         result.put(Constants.Strings.BrandingTypes.MISSION_STATEMENT+currentIndex,data.get(currentIndex));
                         break;
                     case TARGET_AUDIENCE:
+                        result.put(Constants.Strings.BrandingTypes.TARGET_AUDIENCE+currentIndex,data.get(currentIndex));
                         break;
-                    case STYLE_GUIDE:
+                    case BRAND_STYLE:
+                        result.put(Constants.Strings.BrandingTypes.BRAND_STYLE +currentIndex,data.get(currentIndex));
                         break;
                     case LOGO:
+                        result.put(Constants.Strings.BrandingTypes.LOGO+currentIndex,data.get(currentIndex));
                         break;
                     case PRODUCTS_SERVICES:
+                        result.put(Constants.Strings.BrandingTypes.PRODUCTS_SERVICES+currentIndex,data.get(currentIndex));
                         break;
-                    case DEFAULT:
+                    default:
                         break;
                 }
                 currentIndex++;
