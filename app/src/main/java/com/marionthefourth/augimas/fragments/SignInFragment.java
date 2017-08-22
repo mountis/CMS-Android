@@ -107,6 +107,7 @@ public final class SignInFragment extends Fragment {
                     loadingProgress.dismiss();
                 }
             });
+            loadingProgress.dismiss();
         }
     }
     private void setupTextInputsWithFocusAndTextChangedListeners(final ArrayList<TextInputLayout> layouts, final ArrayList<TextInputEditText> inputs) {

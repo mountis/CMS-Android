@@ -12,14 +12,13 @@
         android:background="@drawable/their_circle"
         android:layout_height="wrap_content">
         <android.support.v7.widget.AppCompatTextView
-            android:paddingStart="-5dp"
             android:padding="8dp"
             android:enabled="false"
             android:textSize="15sp"
             android:gravity="start"
             android:textColor="#fff"
             android:text="@string/team_member_name"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="10dp"
             android:layout_gravity="bottom"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
