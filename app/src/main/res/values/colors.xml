@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorAccent">#01579b</color>
+    <color name="backgroundMain">#fff</color>
+    <color name="yourMessageBubbleBackgroundColor">#2195f2</color>
+    <color name="yourMessageTextColor">#fff</color>
+</resources>

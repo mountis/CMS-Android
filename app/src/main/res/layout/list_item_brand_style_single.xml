@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_margin="10dp"
+    android:id="@+id/brand_style_content"
+    android:background="@drawable/team_item_circle"
+    android:layout_height="75dp">
+    <android.support.v7.widget.AppCompatButton
+        android:background="@drawable/circle"
+        android:layout_gravity="center"
+        android:text="@string/plus_sign"
+        android:textSize="40sp"
+        android:textColor="#ec3f26"
+        app:backgroundTint="#fff"
+        android:gravity="center"
+        android:layout_weight="4.3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:layout_marginStart="5dp"
+        app:pressedTranslationZ="12dp"
+        android:id="@+id/item_create_element"/>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_weight="1"
+        android:background="@drawable/team_item_circle"
+        android:id="@+id/input_layout_brand_style"
+        android:backgroundTint="#fff"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="10dp"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:layout_weight="1"
+            android:id="@+id/brand_style_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layoutManager="LinearLayoutManager"
+            tools:context="com.marionthefourth.augimas.fragments.BrandingElementFragment"
+            tools:listitem="@layout/list_item_color_single" />
+    </android.support.v7.widget.LinearLayoutCompat>
+</android.support.v7.widget.LinearLayoutCompat>

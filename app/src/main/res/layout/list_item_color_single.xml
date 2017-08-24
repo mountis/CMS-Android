@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_gravity="left"
+    android:layout_marginTop="3.22dp"
+    android:layout_marginLeft="10dp"
+    android:id="@+id/color_item_content"
+    android:layout_width="50dp"
+    android:layout_height="50dp">
+    <android.support.v7.widget.AppCompatButton
+        android:layout_weight="1"
+        android:textColor="#fff"
+        android:background="#424242"
+        android:text="@string/question_mark"
+        android:id="@+id/button_color"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</android.support.v7.widget.LinearLayoutCompat>
