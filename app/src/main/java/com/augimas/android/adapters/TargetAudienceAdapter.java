@@ -16,9 +16,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.objects.FirebaseEntity;
@@ -26,12 +23,13 @@ import com.augimas.android.classes.objects.content.BrandingElement;
 import com.augimas.android.classes.objects.content.RecentActivity;
 import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
-import com.augimas.android.helpers.FragmentHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 import static com.augimas.android.backend.Backend.getCurrentUser;
-import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 
 /**
  * Created on 8/18/17.
@@ -214,29 +212,17 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         }
     }
     private void handleInput(final TargetAudienceAdapter.ViewHolder holder, final int position) {
-        if (BrandingElement.checkInput(holder.mOccupationEditText.getText().toString().trim(), brandingName.getType())) {
-            if (position == brandingName.getData().size()) {
-                brandingName.getData().add(holder.mOccupationEditText.getText().toString().trim());
-                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mOccupationEditText.getText().toString().trim(), null);
-            } else if (position < brandingName.getData().size()){
-                if (!holder.getText().equals(brandingName.getData().get(position))) {
-                    final String previousName = brandingName.getData().get(position).trim();
-                    brandingName.getData().set(position,holder.getText());
-                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, holder.getText());
-                }
-            }
-            holder.editing = false;
-            holder.creating = false;
-        } else {
-            // Improper Input
-            switch (brandingName.getType()) {
-                case DOMAIN_NAME:
-                    FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
-                    break;
-                default:
-                    break;
+        if (position == brandingName.getData().size()) {
+            brandingName.getData().add(holder.getText());
+            sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,"", null);
+        } else if (position < brandingName.getData().size()){
+            if (!holder.getText().equals(brandingName.getData().get(position))) {
+                brandingName.getData().set(position,holder.getText());
+                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,"", "");
             }
         }
+        holder.editing = false;
+        holder.creating = false;
     }
     private void addOnClickListener(final BrandingElement brandingName, final TargetAudienceAdapter.ViewHolder holder, final int POSITION) {
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
@@ -267,11 +253,10 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                             if (holder.inputsFilled()) {
                                 if (POSITION == brandingName.getData().size()) {
                                     brandingName.getData().remove(holder.getText());
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE, holder.getText(), null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,"", null);
                                 } else {
-                                    final String previousName = brandingName.getData().get(POSITION);
                                     brandingName.getData().remove(POSITION);
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,previousName, null);
+                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,"", null);
                                 }
                             }
                         }

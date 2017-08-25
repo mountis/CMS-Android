@@ -56,9 +56,17 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                         final ActionBar actionBar = activity.getSupportActionBar();
                         if (actionBar != null) {
                             if (teamItem.getName().endsWith("s")) {
-                                actionBar.setTitle(teamItem.getName() +"' " + element.getType().toString() + "s");
+                                if (element.getType().toString().endsWith("s")) {
+                                    actionBar.setTitle(teamItem.getName() +"' " + element.getType().toString());
+                                } else {
+                                    actionBar.setTitle(teamItem.getName() +"' " + element.getType().toString() + "s");
+                                }
                             } else {
-                                actionBar.setTitle(teamItem.getName() +"'s " + element.getType().toString() + "s");
+                                if (element.getType().toString().endsWith("s")) {
+                                    actionBar.setTitle(teamItem.getName() +"'s " + element.getType().toString());
+                                } else {
+                                    actionBar.setTitle(teamItem.getName() +"'s " + element.getType().toString() + "s");
+                                }
                             }
                         }
                     }

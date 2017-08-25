@@ -893,6 +893,9 @@ public final class RecentActivity extends FirebaseContent {
                                         case LOGO:
                                             setMessageText(subjectPart + "added a logo in " + teamName + objectType);
                                             break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "added a target audience in " + teamName + objectType);
+                                            break;
                                         default:
                                             break;
                                     }
@@ -912,6 +915,9 @@ public final class RecentActivity extends FirebaseContent {
                                         case LOGO:
                                             setMessageText(subjectPart + "replaced a logo in " + teamName + objectType);
                                             break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "replaced a target audience in " + teamName + objectType);
+                                            break;
                                         default:
                                             break;
                                     }
@@ -928,6 +934,9 @@ public final class RecentActivity extends FirebaseContent {
                                     switch(((BrandingElement)object).getType()) {
                                         case BRAND_STYLE:
                                             setMessageText(subjectPart + "removed a brand style from " + teamName + objectType);
+                                            break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "removed a target audience from " + teamName + objectType);
                                             break;
                                         default:
                                             setMessageText(subjectPart + "removed " + extraString + " from " + teamName + objectType);
@@ -959,6 +968,9 @@ public final class RecentActivity extends FirebaseContent {
                                     case LOGO:
                                         setMessageText(subjectPart + "added a logo in the " + objectType);
                                         break;
+                                    case TARGET_AUDIENCE:
+                                        setMessageText(subjectPart + "added a target audience in the " + objectType);
+                                        break;
                                     default:
                                         setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
                                         break;
@@ -978,6 +990,9 @@ public final class RecentActivity extends FirebaseContent {
                                         case LOGO:
                                             setMessageText(subjectPart + "updated a logo in the " + objectType);
                                             break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "updated a target audience in the " + objectType);
+                                            break;
                                         default:
                                             setMessageText(subjectPart + "added " + extraString + " to the " + objectType);
                                             break;
@@ -996,6 +1011,9 @@ public final class RecentActivity extends FirebaseContent {
                                         case BRAND_STYLE:
                                             setMessageText(subjectPart + "removed a brand style from " + objectType);
                                             break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "removed a target audience from " + objectType);
+                                            break;
                                         default:
                                             setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
                                             break;
@@ -1004,6 +1022,9 @@ public final class RecentActivity extends FirebaseContent {
                                     switch(((BrandingElement)object).getType()) {
                                         case BRAND_STYLE:
                                             setMessageText(subjectPart + "removed a color from " + objectType);
+                                            break;
+                                        case TARGET_AUDIENCE:
+                                            setMessageText(subjectPart + "removed a target audience from " + objectType);
                                             break;
                                         case LOGO:
                                             setMessageText(subjectPart + "removed a logo from " + objectType);
