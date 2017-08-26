@@ -17,6 +17,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -78,6 +79,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         final int POSITION = holder.getAdapterPosition();
         setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
+        holder.hideButtons();
         addTextChangedListener(holder);
         addOnEditorActionListener(holder,POSITION);
         addOnClickListener(brandingName,holder,POSITION);
@@ -95,11 +97,23 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     } else {
                         holder.turnButtonToDelete();
                     }
+//                    holder.mNameEditText.setText(getTenCharPerLineString(s.toString()));
                 }
             }
             @Override
             public void afterTextChanged(Editable s) {}
         });
+    }
+    public String getTenCharPerLineString(String text){
+        String tenCharPerLineString = "";
+        while (text.length() > 10) {
+
+            String buffer = text.substring(0, 10);
+            tenCharPerLineString = tenCharPerLineString + buffer + "/n";
+            text = text.substring(10);
+        }
+        tenCharPerLineString = tenCharPerLineString + text.substring(0);
+        return tenCharPerLineString;
     }
     private void setupView(final ViewHolder holder, final int POSITION) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
@@ -124,13 +138,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mNameEditText.setText(brandingName.getData().get(POSITION));
-                                holder.mCreateButton.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        holder.hideButton();
-                                    }
-                                });
+                                holder.mNameEditText.setText(getTenCharPerLineString(brandingName.getData().get(POSITION)));
                                 holder.editing = false;
                                 holder.mNameEditText.setEnabled(false);
                                 holder.mNameEditText.setClickable(false);
@@ -152,11 +160,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         }
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);
+                            holder.revealCreateButton();
                         } else {
                             holder.editing = false;
                             holder.revealInputAndTurnButtonToDelete(false);
                             holder.mNameEditText.setText(brandingName.getData().get(POSITION));
                         }
+
                     }
                 }
                 @Override
@@ -165,7 +175,14 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
     }
     private void handleInput(final ViewHolder holder, final int position) {
-        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString().trim(), brandingName.getType())) {
+        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString().trim(), brandingName)) {
+            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
+                for(String domain:brandingName.getData()) {
+                    if (holder.mNameEditText.getText().toString().trim().equals(domain)) {
+                        return;
+                    }
+                }
+            }
             if (position == brandingName.getData().size()) {
                 brandingName.getData().add(holder.mNameEditText.getText().toString().trim());
                 sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mNameEditText.getText().toString().trim(), null);
@@ -205,39 +222,42 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.inputHidden) {
-                    holder.hideButton();
-                    holder.revealInputAndTurnButtonToDelete(true);
-                    holder.revealButton();
-                    holder.creating = true;
-                    holder.mCreateButton.startAnimation(rotate_forward);
-                } else {
-                    if (holder.creating) {
-                        if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,POSITION);
+                holder.hideCreateButton();
+                holder.revealInputAndTurnButtonToDelete(true);
+                holder.creating = true;
+            }
+        });
+        holder.mModifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (holder.buttonRotated) {
+                    holder.editing = false;
+                    holder.creating = false;
+//                            holder.hideView();
+                    if (!holder.mNameEditText.getText().toString().equals("")) {
+                        final String previousName;
+                        if (POSITION == brandingName.getData().size()) {
+                            previousName = holder.mNameEditText.getText().toString();
                         } else {
-                            holder.creating = false;
-                            holder.turnButtonToCreate();
-                            holder.hideButton();
-                            holder.hideInput(true);
-                            holder.revealButton();
+                            previousName = brandingName.getData().get(POSITION);
                         }
+                        new ConfirmActionDialog(previousName,previousName,null, brandingName,activity);
                     } else {
-                        if (holder.buttonRotated) {
-                            holder.editing = false;
-                            holder.creating = false;
-                            holder.hideView();
-                            if (!holder.mNameEditText.getText().toString().equals("")) {
-                                if (POSITION == brandingName.getData().size()) {
-                                    brandingName.getData().remove(holder.mNameEditText.getText().toString());
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
-                                } else {
-                                    final String previousName = brandingName.getData().get(POSITION);
-                                    brandingName.getData().remove(POSITION);
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,previousName, null);
-                                }
-                            }
-                        }
+                        holder.hideModifyButton();
+                        holder.revealCreateButton();
+                        holder.turnButtonToCreate();
+                        holder.hideInput(true);
+                    }
+                } else {
+                    if (!holder.mNameEditText.getText().toString().equals("")) {
+                        handleInput(holder,POSITION);
+                    } else {
+                        holder.creating = false;
+                        holder.hideModifyButton();
+                        holder.revealCreateButton();
+                        holder.turnButtonToCreate();
+                        holder.hideInput(true);
+//                        holder.revealCreateButton();
                     }
                 }
             }
@@ -257,12 +277,14 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         }
                     } else {
                         if (!holder.mNameEditText.getText().toString().equals("")) {
-                            handleInput(holder,POSITION);
+                            if (holder.editing) {
+//                                handleInput(holder,POSITION);
+                            }
                         } else {
                             if (brandingName.getData().size() >= POSITION+1) {
                                 holder.hideView();
-                                brandingName.getData().remove(POSITION);
-                                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE, holder.mNameEditText.getText().toString(), null);
+                                String previousText = brandingName.getData().get(POSITION);
+                                new ConfirmActionDialog(previousText,previousText,null, brandingName,activity);
                             }
                         }
                     }
@@ -335,45 +357,76 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         boolean creating = false;
         boolean inputHidden = true;
         boolean buttonRotated = false;
-        AppCompatButton mCreateButton;
-        AppCompatEditText mNameEditText;
-        public LinearLayoutCompat layout;
-        public LinearLayoutCompat content;
+        final AppCompatButton mCreateButton;
+        final AppCompatButton mModifyButton;
+        final AppCompatEditText mNameEditText;
+        public final LinearLayoutCompat layout;
+        public final LinearLayoutCompat content;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mNameEditText   = (AppCompatEditText) view.findViewById(R.id.input_brand_name);
-            mCreateButton   = (AppCompatButton) view.findViewById(R.id.item_create_element);
-            content         = (LinearLayoutCompat) view.findViewById(R.id.brand_name_content);
-            layout          = (LinearLayoutCompat) view.findViewById(R.id.input_layout_brand_name);
+            mNameEditText   = view.findViewById(R.id.input_brand_name);
+            content         = view.findViewById(R.id.brand_name_content);
+            mCreateButton   = view.findViewById(R.id.item_create_element);
+            mModifyButton   = view.findViewById(R.id.item_modify_element);
+            layout          = view.findViewById(R.id.input_layout_brand_name);
         }
 
         void hideView() {
-            hideButton();
+            hideButtons();
             mView.startAnimation(close);
-
         }
-        void hideButton() {
+
+        void hideButtons(){
+            hideCreateButton();
+            hideModifyButton();
+        }
+        void hideModifyButton(){
+            mModifyButton.setEnabled(false);
+            mModifyButton.setClickable(false);
+            mModifyButton.startAnimation(close);
+            mModifyButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mModifyButton.setVisibility(View.GONE);
+                }
+            });
+        }
+        void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
+            mCreateButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mCreateButton.setVisibility(View.GONE);
+                }
+            });
         }
-        void revealButton() {
+        void revealModifyButton(){
+            mModifyButton.setEnabled(true);
+            mModifyButton.setClickable(true);
+            mModifyButton.setVisibility(View.VISIBLE);
+            mModifyButton.startAnimation(open);
+
+        }
+        void revealCreateButton() {
             mCreateButton.setEnabled(true);
             mCreateButton.setClickable(true);
+            mCreateButton.setVisibility(View.VISIBLE);
             mCreateButton.startAnimation(open);
         }
         void turnButtonToDelete() {
             if (!buttonRotated) {
                 buttonRotated = true;
-                mCreateButton.startAnimation(rotate_forward);
+                mModifyButton.startAnimation(rotate_forward);
             }
         }
         void turnButtonToCreate() {
             if (buttonRotated) {
                 buttonRotated = false;
-                mCreateButton.startAnimation(rotate_back);
+                mModifyButton.startAnimation(rotate_back);
             }
         }
         void hideInput(boolean manual) {
@@ -400,6 +453,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
         void revealInputAndTurnButtonToDelete(final boolean manual) {
             revealInput(manual);
+            revealModifyButton();
             turnButtonToDelete();
         }
         @Override

@@ -8,7 +8,10 @@ import static com.augimas.android.classes.constants.Constants.Ints.DEFAULT_ID;
 
 public final class Branding {
     public enum TLD {
-        COM,NET,ME,ORG,US,INFO,LA,ASIA,BIZ,TV,UK,WS,NU,NYC,OKINAWA,ONL,NETWORK,NINJA,DEFAULT;
+        COM,NET,ME,ORG,US,INFO,LA,ASIA,BIZ,TV,UK,WS,NU,NYC,
+        OKINAWA,ONL,NETWORK,NINJA,MIL,INT,EDU,GOV,ARPA,
+        ACADEMY,ACCOUNTANT,ADULT,AERO,AGENCY,APARTMENTS,APP,ARCHI,ARMY,AIRFORCE,
+        ART,ASSOCIATES,ATTORNEY,AUDIO,AUTO,BAR,BEST,JOBS,DEFAULT;
         @Override
         public String toString() {
             return "." + super.toString().toLowerCase();

@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -64,6 +65,8 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
         final int POSITION = holder.getAdapterPosition();
         setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
+        holder.hideButtons();
+
         addOnClickListener(brandingName,holder,POSITION);
     }
     private void setupView(final LogoAdapter.ViewHolder holder, final int POSITION) {
@@ -81,12 +84,12 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mCreateButton.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        holder.hideButton();
-                                    }
-                                });
+//                                holder.mCreateButton.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        holder.hideButton();
+//                                    }
+//                                });
                                 holder.editing = false;
                                 holder.revealInputAndTurnButtonToDelete(false);
                             }
@@ -98,13 +101,13 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
                         }
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);
+                            holder.revealCreateButton();
                         } else {
                             holder.editing = false;
                             holder.imageView.setImageBitmap(DeviceHelper.decodeBase64(brandingName.getData().get(POSITION)));
-                            holder.turnButtonToDelete();
                             holder.revealImageView();
                             holder.inputHidden = false;
-//                            holder.revealInputAndTurnButtonToDelete(false);
+                            holder.revealInputAndTurnButtonToDelete(false);
                         }
                     }
                 }
@@ -117,27 +120,17 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.inputHidden) {
-                    holder.hideButton();
-                    holder.revealInputAndTurnButtonToDelete(true);
-                    holder.revealButton();
-                    holder.creating = true;
-                    holder.mCreateButton.startAnimation(rotate_forward);
-                } else {
-                    if (holder.buttonRotated) {
-                        holder.editing = false;
-                        holder.creating = false;
-                        holder.hideButton();
-                        holder.turnButtonToCreate();
-                        holder.hideInput(true);
-                        holder.revealButton();
-                        if (POSITION < brandingName.getData().size()) {
-                            holder.hideView();
-                            brandingName.getData().remove(POSITION);
-                            Backend.update(brandingName,activity);
-                            sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE);
-                        }
-                    }
+                holder.hideCreateButton();
+                holder.revealInputAndTurnButtonToDelete(true);
+                holder.creating = true;
+            }
+        });
+        holder.mModifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (POSITION < brandingName.getData().size()) {
+                    String previousData = brandingName.getData().get(POSITION);
+                    new ConfirmActionDialog(previousData,previousData,"",brandingName,activity);
                 }
             }
         });
@@ -224,46 +217,77 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
         boolean creating = false;
         boolean inputHidden = true;
         boolean buttonRotated = false;
-        AppCompatButton mCreateButton;
-        public AppCompatImageView imageView;
-        public AppCompatImageButton uploadButton;
+        final AppCompatButton mCreateButton;
+        final AppCompatButton mModifyButton;
+        public final AppCompatImageView imageView;
+        public final AppCompatImageButton uploadButton;
 
         public LinearLayoutCompat content;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            uploadButton = (AppCompatImageButton) view.findViewById(R.id.upload_image_button);
-            mCreateButton   = (AppCompatButton) view.findViewById(R.id.item_create_element);
-            content         = (LinearLayoutCompat) view.findViewById(R.id.brand_name_content);
-            imageView          = (AppCompatImageView) view.findViewById(R.id.uploaded_image_view);
+            uploadButton    = view.findViewById(R.id.upload_image_button);
+            mCreateButton   = view.findViewById(R.id.item_create_element);
+            mModifyButton   = view.findViewById(R.id.item_modify_element);
+            content         = view.findViewById(R.id.brand_name_content);
+            imageView       = view.findViewById(R.id.uploaded_image_view);
         }
 
         void hideView() {
-            hideButton();
+            hideButtons();
             mView.startAnimation(close);
 
         }
-        void hideButton() {
+        void hideButtons(){
+            hideCreateButton();
+            hideModifyButton();
+        }
+        void hideModifyButton(){
+            mModifyButton.setEnabled(false);
+            mModifyButton.setClickable(false);
+            mModifyButton.startAnimation(close);
+            mModifyButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mModifyButton.setVisibility(View.GONE);
+                }
+            });
+        }
+        void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
+            mCreateButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mCreateButton.setVisibility(View.GONE);
+                }
+            });
         }
-        void revealButton() {
+        void revealModifyButton(){
+            mModifyButton.setEnabled(true);
+            mModifyButton.setClickable(true);
+            mModifyButton.setVisibility(View.VISIBLE);
+            mModifyButton.startAnimation(open);
+
+        }
+        void revealCreateButton() {
             mCreateButton.setEnabled(true);
             mCreateButton.setClickable(true);
+            mCreateButton.setVisibility(View.VISIBLE);
             mCreateButton.startAnimation(open);
         }
         void turnButtonToDelete() {
             if (!buttonRotated) {
                 buttonRotated = true;
-                mCreateButton.startAnimation(rotate_forward);
+                mModifyButton.startAnimation(rotate_forward);
             }
         }
         void turnButtonToCreate() {
             if (buttonRotated) {
                 buttonRotated = false;
-                mCreateButton.startAnimation(rotate_back);
+                mModifyButton.startAnimation(rotate_back);
             }
         }
         void hideImageView() {
@@ -296,6 +320,7 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
         }
         void revealInputAndTurnButtonToDelete(final boolean manual) {
             revealInput(manual);
+            revealModifyButton();
             turnButtonToDelete();
         }
         @Override

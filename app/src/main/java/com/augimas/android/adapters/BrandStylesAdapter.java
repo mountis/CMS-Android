@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -55,6 +56,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
     public void onBindViewHolder(final BrandStylesAdapter.ViewHolder holder, int position) {
         final int POSITION = holder.getAdapterPosition();
         setupView(holder,POSITION);
+        holder.hideButtons();
         holder.mView.startAnimation(bounceFasterAnimation);
         addOnClickListener(brandingName,holder,POSITION);
     }
@@ -74,12 +76,12 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                                 holder.hideView();
                             } else {
                                 holder.mColorsRecyclerView.setAdapter(new ColorsAdapter(brandingName,containingView,activity,POSITION));
-                                holder.mCreateButton.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        holder.hideButton();
-                                    }
-                                });
+//                                holder.mCreateButton.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        holder.hideButton();
+//                                    }
+//                                });
                                 holder.editing = false;
                                 holder.revealInputAndTurnButtonToDelete(false);
                             }
@@ -89,6 +91,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
 
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);
+                            holder.revealCreateButton();
                             holder.mColorsRecyclerView.setAdapter(new ColorsAdapter(brandingName,containingView,activity,POSITION));
                         } else {
                             holder.editing = false;
@@ -106,40 +109,42 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.inputHidden) {
-                    holder.hideButton();
-                    holder.revealInputAndTurnButtonToDelete(true);
-                    holder.revealButton();
-                    holder.creating = true;
-                    holder.mCreateButton.startAnimation(rotate_forward);
-                } else {
-                    if (holder.creating) {
-                        holder.creating = false;
-                        holder.turnButtonToCreate();
-                        holder.hideButton();
-                        holder.hideInput(true);
-                        holder.revealButton();
-                    }
+                holder.revealInputAndTurnButtonToDelete(true);
+                holder.hideCreateButton();
+                holder.creating = true;
+            }
+        });
+        holder.mModifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-                    Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(brandingName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                final BrandingElement element = new BrandingElement(dataSnapshot);
-                                if (element.getData().size() != 0) {
-                                    if (POSITION <= element.getData().size()-1) {
-                                        element.getData().remove(POSITION);
-                                        Backend.update(element,activity);
-                                        sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.REMOVE,"style","");
-                                    }
+                holder.creating = false;
+//                holder.hideInput(true);
+
+                Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(brandingName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            final BrandingElement element = new BrandingElement(dataSnapshot);
+                            if (element.getData().size() != 0) {
+                                if (POSITION <= element.getData().size()-1) {
+                                    String previousText = element.getData().get(POSITION);
+//                                        element.getData().remove(POSITION);
+//                                        Backend.update(element,activity);
+                                    new ConfirmActionDialog(previousText,"style","", element,activity);
+//                                        sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.REMOVE,"style","");
+                                } else {
+                                    holder.hideInput(true);
+                                    holder.hideModifyButton();
+                                    holder.revealCreateButton();
                                 }
                             }
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                });
             }
         });
     }
@@ -207,6 +212,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
         boolean inputHidden = true;
         boolean buttonRotated = false;
         final AppCompatButton mCreateButton;
+        final AppCompatButton mModifyButton;
         final RecyclerView mColorsRecyclerView;
         public final LinearLayoutCompat layout;
         public final LinearLayoutCompat content;
@@ -214,37 +220,68 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mColorsRecyclerView     = (RecyclerView) view.findViewById(R.id.brand_style_recycler_view);
-            mCreateButton           = (AppCompatButton) view.findViewById(R.id.item_create_element);
-            content                 = (LinearLayoutCompat) view.findViewById(R.id.brand_style_content);
-            layout                  = (LinearLayoutCompat) view.findViewById(R.id.input_layout_brand_style);
+            mColorsRecyclerView     = view.findViewById(R.id.brand_style_recycler_view);
+            mCreateButton           = view.findViewById(R.id.item_create_element);
+            mModifyButton           = view.findViewById(R.id.item_modify_element);
+            content                 = view.findViewById(R.id.brand_style_content);
+            layout                  = view.findViewById(R.id.input_layout_brand_style);
         }
 
         void hideView() {
-            hideButton();
+            hideButtons();
             mView.startAnimation(close);
 
         }
-        void hideButton() {
+        void hideButtons() {
+            hideCreateButton();
+            hideModifyButton();
+        }
+
+        void hideModifyButton(){
+            mModifyButton.setEnabled(false);
+            mModifyButton.setClickable(false);
+            mModifyButton.startAnimation(close);
+            mModifyButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mModifyButton.setVisibility(View.GONE);
+                }
+            });
+        }
+        void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
+            mCreateButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mCreateButton.setVisibility(View.GONE);
+                }
+            });
         }
-        void revealButton() {
+        void revealModifyButton(){
+            mModifyButton.setEnabled(true);
+            mModifyButton.setClickable(true);
+            mModifyButton.setVisibility(View.VISIBLE);
+            mModifyButton.startAnimation(open);
+
+        }
+        void revealCreateButton() {
             mCreateButton.setEnabled(true);
             mCreateButton.setClickable(true);
+            mCreateButton.setVisibility(View.VISIBLE);
             mCreateButton.startAnimation(open);
         }
         void turnButtonToDelete() {
             if (!buttonRotated) {
                 buttonRotated = true;
-                mCreateButton.startAnimation(rotate_forward);
+                mModifyButton.startAnimation(rotate_forward);
             }
         }
         void turnButtonToCreate() {
             if (buttonRotated) {
                 buttonRotated = false;
-                mCreateButton.startAnimation(rotate_back);
+                mModifyButton.startAnimation(rotate_back);
             }
         }
         void hideInput(boolean manual) {
@@ -271,6 +308,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
         }
         void revealInputAndTurnButtonToDelete(final boolean manual) {
             revealInput(manual);
+            revealModifyButton();
             turnButtonToDelete();
         }
         @Override

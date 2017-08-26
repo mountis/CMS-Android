@@ -156,8 +156,8 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mBrandingElementStatus = (AppCompatImageButton) view.findViewById(R.id.item_branding_element_status);
-            mBrandingElementNameLabel = (AppCompatTextView) view.findViewById(R.id.item_label_branding_element_name);
+            mBrandingElementStatus = view.findViewById(R.id.item_branding_element_status);
+            mBrandingElementNameLabel = view.findViewById(R.id.item_label_branding_element_name);
         }
 
         @Override

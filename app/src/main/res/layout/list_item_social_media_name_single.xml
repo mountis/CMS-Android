@@ -8,22 +8,36 @@
     android:id="@+id/brand_name_content"
     android:background="@drawable/team_item_circle"
     android:layout_height="75dp">
-
+    <android.support.v7.widget.AppCompatButton
+        android:background="@drawable/circle"
+        android:layout_gravity="center"
+        android:text="+"
+        android:textSize="40dp"
+        android:textColor="#ec3f26"
+        app:backgroundTint="#fff"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:visibility="gone"
+        android:layout_marginLeft="5dp"
+        app:pressedTranslationZ="12dp"
+        android:id="@+id/item_create_element"/>
     <android.support.v7.widget.AppCompatButton
         android:background="@drawable/circle"
         android:layout_gravity="center"
         android:text="@string/plus_sign"
         android:textSize="40sp"
         android:textColor="#ec3f26"
+        android:visibility="gone"
         app:backgroundTint="#fff"
         android:gravity="center"
-        android:layout_weight="4.3"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_margin="10dp"
         android:layout_marginStart="5dp"
         app:pressedTranslationZ="12dp"
-        android:id="@+id/item_create_element"/>
+        android:id="@+id/item_modify_element"/>
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_weight="1"
         android:background="@drawable/team_item_circle"

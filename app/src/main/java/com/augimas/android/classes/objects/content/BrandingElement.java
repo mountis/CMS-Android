@@ -465,18 +465,27 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
-    public static boolean checkInput(String input, ElementType type) {
-        switch (type){
+    public static boolean checkInput(String input, BrandingElement element) {
+        switch (element.getType()){
             case DOMAIN_NAME:
-                for (Branding.TLD tld:Branding.TLD.getAllTLDs()) {
-                    if (input.endsWith(tld.toString())) return true;
+                for (String dat:element.getData()) {
+                    if (dat.equals(input)) {
+                        return false;
+                    }
                 }
-                break;
+                return input.matches("^(?:[-A-Za-z0-9]+\\.)+[A-Za-z]{2,6}$");
+//                if (input.matches("^(?:[-A-Za-z0-9]+\\.)+[A-Za-z]{2,6}$")) {
+//                    return true;
+//                }
+//                for (Branding.TLD tld:Branding.TLD.getAllTLDs()) {
+//                    if (input.endsWith(tld.toString())) return true;
+//                }
+//                break;
             default:
                 return true;
         }
 
-        return false;
+//        return false;
     }
     @Override
     public Map<String, String> toMap() {

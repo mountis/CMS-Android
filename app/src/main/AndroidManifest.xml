@@ -44,7 +44,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.SignInActivity"/>
         </activity>
-        <activity android:name=".activities.HomeActivity" />
+        <activity android:name=".activities.HomeActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".activities.ChatActivity"
             android:parentActivityName=".activities.HomeActivity">
             <meta-data

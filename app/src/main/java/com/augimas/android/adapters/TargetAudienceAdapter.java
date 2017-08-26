@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import com.augimas.android.R;
@@ -23,6 +24,7 @@ import com.augimas.android.classes.objects.content.BrandingElement;
 import com.augimas.android.classes.objects.content.RecentActivity;
 import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -63,6 +65,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         final int POSITION = holder.getAdapterPosition();
         setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
+        holder.hideButtons();
         addTextChangedListener(holder);
         addItemAdapters(brandingName,holder,POSITION,null);
         addOnClickListener(brandingName,holder,POSITION);
@@ -106,6 +109,26 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
             holder.mSexSpinner.setSelection(0);
             holder.mEducationSpinner.setSelection(0);
         }
+
+        final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (position < brandingName.getData().size()) {
+                    if (holder.inputsFilled()) {
+                        handleInput(holder,position);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        };
+        holder.mSexSpinner.setOnItemSelectedListener(onItemSelectedListener);
+        holder.mIncomeSpinner.setOnItemSelectedListener(onItemSelectedListener);
+        holder.mEducationSpinner.setOnItemSelectedListener(onItemSelectedListener);
+
     }
     private String getViewData(final String data, final int position) {
         String viewData = data;
@@ -152,7 +175,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (holder.editing) {
                         if (s.length() != 0) {
-                            holder.turnButtonToCreate();
+                            holder.turnButtonToSave();
                         } else {
                             holder.turnButtonToDelete();
                         }
@@ -181,7 +204,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                                 holder.mCreateButton.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        holder.hideButton();
+                                        holder.hideButtons();
                                     }
                                 });
                                 holder.editing = false;
@@ -197,6 +220,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                         }
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);
+                            holder.revealCreateButton();
                         } else {
                             holder.editing = false;
                             holder.revealInputAndTurnButtonToDelete(false);
@@ -228,38 +252,42 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.inputHidden) {
-                    holder.hideButton();
-                    holder.revealInputAndTurnButtonToDelete(true);
-                    holder.revealButton();
-                    holder.creating = true;
-                    holder.mCreateButton.startAnimation(rotate_forward);
-                } else {
-                    if (holder.creating) {
-                        if (holder.inputsFilled()) {
-                            handleInput(holder,POSITION);
+                holder.hideCreateButton();
+                holder.revealInputAndTurnButtonToDelete(true);
+                holder.creating = true;
+//                    holder.mCreateButton.startAnimation(rotate_forward);
+            }
+        });
+
+        holder.mModifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (holder.buttonRotated) {
+                    holder.editing = false;
+                    holder.creating = false;
+                    if (holder.inputsFilled()) {
+                        final String previousText;
+                        if (POSITION == brandingName.getData().size()) {
+                            previousText = holder.getText();
                         } else {
-                            holder.creating = false;
-                            holder.turnButtonToCreate();
-                            holder.hideButton();
-                            holder.hideInput(true);
-                            holder.revealButton();
+                            previousText = brandingName.getData().get(POSITION);
                         }
+                        new ConfirmActionDialog(previousText,null,null, brandingName,activity);
                     } else {
-                        if (holder.buttonRotated) {
-                            holder.editing = false;
-                            holder.creating = false;
-                            holder.hideView();
-                            if (holder.inputsFilled()) {
-                                if (POSITION == brandingName.getData().size()) {
-                                    brandingName.getData().remove(holder.getText());
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,"", null);
-                                } else {
-                                    brandingName.getData().remove(POSITION);
-                                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.REMOVE,"", null);
-                                }
-                            }
-                        }
+                        holder.creating = false;
+                        holder.hideButtons();
+                        holder.hideInput(true);
+                        holder.revealCreateButton();
+                    }
+                } else {
+                    if (holder.inputsFilled()) {
+                        handleInput(holder,POSITION);
+                    } else {
+                        holder.creating = false;
+                        holder.turnButtonToSave();
+                        holder.hideButtons();
+                        holder.hideInput(true);
+                        holder.revealCreateButton();
                     }
                 }
             }
@@ -311,7 +339,6 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                         public void onCancelled(DatabaseError databaseError) {}
                     });
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });
@@ -331,25 +358,29 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         public LinearLayoutCompat content;
         final AppCompatSpinner mSexSpinner;
         final AppCompatButton mCreateButton;
+        final AppCompatButton mModifyButton;
         final AppCompatEditText mAgeEditText;
-        final LinearLayoutCompat layoutPart1;
-        final LinearLayoutCompat layoutPart2;
         final AppCompatSpinner mIncomeSpinner;
         final AppCompatSpinner mEducationSpinner;
         final AppCompatEditText mOccupationEditText;
+        final LinearLayoutCompat[] layouts = new LinearLayoutCompat[5];
 
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mAgeEditText = (AppCompatEditText) view.findViewById(R.id.input_age);
-            mSexSpinner = (AppCompatSpinner) view.findViewById(R.id.spinner_sex);
-            content = (LinearLayoutCompat) view.findViewById(R.id.brand_name_content);
-            mIncomeSpinner = (AppCompatSpinner) view.findViewById(R.id.spinner_income);
-            mCreateButton = (AppCompatButton) view.findViewById(R.id.item_create_element);
-            mEducationSpinner = (AppCompatSpinner) view.findViewById(R.id.spinner_education);
-            mOccupationEditText = (AppCompatEditText) view.findViewById(R.id.input_occupation);
-            layoutPart1 = (LinearLayoutCompat) view.findViewById(R.id.input_layout_brand_name_1);
-            layoutPart2 = (LinearLayoutCompat) view.findViewById(R.id.input_layout_brand_name_2);
+            mAgeEditText = view.findViewById(R.id.input_age);
+            mSexSpinner = view.findViewById(R.id.spinner_sex);
+            content = view.findViewById(R.id.brand_name_content);
+            mIncomeSpinner = view.findViewById(R.id.spinner_income);
+            mCreateButton = view.findViewById(R.id.item_create_element);
+            mModifyButton = view.findViewById(R.id.item_modify_element);
+            mEducationSpinner = view.findViewById(R.id.spinner_education);
+            mOccupationEditText = view.findViewById(R.id.input_occupation);
+            layouts[0] = view.findViewById(R.id.input_layout_brand_name_1);
+            layouts[1] = view.findViewById(R.id.input_layout_brand_name_2);
+            layouts[2] = view.findViewById(R.id.input_layout_brand_name_3);
+            layouts[3] = view.findViewById(R.id.input_layout_brand_name_4);
+            layouts[4] = view.findViewById(R.id.input_layout_brand_name_5);
         }
 
         boolean inputsFilled() {
@@ -383,43 +414,72 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         }
 
         void hideView() {
-            hideButton();
+            hideButtons();
             mView.startAnimation(close);
         }
 
-        void hideButton() {
+        void hideButtons() {
+            hideCreateButton();
+            hideModifyButton();
+        }
+
+        void hideModifyButton(){
+            mModifyButton.setEnabled(false);
+            mModifyButton.setClickable(false);
+            mModifyButton.startAnimation(close);
+            mModifyButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mModifyButton.setVisibility(View.GONE);
+                }
+            });
+        }
+        void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
+            mCreateButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    mCreateButton.setVisibility(View.GONE);
+                }
+            });
         }
+        void revealModifyButton(){
+            mModifyButton.setEnabled(true);
+            mModifyButton.setClickable(true);
+            mModifyButton.setVisibility(View.VISIBLE);
+            mModifyButton.startAnimation(open);
 
-        void revealButton() {
+        }
+        void revealCreateButton() {
             mCreateButton.setEnabled(true);
             mCreateButton.setClickable(true);
+            mCreateButton.setVisibility(View.VISIBLE);
             mCreateButton.startAnimation(open);
         }
 
         void turnButtonToDelete() {
             if (!buttonRotated) {
                 buttonRotated = true;
-                mCreateButton.startAnimation(rotate_forward);
+                mModifyButton.startAnimation(rotate_forward);
             }
         }
 
-        void turnButtonToCreate() {
+        void turnButtonToSave() {
             if (buttonRotated) {
                 buttonRotated = false;
-                mCreateButton.startAnimation(rotate_back);
+                mModifyButton.startAnimation(rotate_back);
             }
         }
 
         void hideInput(boolean manual) {
             if (!inputHidden) {
                 inputHidden = true;
-                layoutPart1.startAnimation(close);
-                layoutPart1.setVisibility(View.GONE);
-                layoutPart2.startAnimation(close);
-                layoutPart2.setVisibility(View.GONE);
+                for (LinearLayoutCompat layout:layouts) {
+                    layout.startAnimation(close);
+                    layout.setVisibility(View.GONE);
+                }
                 if (manual) {
                     editing = false;
 //                    mNameEditText.clearFocus();
@@ -430,10 +490,10 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         void revealInput(boolean manual) {
             if (inputHidden) {
                 inputHidden = false;
-                layoutPart1.startAnimation(open);
-                layoutPart1.setVisibility(View.VISIBLE);
-                layoutPart2.startAnimation(open);
-                layoutPart2.setVisibility(View.VISIBLE);
+                for (LinearLayoutCompat layout:layouts) {
+                    layout.startAnimation(open);
+                    layout.setVisibility(View.VISIBLE);
+                }
                 if (manual) {
                     editing = true;
                 }
@@ -442,6 +502,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
 
         void revealInputAndTurnButtonToDelete(final boolean manual) {
             revealInput(manual);
+            revealModifyButton();
             turnButtonToDelete();
         }
 
