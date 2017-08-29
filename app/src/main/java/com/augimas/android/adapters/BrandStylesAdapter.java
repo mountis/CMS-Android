@@ -1,7 +1,6 @@
 package com.augimas.android.adapters;
 
 import android.app.Activity;
-import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
@@ -11,17 +10,15 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import com.augimas.android.dialogs.ConfirmActionDialog;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.objects.FirebaseEntity;
 import com.augimas.android.classes.objects.content.BrandingElement;
-import com.augimas.android.classes.objects.content.RecentActivity;
-import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.augimas.android.dialogs.ConfirmActionDialog;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import static com.augimas.android.backend.Backend.getCurrentUser;
 
@@ -76,12 +73,6 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                                 holder.hideView();
                             } else {
                                 holder.mColorsRecyclerView.setAdapter(new ColorsAdapter(brandingName,containingView,activity,POSITION));
-//                                holder.mCreateButton.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        holder.hideButton();
-//                                    }
-//                                });
                                 holder.editing = false;
                                 holder.revealInputAndTurnButtonToDelete(false);
                             }
@@ -119,8 +110,6 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
             public void onClick(View view) {
 
                 holder.creating = false;
-//                holder.hideInput(true);
-
                 Backend.getReference(R.string.firebase_branding_elements_directory,activity).child(brandingName.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -129,10 +118,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                             if (element.getData().size() != 0) {
                                 if (POSITION <= element.getData().size()-1) {
                                     String previousText = element.getData().get(POSITION);
-//                                        element.getData().remove(POSITION);
-//                                        Backend.update(element,activity);
                                     new ConfirmActionDialog(previousText,"style","", element,activity);
-//                                        sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.REMOVE,"style","");
                                 } else {
                                     holder.hideInput(true);
                                     holder.hideModifyButton();
@@ -147,58 +133,6 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                 });
             }
         });
-    }
-    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.ActivityVerbType verbType, final String extraString, final String extraString2) {
-        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
-            Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,brandingName.getTeamUID());
-                    Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            final User currentUser = new User(dataSnapshot);
-                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                final RecentActivity hostRecentActivity;
-                                final RecentActivity clientRecentActivity;
-                                switch (verbType) {
-                                    case UPDATE:
-                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString,extraString2);
-                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "", extraString, extraString2);
-                                        } else {
-                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString,extraString2);
-                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType, "",extraString,extraString2);
-                                        }
-                                        break;
-                                    default:
-                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName(), extraString);
-                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType, "",extraString);
-                                        } else {
-                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType, "",extraString);
-                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType,"", extraString);
-                                        }
-                                        break;
-                                }
-
-                                Backend.sendUpstreamNotification(hostRecentActivity,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-                                Backend.sendUpstreamNotification(clientRecentActivity,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-
-                                Backend.update(brandingName, activity);
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
-            });
-        }
     }
     @Override
     public int getItemCount() {
@@ -290,7 +224,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                 layout.setVisibility(View.GONE);
                 if (manual) {
                     editing = false;
-//                    mNameEditText.clearFocus();
+//                    mBrandItemInputText.clearFocus();
                 }
                 inputHidden = true;
             }
@@ -302,7 +236,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                 layout.setVisibility(View.VISIBLE);
                 if (manual) {
                     editing = true;
-//                    mNameEditText.requestFocus();
+//                    mBrandItemInputText.requestFocus();
                 }
             }
         }

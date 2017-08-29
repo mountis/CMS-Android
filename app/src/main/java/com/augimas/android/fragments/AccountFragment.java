@@ -49,9 +49,9 @@ public final class AccountFragment extends Fragment {
 
     private View setupView(final View view, final Activity activity) {
         setupBackButton(view,activity);
-        final TextInputEditText emailInput = (TextInputEditText)view.findViewById(R.id.input_email);
-        final TextInputEditText usernameInput = (TextInputEditText)view.findViewById(R.id.input_username);
-        final TextInputEditText fullNameInput = (TextInputEditText)view.findViewById(R.id.input_full_name);
+        final TextInputEditText emailInput = view.findViewById(R.id.input_email);
+        final TextInputEditText usernameInput = view.findViewById(R.id.input_username);
+        final TextInputEditText fullNameInput = view.findViewById(R.id.input_full_name);
 
         fillInputFields(emailInput,usernameInput,fullNameInput,activity);
         setupEmailSection(emailInput,view,activity);
@@ -87,7 +87,7 @@ public final class AccountFragment extends Fragment {
         }
     }
     private void setupEmailSection(final TextInputEditText emailInput, final View view, final Activity activity) {
-        final AppCompatButton emailButton = (AppCompatButton)view.findViewById(R.id.change_email_button);
+        final AppCompatButton emailButton = view.findViewById(R.id.change_email_button);
         emailButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -171,7 +171,7 @@ public final class AccountFragment extends Fragment {
         });
     }
     private void setupUsernameSection(final TextInputEditText usernameInput, final View view, final Activity activity) {
-        final AppCompatButton usernameButton = (AppCompatButton)view.findViewById(R.id.update_username_button);
+        final AppCompatButton usernameButton = view.findViewById(R.id.update_username_button);
         usernameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

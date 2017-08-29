@@ -126,14 +126,10 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
                                 }
                             }
                         }
-
                         @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
+                        public void onCancelled(DatabaseError databaseError) {}
                     });
                 }
-
                 return true;
             }
         });
@@ -159,7 +155,6 @@ public final class BrandingElementsAdapter extends RecyclerView.Adapter<Branding
             mBrandingElementStatus = view.findViewById(R.id.item_branding_element_status);
             mBrandingElementNameLabel = view.findViewById(R.id.item_label_branding_element_name);
         }
-
         @Override
         public String toString() {
             return super.toString() + " '" + mBrandingElementNameLabel.getText() + "'";

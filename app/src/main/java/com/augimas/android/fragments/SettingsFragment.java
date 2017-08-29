@@ -128,7 +128,7 @@ public final class SettingsFragment extends PreferenceFragment {
                     .getSupportFragmentManager()
                     .beginTransaction()
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.container,AccountFragment.newInstance(getCurrentUser().getUID()))
+                    .replace(R.id.container,AccountFragment.newInstance(getCurrentUser().getUID()),Constants.Strings.Fragments.ACCOUNT)
                     .addToBackStack(Constants.Strings.Fragments.SETTINGS)
                     .commit();
             handleNonSupportFragmentRemoval(getFragmentManager());

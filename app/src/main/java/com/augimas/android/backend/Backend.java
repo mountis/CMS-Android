@@ -119,6 +119,9 @@ public final class Backend {
 
                                                 }
                                             });
+                                } else {
+                                    loadingProgress.dismiss();
+                                    display(SNACKBAR, R.string.error_incorrect_signin_general, view);
                                 }
                             }
                         } else {
@@ -424,31 +427,33 @@ public final class Backend {
     public static void updateEmail(final String email, final View view, final Activity activity) {
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (FragmentHelper.isValidEmail(email)) {
-            user.updateEmail(email)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                // Pull User Info to update their email info
-                                getReference(R.string.firebase_users_directory, activity).child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        final User currentUser = new User(dataSnapshot);
-                                        currentUser.setEmail(email);
-                                        OneSignal.syncHashedEmail(email);
-                                        update(currentUser, activity);
-                                        FragmentHelper.display(SNACKBAR,R.string.email_updated,view);
+            if (user != null) {
+                user.updateEmail(email)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    // Pull User Info to update their email info
+                                    getReference(R.string.firebase_users_directory, activity).child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            final User currentUser = new User(dataSnapshot);
+                                            currentUser.setEmail(email);
+                                            OneSignal.syncHashedEmail(email);
+                                            update(currentUser, activity);
+                                            FragmentHelper.display(SNACKBAR,R.string.email_updated,view);
 
-                                    }
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {}
-                                });
-                                Log.d(TAG, "User email address updated.");
-                            } else {
-                                FragmentHelper.display(SNACKBAR,R.string.error_invalid_email,view);
+                                        }
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {}
+                                    });
+                                    Log.d(TAG, "User email address updated.");
+                                } else {
+                                    FragmentHelper.display(SNACKBAR,R.string.error_invalid_email,view);
+                                }
                             }
-                        }
-                    });
+                        });
+            }
         }
     }
     public static void updateUsername(final Activity activity, final String username) {

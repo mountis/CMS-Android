@@ -7,6 +7,7 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -17,10 +18,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
-import com.augimas.android.dialogs.ConfirmActionDialog;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.objects.FirebaseEntity;
@@ -28,7 +25,11 @@ import com.augimas.android.classes.objects.content.BrandingElement;
 import com.augimas.android.classes.objects.content.RecentActivity;
 import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.augimas.android.helpers.FragmentHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import static com.augimas.android.backend.Backend.getCurrentUser;
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
@@ -37,13 +38,13 @@ import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets
  * Created on 8/6/17.
  */
 
-public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdapter.ViewHolder> {
+public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBrandingAdapter.ViewHolder> {
     private Activity activity;
     private View containingView;
     private BrandingElement brandingName;
     private Animation open,close,rotate_forward,rotate_back,bounceFasterAnimation;
     //    Adapter Constructor
-    public BrandingNamesAdapter(final BrandingElement brandingName, final View containingView, final Activity activity) {
+    public GeneralBrandingAdapter(final BrandingElement brandingName, final View containingView, final Activity activity) {
         this.activity = activity;
         this.brandingName = brandingName;
         this.containingView = containingView;
@@ -56,37 +57,42 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
     //    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view;
+        final View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_general_brand_item, parent, false);
+        final int HINT_ID;
+        boolean multiline = false;
         switch (brandingName.getType()) {
-            case DOMAIN_NAME: view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_domain_name_single, parent, false);
+            case DOMAIN_NAME:
+                HINT_ID = R.string.domain_name_text;
                 break;
-            case SOCIAL_MEDIA_NAME: view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_social_media_name_single, parent, false);
+            case SOCIAL_MEDIA_NAME:
+                HINT_ID = R.string.social_media_name_text;
                 break;
-            case MISSION_STATEMENT: view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_mission_statements_single, parent, false);
+            case MISSION_STATEMENT:
+                HINT_ID = R.string.mission_statement_text;
+                multiline = true;
                 break;
-            case PRODUCTS_SERVICES: view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_product_service_single, parent, false);
+            case PRODUCTS_SERVICES:
+                HINT_ID = R.string.product_service_text;
+                multiline = true;
                 break;
             default: return null;
         }
-        return new BrandingNamesAdapter.ViewHolder(view);
+        return new GeneralBrandingAdapter.ViewHolder(view,HINT_ID,multiline);
     }
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final int POSITION = holder.getAdapterPosition();
-        setupView(holder,POSITION);
-        holder.mView.startAnimation(bounceFasterAnimation);
         holder.hideButtons();
+        setupView(holder,POSITION);
         addTextChangedListener(holder);
         addOnEditorActionListener(holder,POSITION);
         addOnClickListener(brandingName,holder,POSITION);
+        holder.mView.startAnimation(bounceFasterAnimation);
         addOnFocusChangeListener(brandingName,holder,POSITION);
     }
     private void addTextChangedListener(final ViewHolder holder) {
-        holder.mNameEditText.addTextChangedListener(new TextWatcher() {
+        holder.mBrandItemInputText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
@@ -97,14 +103,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     } else {
                         holder.turnButtonToDelete();
                     }
-//                    holder.mNameEditText.setText(getTenCharPerLineString(s.toString()));
                 }
             }
             @Override
             public void afterTextChanged(Editable s) {}
         });
     }
-    public String getTenCharPerLineString(String text){
+    private String getTenCharPerLineString(String text){
         String tenCharPerLineString = "";
         while (text.length() > 10) {
 
@@ -112,7 +117,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
             tenCharPerLineString = tenCharPerLineString + buffer + "/n";
             text = text.substring(10);
         }
-        tenCharPerLineString = tenCharPerLineString + text.substring(0);
+        tenCharPerLineString = tenCharPerLineString + text;
         return tenCharPerLineString;
     }
     private void setupView(final ViewHolder holder, final int POSITION) {
@@ -123,39 +128,23 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                     if (!new User(dataSnapshot).hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
                         if (getItemCount() == 1) {
                             holder.mView.setVisibility(View.GONE);
-                            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
-                                containingView.findViewById(R.id.branding_element_domain_name_layout).setVisibility(View.GONE);
-                            } else if (brandingName.getType() == BrandingElement.ElementType.SOCIAL_MEDIA_NAME) {
-                                containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.GONE);
-                            } else if (brandingName.getType() == BrandingElement.ElementType.MISSION_STATEMENT) {
-                                containingView.findViewById(R.id.branding_element_mission_statement_layout).setVisibility(View.GONE);
-                            } else {
-                                containingView.findViewById(R.id.branding_element_product_service_layout).setVisibility(View.GONE);
-                            }
+                            containingView.findViewById(R.id.branding_element_general_layout).setVisibility(View.GONE);
                             containingView.findViewById(R.id.no_content).setVisibility(View.VISIBLE);
                             // Set alternative View for display when there is no data.
                         } else {
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mNameEditText.setText(getTenCharPerLineString(brandingName.getData().get(POSITION)));
+                                holder.mBrandItemInputText.setText(getTenCharPerLineString(brandingName.getData().get(POSITION)));
                                 holder.editing = false;
-                                holder.mNameEditText.setEnabled(false);
-                                holder.mNameEditText.setClickable(false);
+                                holder.mBrandItemInputText.setEnabled(false);
+                                holder.mBrandItemInputText.setClickable(false);
                                 holder.revealInputAndTurnButtonToDelete(false);
                             }
                         }
                     } else {
                         if (getItemCount() == 1) {
-                            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
-                                containingView.findViewById(R.id.branding_element_domain_name_layout).setVisibility(View.VISIBLE);
-                            } else if (brandingName.getType() == BrandingElement.ElementType.SOCIAL_MEDIA_NAME) {
-                                containingView.findViewById(R.id.branding_element_social_media_name_layout).setVisibility(View.VISIBLE);
-                            } else if (brandingName.getType() == BrandingElement.ElementType.MISSION_STATEMENT) {
-                                containingView.findViewById(R.id.branding_element_mission_statement_layout).setVisibility(View.VISIBLE);
-                            } else {
-                                containingView.findViewById(R.id.branding_element_product_service_layout).setVisibility(View.VISIBLE);
-                            }
+                            containingView.findViewById(R.id.branding_element_general_layout).setVisibility(View.GONE);
                             containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
                         }
                         if (POSITION > brandingName.getData().size()-1) {
@@ -164,7 +153,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         } else {
                             holder.editing = false;
                             holder.revealInputAndTurnButtonToDelete(false);
-                            holder.mNameEditText.setText(brandingName.getData().get(POSITION));
+                            holder.mBrandItemInputText.setText(brandingName.getData().get(POSITION));
                         }
 
                     }
@@ -175,29 +164,29 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
     }
     private void handleInput(final ViewHolder holder, final int position) {
-        if (BrandingElement.checkInput(holder.mNameEditText.getText().toString().trim(), brandingName)) {
+        if (BrandingElement.checkInput(holder.mBrandItemInputText.getText().toString().trim(), brandingName)) {
             if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
                 for(String domain:brandingName.getData()) {
-                    if (holder.mNameEditText.getText().toString().trim().equals(domain)) {
+                    if (holder.mBrandItemInputText.getText().toString().trim().equals(domain)) {
                         return;
                     }
                 }
             }
             if (position == brandingName.getData().size()) {
-                brandingName.getData().add(holder.mNameEditText.getText().toString().trim());
-                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mNameEditText.getText().toString().trim(), null);
+                brandingName.getData().add(holder.mBrandItemInputText.getText().toString().trim());
+                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mBrandItemInputText.getText().toString().trim(), null);
             } else if (position < brandingName.getData().size()){
-                if (!holder.mNameEditText.getText().toString().trim().equals(brandingName.getData().get(position))) {
+                if (!holder.mBrandItemInputText.getText().toString().trim().equals(brandingName.getData().get(position))) {
                     final String previousName = brandingName.getData().get(position).trim();
-                    brandingName.getData().set(position,holder.mNameEditText.getText().toString().trim());
-                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, holder.mNameEditText.getText().toString().trim());
+                    brandingName.getData().set(position,holder.mBrandItemInputText.getText().toString().trim());
+                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, holder.mBrandItemInputText.getText().toString().trim());
                 }
             }
             holder.editing = false;
             holder.creating = false;
         } else {
             // Improper Input
-            holder.mNameEditText.setText("");
+            holder.mBrandItemInputText.setText("");
             switch (brandingName.getType()) {
                 case DOMAIN_NAME:
                     FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
@@ -208,7 +197,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
     }
     private void addOnEditorActionListener(final ViewHolder holder,final int POSITION) {
-        holder.mNameEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        holder.mBrandItemInputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -233,11 +222,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                 if (holder.buttonRotated) {
                     holder.editing = false;
                     holder.creating = false;
-//                            holder.hideView();
-                    if (!holder.mNameEditText.getText().toString().equals("")) {
+                    if (!holder.mBrandItemInputText.getText().toString().equals("")) {
                         final String previousName;
                         if (POSITION == brandingName.getData().size()) {
-                            previousName = holder.mNameEditText.getText().toString();
+                            previousName = holder.mBrandItemInputText.getText().toString();
                         } else {
                             previousName = brandingName.getData().get(POSITION);
                         }
@@ -249,7 +237,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         holder.hideInput(true);
                     }
                 } else {
-                    if (!holder.mNameEditText.getText().toString().equals("")) {
+                    if (!holder.mBrandItemInputText.getText().toString().equals("")) {
                         handleInput(holder,POSITION);
                     } else {
                         holder.creating = false;
@@ -257,14 +245,13 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                         holder.revealCreateButton();
                         holder.turnButtonToCreate();
                         holder.hideInput(true);
-//                        holder.revealCreateButton();
                     }
                 }
             }
         });
     }
     private void addOnFocusChangeListener(final BrandingElement brandingName, final ViewHolder holder, final int POSITION) {
-        holder.mNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        holder.mBrandItemInputText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
@@ -276,10 +263,10 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                             holder.turnButtonToDelete();
                         }
                     } else {
-                        if (!holder.mNameEditText.getText().toString().equals("")) {
-                            if (holder.editing) {
+                        if (!holder.mBrandItemInputText.getText().toString().equals("")) {
+//                            if (holder.editing) {
 //                                handleInput(holder,POSITION);
-                            }
+//                            }
                         } else {
                             if (brandingName.getData().size() >= POSITION+1) {
                                 holder.hideView();
@@ -333,14 +320,11 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
 
                                 Backend.update(brandingName, activity);
                             }
-
                         }
-
                         @Override
                         public void onCancelled(DatabaseError databaseError) {}
                     });
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });
@@ -359,25 +343,27 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         boolean buttonRotated = false;
         final AppCompatButton mCreateButton;
         final AppCompatButton mModifyButton;
-        final AppCompatEditText mNameEditText;
         public final LinearLayoutCompat layout;
         public final LinearLayoutCompat content;
+        final AppCompatEditText mBrandItemInputText;
 
-        public ViewHolder(View view) {
+        public ViewHolder(View view, int HINT_ID, boolean multiline) {
             super(view);
             mView = view;
-            mNameEditText   = view.findViewById(R.id.input_brand_name);
             content         = view.findViewById(R.id.brand_name_content);
             mCreateButton   = view.findViewById(R.id.item_create_element);
             mModifyButton   = view.findViewById(R.id.item_modify_element);
+            mBrandItemInputText = view.findViewById(R.id.input_brand_item);
+            mBrandItemInputText.setHint(HINT_ID);
+            if (multiline) {
+                mBrandItemInputText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            }
             layout          = view.findViewById(R.id.input_layout_brand_name);
         }
-
         void hideView() {
             hideButtons();
             mView.startAnimation(close);
         }
-
         void hideButtons(){
             hideCreateButton();
             hideModifyButton();
@@ -435,7 +421,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                 layout.setVisibility(View.GONE);
                 if (manual) {
                     editing = false;
-                    mNameEditText.clearFocus();
+                    mBrandItemInputText.clearFocus();
                 }
                 inputHidden = true;
             }
@@ -447,7 +433,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
                 layout.setVisibility(View.VISIBLE);
                 if (manual) {
                     editing = true;
-                    mNameEditText.requestFocus();
+                    mBrandItemInputText.requestFocus();
                 }
             }
         }
@@ -458,7 +444,7 @@ public class BrandingNamesAdapter extends RecyclerView.Adapter<BrandingNamesAdap
         }
         @Override
         public String toString() {
-            return super.toString() + " '" + mNameEditText.getText() + "'";
+            return super.toString() + " '" + mBrandItemInputText.getText() + "'";
         }
     }
 }

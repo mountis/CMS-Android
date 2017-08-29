@@ -49,7 +49,6 @@ public class TeamManagementFragment extends Fragment {
     public static TeamManagementFragment newInstance(Team teamItem) {
         final Bundle args = new Bundle();
         if (teamItem != null) args.putSerializable(Constants.Strings.TEAM,teamItem);
-
         TeamManagementFragment fragment = new TeamManagementFragment();
         fragment.setArguments(args);
         return fragment;
@@ -58,7 +57,7 @@ public class TeamManagementFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_team_management, container, false);
 
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.team_member_recycler_view);
+        RecyclerView recyclerView = view.findViewById(R.id.team_member_recycler_view);
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
@@ -196,11 +195,11 @@ public class TeamManagementFragment extends Fragment {
     private void populateTeamLayout(final Team teamItem, final View view, final RecyclerView recyclerView, final Activity activity) {
         view.findViewById(R.id.create_or_join_team_layout).setVisibility(View.GONE);
         view.findViewById(R.id.team_layout).setVisibility(View.VISIBLE);
-        final AppCompatButton leaveTeam = (AppCompatButton)view.findViewById(R.id.button_leave_team);
-        final TextInputEditText teamNameEditText = (TextInputEditText) view.findViewById(R.id.input_team_name);
-        final AppCompatButton inviteMembers = (AppCompatButton)view.findViewById(R.id.button_invite_member);
-        final AppCompatButton updateButton = (AppCompatButton) view.findViewById(R.id.button_update_team_info);
-        final TextInputEditText usernameEditText = (TextInputEditText) view.findViewById(R.id.input_team_username);
+        final AppCompatButton leaveTeam = view.findViewById(R.id.button_leave_team);
+        final TextInputEditText teamNameEditText = view.findViewById(R.id.input_team_name);
+        final AppCompatButton inviteMembers = view.findViewById(R.id.button_invite_member);
+        final AppCompatButton updateButton = view.findViewById(R.id.button_update_team_info);
+        final TextInputEditText usernameEditText = view.findViewById(R.id.input_team_username);
 
         teamNameEditText.setText(teamItem.getName());
         usernameEditText.setText(teamItem.getUsername());

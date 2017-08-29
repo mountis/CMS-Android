@@ -71,7 +71,7 @@ final class ColorsAdapter extends RecyclerView.Adapter<ColorsAdapter.ViewHolder>
                         holder.mCreateButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                if (holder.mCreateButton.getText().equals("?")) {
+                                if (holder.mCreateButton.getText().equals(activity.getString(R.string.plus_sign))) {
                                     new ColorDialog(index,POSITION,null,brandingName,containingView,activity);
                                 } else {
                                     new ColorDialog(index,POSITION,getViewData(brandingName.getData().get(index),POSITION),brandingName,containingView,activity);

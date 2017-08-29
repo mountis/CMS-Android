@@ -178,4 +178,8 @@
     <string name="yes_text">YES</string>
     <string name="confirm_data_deletion">Are you sure you want to delete this data?</string>
     <string name="no_text">NO</string>
+    <string name="pound_sign">#</string>
+    <string name="sex_header">sex</string>
+    <string name="income_header">income</string>
+    <string name="education_header">education</string>
 </resources>

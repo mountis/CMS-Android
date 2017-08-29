@@ -490,7 +490,7 @@ public final class RecentActivity extends FirebaseContent {
 
     return bundle;
 }
-    public JSONObject toNotificationJSON(final String toTeamUID, final String senderUID, String header) {
+    public JSONObject toNotificationJSON(final String toUID, final String senderUID, String header) {
         JSONObject upstreamJSON = new JSONObject();
         try {
             upstreamJSON.put(Constants.Strings.Server.Fields.APP_ID,Constants.Strings.Server.OneSignal.APP_ID);
@@ -498,9 +498,9 @@ public final class RecentActivity extends FirebaseContent {
             JSONArray filters = new JSONArray();
             JSONObject filter = new JSONObject();
             filter.put(Constants.Strings.Server.Fields.FIELD,Constants.Strings.Server.Fields.TAG);
-            filter.put("key",Constants.Strings.UIDs.TEAM_UID);
+            filter.put(Constants.Strings.Server.Fields.KEY,Constants.Strings.UIDs.TEAM_UID);
             filter.put(Constants.Strings.Server.Fields.RELATION,Constants.Strings.Server.Fields.EQUALS);
-            filter.put(Constants.Strings.Server.Fields.VALUE,toTeamUID);
+            filter.put(Constants.Strings.Server.Fields.VALUE,toUID);
             filters.put(filter);
             upstreamJSON.put(Constants.Strings.Server.Fields.FILTERS,filters);
 //            Add Data

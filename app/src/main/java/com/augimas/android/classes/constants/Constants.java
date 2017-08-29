@@ -5,7 +5,7 @@ public final class Constants {
         public final class Fragments {
             public static final int DASHBOARD     = 0x19151AB;
             public static final int CHAT          = 0x8816231;
-            public static final int NOTIFICATION  = 0x4718591;
+            public static final int RECENT_ACTIVITIES = 0x4718591;
             public static final int SETTINGS      = 0x9102612;
         }
         public static final class UIDs {
@@ -431,7 +431,7 @@ public final class Constants {
                 public static final String ENGLISH_MESSAGE = "English Message";
 
 
-
+                public static final String KEY = "key";
             }
         }
         public static final class Firebase {
@@ -456,6 +456,8 @@ public final class Constants {
         }
         public static final class Fragments {
             public static final String SETTINGS = "Settings";
+            public static final String ACCOUNT = "Account";
+
             public static final String SIGN_IN = "Sign In";
             public static final String SIGN_UP = "Sign Up";
             public static final String HOME = "Home";

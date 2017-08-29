@@ -10,9 +10,9 @@
     android:layout_height="50dp">
     <android.support.v7.widget.AppCompatButton
         android:layout_weight="1"
-        android:textColor="#fff"
-        android:background="#424242"
-        android:text="@string/question_mark"
+        android:textColor="#000"
+        android:background="#50d7ccc8"
+        android:text="@string/plus_sign"
         android:id="@+id/button_color"
         android:layout_margin="5dp"
         android:layout_width="match_parent"

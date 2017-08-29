@@ -96,10 +96,9 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         sexes.add("Select your Sex");
         sexes.add("Male");
         sexes.add("Female");
-        holder.mSexSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.spinner_layout,R.id.spinner_text_item,sexes));
-        holder.mIncomeSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.spinner_layout,R.id.spinner_text_item, incomeLevels));
-        holder.mEducationSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.spinner_layout,R.id.spinner_text_item,educationalLevels));
-
+        holder.mSexSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.second_spinner_layout,R.id.spinner_text_item,sexes));
+        holder.mIncomeSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.second_spinner_layout,R.id.spinner_text_item, incomeLevels));
+        holder.mEducationSpinner.setAdapter(new ArrayAdapter<>(activity,R.layout.second_spinner_layout,R.id.spinner_text_item,educationalLevels));
         if (data != null && !data.equals("")) {
             holder.mSexSpinner.setSelection(Integer.valueOf(getViewData(data,0)));
             holder.mIncomeSpinner.setSelection(Integer.valueOf(getViewData(data,1)));
@@ -482,7 +481,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                 }
                 if (manual) {
                     editing = false;
-//                    mNameEditText.clearFocus();
+//                    mBrandItemInputText.clearFocus();
                 }
             }
         }

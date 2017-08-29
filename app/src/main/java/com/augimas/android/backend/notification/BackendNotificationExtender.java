@@ -27,7 +27,6 @@ import static com.augimas.android.backend.Backend.getCurrentUser;
 public class BackendNotificationExtender extends NotificationExtenderService {
     @Override
     protected boolean onNotificationProcessing(OSNotificationReceivedResult osNotificationReceivedResult) {
-
         final int flags = Intent.FLAG_ACTIVITY_CLEAR_TASK |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -40,10 +39,6 @@ public class BackendNotificationExtender extends NotificationExtenderService {
             String message = "";
             String senderUID = "";
             String recentActivityUID = "";
-            String navigationDirection = "";
-            if (messageBody.has(Constants.Strings.Fields.FRAGMENT)) {
-                navigationDirection = messageBody.getString(Constants.Strings.Fields.FRAGMENT);
-            }
             if (messageBody.has(Constants.Strings.Fields.HEADER)) {
                 header = messageBody.getString(Constants.Strings.Fields.HEADER);
             }

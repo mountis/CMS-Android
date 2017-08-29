@@ -17,7 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.adapters.BrandStylesAdapter;
-import com.augimas.android.adapters.BrandingNamesAdapter;
+import com.augimas.android.adapters.GeneralBrandingAdapter;
 import com.augimas.android.adapters.LogoAdapter;
 import com.augimas.android.adapters.TargetAudienceAdapter;
 import com.augimas.android.backend.Backend;
@@ -83,7 +83,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             case SOCIAL_MEDIA_NAME:
             case MISSION_STATEMENT:
             case PRODUCTS_SERVICES:
-                loadBrandingNameView(elementType,view,activity);
+                loadBrandingNameView(view,activity);
                 break;
             case TARGET_AUDIENCE:
                 loadTargetAudienceView(view,activity);
@@ -196,22 +196,11 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
             });
         }
     }
-    private void loadBrandingNameView(final BrandingElement.ElementType elementType, final View view, final Activity activity) {
+    private void loadBrandingNameView(final View view, final Activity activity) {
         final LinearLayoutCompat layout;
         final RecyclerView recyclerView;
-        if (elementType == BrandingElement.ElementType.DOMAIN_NAME) {
-            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_domain_name_layout);
-            recyclerView = (RecyclerView)view.findViewById(R.id.domain_name_recycler_view);
-        } else if (elementType == BrandingElement.ElementType.SOCIAL_MEDIA_NAME){
-            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_social_media_name_layout);
-            recyclerView = (RecyclerView)view.findViewById(R.id.social_media_name_recycler_view);
-        } else if (elementType == BrandingElement.ElementType.MISSION_STATEMENT){
-            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_mission_statement_layout);
-            recyclerView = (RecyclerView)view.findViewById(R.id.mission_statement_recycler_view);
-        } else {
-            layout = (LinearLayoutCompat) view.findViewById(R.id.branding_element_product_service_layout);
-            recyclerView = (RecyclerView)view.findViewById(R.id.product_service_recycler_view);
-        }
+        layout = view.findViewById(R.id.branding_element_general_layout);
+        recyclerView = view.findViewById(R.id.general_branding_item_recycler_view);
 
         if (layout != null) {
             layout.setVisibility(View.VISIBLE);
@@ -227,7 +216,7 @@ public class BrandingElementFragment extends android.support.v4.app.Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         final BrandingElement elementItem = new BrandingElement(dataSnapshot);
-                        recyclerView.setAdapter(new BrandingNamesAdapter(elementItem, getView(), activity));
+                        recyclerView.setAdapter(new GeneralBrandingAdapter(elementItem, getView(), activity));
                         recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                             @Override
                             public void onLayoutChange(View v, int left, final int top, int right, final int bottom, int oldLeft, final int oldTop, int oldRight, final int oldBottom) {

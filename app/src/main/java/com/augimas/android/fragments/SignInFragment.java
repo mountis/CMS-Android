@@ -260,8 +260,10 @@ public final class SignInFragment extends Fragment {
         };
 
         final ArrayList<String> fields = new ArrayList<>();
-        for (int INPUT_VIEW_ID : INPUT_VIEW_IDS) {
-            fields.add(((EditText) getView().findViewById(INPUT_VIEW_ID)).getText().toString().trim());
+        if (getView() != null) {
+            for (int INPUT_VIEW_ID : INPUT_VIEW_IDS) {
+                fields.add(((EditText) getView().findViewById(INPUT_VIEW_ID)).getText().toString().trim());
+            }
         }
 
         return FirebaseObject.getFromFields(fields,BACKEND_CONTENT);

@@ -8,14 +8,13 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.objects.FirebaseEntity;
@@ -23,6 +22,9 @@ import com.augimas.android.classes.objects.content.BrandingElement;
 import com.augimas.android.classes.objects.content.RecentActivity;
 import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import static com.augimas.android.backend.Backend.getCurrentUser;
 import static com.augimas.android.classes.constants.Constants.Ints.SignificantNumbers.GENERAL_PADDING_AMOUNT;
@@ -44,7 +46,7 @@ public final class ColorDialog extends AlertDialog.Builder {
         view.setBackgroundColor(Color.BLACK);
 
         if (hexCode != null && !hexCode.equals("")) {
-            editText.setText(hexCode.substring(1));
+            editText.setText(hexCode);
             view.setBackgroundColor(Color.parseColor(hexCode));
             setTitle(containingView.getContext().getString(R.string.title_update_color));
             setupPositiveButton(paletteIndex,colorIndex,hexCode,brandingElement,editText,R.string.button_text_update,activity);
@@ -83,6 +85,20 @@ public final class ColorDialog extends AlertDialog.Builder {
             });
         } else {
             setTitle(containingView.getContext().getString(R.string.title_create_color));
+            editText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (editText.length() == 0) {
+                        editText.setText(activity.getString(R.string.pound_sign));
+                    } else if (isProperInput(editText) && editText.length() == 7){
+                        view.setBackgroundColor(Color.parseColor(editText.getText().toString()));
+                    }
+                }
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
             setupPositiveButton(paletteIndex,colorIndex,hexCode,brandingElement,editText,R.string.button_text_create,activity);
         }
 
@@ -94,7 +110,7 @@ public final class ColorDialog extends AlertDialog.Builder {
         setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, int which) {
-                if (!editText.getText().toString().equals("") && editText.getText().length() == 6 && containsOnlyProperInput(editText)) {
+                if (!editText.getText().toString().equals("") && isProperInput(editText)) {
                     Backend.getReference(R.string.firebase_branding_elements_directory, activity).child(brandingElement.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -110,16 +126,8 @@ public final class ColorDialog extends AlertDialog.Builder {
             }
         });
     }
-    private boolean containsOnlyProperInput(TextInputEditText editText) {
-        String[] bannedInput = {"q","w","r","t","y","u","i","o","p","s","g","h","j","k","l","z","x","v","n","m"};
-
-        for (String bannedChar:bannedInput) {
-            if (editText.getText().toString().contains(bannedChar)) {
-                return false;
-            }
-        }
-
-        return true;
+    private boolean isProperInput(TextInputEditText editText) {
+        return editText.getText().toString().matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
     }
     private void modifyItem(final BrandingElement element, final int paletteIndex, final int colorIndex, final String previousText, final String newText, final Activity activity) {
         String paletteData = "";
@@ -127,24 +135,20 @@ public final class ColorDialog extends AlertDialog.Builder {
         if (element.getData().size() > paletteIndex) {
            paletteData = element.getData().get(paletteIndex);
             if (previousText != null && !previousText.equals("")) {
-                paletteData = paletteData.replace(previousText,"#"+newText);
+                paletteData = paletteData.replace(previousText,newText);
                 element.getData().set(paletteIndex,paletteData);
                 sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.UPDATE,activity);
             } else {
-                paletteData += ",#"+newText;
+                paletteData += ","+newText;
                 element.getData().set(paletteIndex,paletteData);
                 sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.ADD,activity);
             }
         } else {
-            paletteData += "#"+newText;
+            paletteData += newText;
             element.getData().add(paletteData);
             sendBrandingElementNotification(element, RecentActivity.ActivityVerbType.ADD,activity);
 
         }
-
-        // Find position of data to replace
-
-
     }
     private void setupDialogLayout(final TextInputLayout layout, final TextInputEditText editText, View view) {
         final LinearLayout linearLayout = new LinearLayout(getContext());
@@ -168,7 +172,7 @@ public final class ColorDialog extends AlertDialog.Builder {
 
         editText.setLayoutParams(layoutParams);
         editText.setEnabled(true);
-        editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(6) } );
+        editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(7) } );
         editText.setHint(getContext().getString(R.string.hex_text));
         layout.addView(editText,0,layoutParams);
         linearLayout.addView(layout);
