@@ -1,13 +1,18 @@
 package com.augimas.android.backend;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -215,7 +220,52 @@ public final class Backend {
             ).child(CURRENT_REFERENCE);
         }
     }
-//    Data CUD Methods
+    public static void setConnectionListener(final Activity activity) {
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(Constants.Strings.Firebase.General.CONNECTED);
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    System.out.println("connected");
+                    // Send Notification Stating Reconnection
+                } else {
+                    // Send Notification Stating Connection Lost
+                    final int flags = Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                            Intent.FLAG_ACTIVITY_NEW_TASK;
+                    final int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
+                    final Intent intent = new Intent(activity,HomeActivity.class);
+                    intent.addFlags(flags);
+
+                    final PendingIntent pendingIntent = PendingIntent.getActivity(activity, uniqueInt, intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(activity)
+                            .setSmallIcon(R.drawable.filled_logo)
+                            .setContentTitle("Connection Lost")
+                            .setContentText("You appear to not be connected to the network. You will not be able to access the features of the application without it.")
+                            .setAutoCancel(true)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setSound(defaultSoundUri)
+                            .setContentIntent(pendingIntent);
+
+                    NotificationManager notificationManager =
+                            (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    notificationManager.notify(0, notificationBuilder.build());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                System.err.println("Listener was cancelled");
+            }
+        });
+    }
+
+    //    Data CUD Methods
     public static void update(final FirebaseObject firebaseObject, final Activity activity){
         DatabaseReference myRef = null;
         DatabaseReference itemRef;
@@ -456,21 +506,7 @@ public final class Backend {
             }
         }
     }
-    public static void updateUsername(final Activity activity, final String username) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (username != null && !username.equals("")) {
-            Backend.getReference(R.string.firebase_users_directory, activity).child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    final User currentUser = new User(dataSnapshot);
-                    currentUser.setUsername(username);
-                    Backend.update(currentUser, activity);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
-            });
-        }
+    public static void setPersistenceEnabled(boolean value) {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(value);
     }
 }

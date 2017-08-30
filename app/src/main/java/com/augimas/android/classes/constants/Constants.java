@@ -437,6 +437,7 @@ public final class Constants {
         public static final class Firebase {
             public static final class General {
 
+                public static String CONNECTED = ".info/connected";
             }
             public static final class DetailModes {
                 public static final String DETAIL_MODE = "detailMode";

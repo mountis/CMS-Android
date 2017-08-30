@@ -326,6 +326,23 @@ public class BrandingElement extends FirebaseContent {
         }
         return brandingElements;
     }
+    public static ArrayList<BrandingElement> toFilteredArrayList(DataSnapshot brandingElementReferences,String field, String filter) {
+        final ArrayList<BrandingElement> elements = new ArrayList<>();
+        switch (field) {
+            case Constants.Strings.UIDs.TEAM_UID:
+                for (DataSnapshot brandingElementReference:brandingElementReferences.getChildren()) {
+                    final BrandingElement elementItem = new BrandingElement(brandingElementReference);
+                    if (elementItem.getTeamUID().equals(filter)) {
+                        elements.add(new BrandingElement(brandingElementReference));
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        return elements;
+    }
 //    Init Methods
     private void initContents(ElementType type) {
         if (getContents().size() == 0) {

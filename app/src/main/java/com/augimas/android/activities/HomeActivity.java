@@ -1,20 +1,16 @@
 package com.augimas.android.activities;
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -45,8 +41,6 @@ import com.augimas.android.helpers.DeviceHelper;
 import com.augimas.android.helpers.FragmentHelper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
@@ -100,8 +94,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         } else {
             setupHomeActivity(manager, navigation);
         }
-
-
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -231,7 +223,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         final User currentUser = new User(dataSnapshot);
-                        setInternetConnectionListener();
+                        Backend.setConnectionListener(HomeActivity.this);
                         if (!currentUser.getTeamUID().equals("")) {
                             Backend.subscribeTo(Constants.Strings.UIDs.TEAM_UID,currentUser.getTeamUID());
                             // get current Team
@@ -307,50 +299,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         }
     }
 
-    private void setInternetConnectionListener() {
-        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        connectedRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                boolean connected = snapshot.getValue(Boolean.class);
-                if (connected) {
-                    System.out.println("connected");
-                    // Send Notification Stating Reconnection
-                } else {
-                    // Send Notification Stating Connection Lost
-                    final int flags = Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                            Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                            Intent.FLAG_ACTIVITY_NEW_TASK;
-                    final int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
-                    final Intent intent = new Intent(HomeActivity.this,HomeActivity.class);
-                    intent.addFlags(flags);
-
-                    final PendingIntent pendingIntent = PendingIntent.getActivity(HomeActivity.this, uniqueInt, intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(HomeActivity.this)
-                            .setSmallIcon(R.drawable.filled_logo)
-                            .setContentTitle("Connection Lost")
-                            .setContentText("You appear to not be connected to the network. You will not be able to access the features of the application without it.")
-                            .setAutoCancel(true)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .setSound(defaultSoundUri)
-                            .setContentIntent(pendingIntent);
-
-                    NotificationManager notificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    notificationManager.notify(0, notificationBuilder.build());
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                System.err.println("Listener was cancelled");
-            }
-        });
-    }
 
     //    Navigation Methods
     private void checkNavigationItem(final User currentUser, final Activity activity) {

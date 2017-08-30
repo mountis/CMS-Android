@@ -14,9 +14,12 @@ public final class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        setupInitialBackend();
+    }
 
+    private void setupInitialBackend() {
+//        Backend.setPersistenceEnabled(true);
         Backend.sendRegistrationToServer(FirebaseInstanceId.getInstance().getToken(), this);
-
         OneSignal.startInit(this)
                 .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
                 .unsubscribeWhenNotificationsAreDisabled(true)
