@@ -3,6 +3,7 @@ package com.augimas.android.helpers;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
@@ -11,9 +12,6 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.activities.ChatActivity;
 import com.augimas.android.backend.Backend;
@@ -23,6 +21,9 @@ import com.augimas.android.classes.objects.communication.Channel;
 import com.augimas.android.classes.objects.communication.Chat;
 import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -53,6 +54,27 @@ public final class FragmentHelper {
             case PROGRESS_DIALOG:
                 final ProgressDialog loadingProgress = new ProgressDialog(view.getContext());
                 loadingProgress.setMessage(view.getContext().getString(STRING_ID));
+                loadingProgress.setProgressStyle(R.style.AppTheme_ProgressDialog);
+                loadingProgress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+                loadingProgress.show();
+                return loadingProgress;
+            default:
+                return null;
+        }
+        return null;
+    }
+
+    public static ProgressDialog display(final int VIEW_TYPE, final int STRING_ID, final Context context) {
+        switch (VIEW_TYPE) {
+            case SNACKBAR:
+//                Snackbar.make(view, STRING_ID, Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                break;
+            case TOAST:
+                Toast.makeText(context, context.getString(STRING_ID), Toast.LENGTH_SHORT).show();
+                break;
+            case PROGRESS_DIALOG:
+                final ProgressDialog loadingProgress = new ProgressDialog(context);
+                loadingProgress.setMessage(context.getString(STRING_ID));
                 loadingProgress.setProgressStyle(R.style.AppTheme_ProgressDialog);
                 loadingProgress.setCancelable(false); // disable dismiss by tapping outside of the dialog
                 loadingProgress.show();

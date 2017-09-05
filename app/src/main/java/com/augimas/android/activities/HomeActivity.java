@@ -129,10 +129,20 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                         } else {
                                             final BrandingElementsFragment brandingElementsFragment = (BrandingElementsFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENTS);
                                             if (brandingElementsFragment != null && brandingElementsFragment.isVisible()) {
-                                                supportFragmentManager.beginTransaction().setTransition(
-                                                        android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                        BrandingElementsFragment.newInstance(brandingElementsFragment.getArguments().getString(Constants.Strings.UIDs.TEAM_UID)),
-                                                        Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                                                String teamUID = brandingElementsFragment.getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
+
+                                                if (teamUID != null && !teamUID.equals("")) {
+                                                    supportFragmentManager.beginTransaction().setTransition(
+                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                                                            BrandingElementsFragment.newInstance(teamUID),
+                                                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                                                } else {
+                                                    supportFragmentManager.beginTransaction().setTransition(
+                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                                                            new BrandingElementsFragment(),
+                                                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                                                }
+
                                             } else {
                                                 final BrandingElementFragment brandingElementFragment = (BrandingElementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENT);
                                                 if (brandingElementFragment != null && brandingElementFragment.isVisible()) {

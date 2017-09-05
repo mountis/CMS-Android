@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
+import com.augimas.android.helpers.NetworkConnectionHelper;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.onesignal.OneSignal;
 
@@ -14,6 +15,7 @@ public final class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        NetworkConnectionHelper.register(this);
         setupInitialBackend();
     }
 

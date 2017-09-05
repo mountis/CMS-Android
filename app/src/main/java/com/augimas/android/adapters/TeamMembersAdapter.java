@@ -112,7 +112,7 @@ public class TeamMembersAdapter extends RecyclerView.Adapter<TeamMembersAdapter.
                     v = vi.inflate(R.layout.row, null);
                 }
 
-                final TextView tv = (TextView) v.findViewById(R.id.spinnerTarget);
+                final TextView tv = v.findViewById(R.id.spinnerTarget);
 
                 tv.setText(FirebaseEntity.EntityRole.getRole(position+1).toString());
 

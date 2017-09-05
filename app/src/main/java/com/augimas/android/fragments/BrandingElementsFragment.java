@@ -43,7 +43,7 @@ public final class BrandingElementsFragment extends Fragment implements Branding
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_branding_elements, container, false);
-        final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.branding_elements_recycler_view);
+        final RecyclerView recyclerView = view.findViewById(R.id.branding_elements_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         final Activity activity = getActivity();
         if (getArguments() != null) {

@@ -57,16 +57,15 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
     @Override
     public LogoAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_logo_single, parent, false);
+                .inflate(R.layout.list_item_logo_brand_item, parent, false);
         return new LogoAdapter.ViewHolder(view);
     }
     @Override
     public void onBindViewHolder(final LogoAdapter.ViewHolder holder, int position) {
         final int POSITION = holder.getAdapterPosition();
+        holder.hideButtons();
         setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
-        holder.hideButtons();
-
         addOnClickListener(brandingName,holder,POSITION);
     }
     private void setupView(final LogoAdapter.ViewHolder holder, final int POSITION) {
@@ -107,6 +106,7 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
                             holder.imageView.setImageBitmap(DeviceHelper.decodeBase64(brandingName.getData().get(POSITION)));
                             holder.revealImageView();
                             holder.inputHidden = false;
+                            
                             holder.revealInputAndTurnButtonToDelete(false);
                         }
                     }

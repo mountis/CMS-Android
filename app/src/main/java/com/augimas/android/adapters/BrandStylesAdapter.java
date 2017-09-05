@@ -46,14 +46,14 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
     @Override
     public BrandStylesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_brand_style_single, parent, false);
+                .inflate(R.layout.list_item_brand_style_brand_item, parent, false);
         return new BrandStylesAdapter.ViewHolder(view);
     }
     @Override
     public void onBindViewHolder(final BrandStylesAdapter.ViewHolder holder, int position) {
         final int POSITION = holder.getAdapterPosition();
-        setupView(holder,POSITION);
         holder.hideButtons();
+        setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
         addOnClickListener(brandingName,holder,POSITION);
     }
@@ -79,6 +79,7 @@ public final class BrandStylesAdapter extends RecyclerView.Adapter<BrandStylesAd
                         }
                     } else {
                         containingView.findViewById(R.id.branding_element_brand_style_layout).setVisibility(View.VISIBLE);
+                        containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
 
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);

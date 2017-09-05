@@ -57,10 +57,10 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
     //    Adapter Methods
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_general_brand_item, parent, false);
         final int HINT_ID;
         boolean multiline = false;
+        final View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_general_brand_item, parent, false);
         switch (brandingName.getType()) {
             case DOMAIN_NAME:
                 HINT_ID = R.string.domain_name_text;
@@ -85,13 +85,13 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
         final int POSITION = holder.getAdapterPosition();
         holder.hideButtons();
         setupView(holder,POSITION);
-        addTextChangedListener(holder);
+        addTextChangedListener(holder,position);
         addOnEditorActionListener(holder,POSITION);
         addOnClickListener(brandingName,holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
         addOnFocusChangeListener(brandingName,holder,POSITION);
     }
-    private void addTextChangedListener(final ViewHolder holder) {
+    private void addTextChangedListener(final ViewHolder holder, final int position) {
         holder.mBrandItemInputText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -106,19 +106,33 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                 }
             }
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+                if (position > brandingName.getData().size()-1) {
+
+                } else {
+                    if (!s.toString().equals(brandingName.getData().get(position))) {
+                        if (holder.buttonRotated) {
+                            holder.turnButtonToCreate();
+                        }
+                    }
+                }
+                if (holder.buttonRotated) {
+
+                }
+            }
         });
     }
-    private String getTenCharPerLineString(String text){
-        String tenCharPerLineString = "";
-        while (text.length() > 10) {
+    private String getCharsPerLineString(String text){
+        String charsPerLineString = "";
+        int maxLength = 25;
+        while (text.length() > maxLength) {
 
-            String buffer = text.substring(0, 10);
-            tenCharPerLineString = tenCharPerLineString + buffer + "/n";
-            text = text.substring(10);
+            String buffer = text.substring(0, maxLength);
+            charsPerLineString = charsPerLineString + buffer + System.getProperty("line.separator");
+            text = text.substring(maxLength);
         }
-        tenCharPerLineString = tenCharPerLineString + text;
-        return tenCharPerLineString;
+        charsPerLineString = charsPerLineString + text;
+        return charsPerLineString;
     }
     private void setupView(final ViewHolder holder, final int POSITION) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
@@ -135,7 +149,7 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mBrandItemInputText.setText(getTenCharPerLineString(brandingName.getData().get(POSITION)));
+                                holder.mBrandItemInputText.setText(getCharsPerLineString(brandingName.getData().get(POSITION)));
                                 holder.editing = false;
                                 holder.mBrandItemInputText.setEnabled(false);
                                 holder.mBrandItemInputText.setClickable(false);
@@ -144,7 +158,7 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                         }
                     } else {
                         if (getItemCount() == 1) {
-                            containingView.findViewById(R.id.branding_element_general_layout).setVisibility(View.GONE);
+                            containingView.findViewById(R.id.branding_element_general_layout).setVisibility(View.VISIBLE);
                             containingView.findViewById(R.id.no_content).setVisibility(View.GONE);
                         }
                         if (POSITION > brandingName.getData().size()-1) {
@@ -153,6 +167,7 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                         } else {
                             holder.editing = false;
                             holder.revealInputAndTurnButtonToDelete(false);
+//                            holder.mBrandItemInputText.setText(getCharsPerLineString(brandingName.getData().get(POSITION)));
                             holder.mBrandItemInputText.setText(brandingName.getData().get(POSITION));
                         }
 
@@ -356,7 +371,11 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
             mBrandItemInputText = view.findViewById(R.id.input_brand_item);
             mBrandItemInputText.setHint(HINT_ID);
             if (multiline) {
-                mBrandItemInputText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                mBrandItemInputText.setSingleLine(false);
+                mBrandItemInputText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+//                mBrandItemInputText.setLines(2);
+//                mBrandItemInputText.setMaxLines(5);
+                mBrandItemInputText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
             }
             layout          = view.findViewById(R.id.input_layout_brand_name);
         }

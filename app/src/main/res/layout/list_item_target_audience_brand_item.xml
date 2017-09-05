@@ -29,7 +29,7 @@
             android:id="@+id/item_create_element"/>
         <android.support.v7.widget.AppCompatButton
             android:background="@drawable/circle"
-            android:layout_gravity="center"
+            android:layout_gravity="top|center_horizontal"
             android:text="@string/plus_sign"
             android:textSize="40sp"
             android:textColor="#ec3f26"

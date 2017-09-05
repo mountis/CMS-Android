@@ -7,7 +7,7 @@
     android:layout_margin="10dp"
     android:id="@+id/brand_name_content"
     android:background="@drawable/team_item_circle"
-    android:layout_height="75dp">
+    android:layout_height="wrap_content">
     <android.support.v7.widget.AppCompatButton
         android:background="@drawable/circle"
         android:layout_gravity="center"
@@ -25,7 +25,7 @@
         android:id="@+id/item_create_element"/>
     <android.support.v7.widget.AppCompatButton
         android:background="@drawable/circle"
-        android:layout_gravity="center"
+        android:layout_gravity="top|center_horizontal"
         android:text="@string/plus_sign"
         android:textSize="40sp"
         android:textColor="#ec3f26"
@@ -41,7 +41,6 @@
         app:pressedTranslationZ="12dp"
         android:id="@+id/item_modify_element"/>
     <android.support.v7.widget.LinearLayoutCompat
-        android:layout_weight="1"
         android:background="@drawable/team_item_circle"
         android:id="@+id/input_layout_brand_name"
         android:backgroundTint="#fff"
@@ -51,7 +50,7 @@
         android:layout_marginEnd="10dp"
         android:layout_marginStart="10dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
         <android.support.design.widget.TextInputLayout
             app:backgroundTint="#fff"
             android:textColorHint="#ec3f26"
@@ -63,6 +62,7 @@
                 android:inputType="text"
                 app:backgroundTint="#ec3f26"
                 android:textSize="20sp"
+                android:lines="5"
                 android:textColor="#ec3f26"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>

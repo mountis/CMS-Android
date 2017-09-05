@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            tools:listitem="@layout/list_item_target_audience_single"
+            tools:listitem="@layout/list_item_target_audience_brand_item"
             android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
     <android.support.v7.widget.LinearLayoutCompat
@@ -54,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            tools:listitem="@layout/list_item_logo_single"
+            tools:listitem="@layout/list_item_logo_brand_item"
             android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
     <android.support.v7.widget.LinearLayoutCompat
@@ -69,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            tools:listitem="@layout/list_item_brand_style_single"
+            tools:listitem="@layout/list_item_brand_style_brand_item"
             android:layout_marginBottom="65dp"/>
     </android.support.v7.widget.LinearLayoutCompat>
 </android.support.design.widget.CoordinatorLayout>

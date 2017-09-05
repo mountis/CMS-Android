@@ -85,6 +85,8 @@ public final class ColorDialog extends AlertDialog.Builder {
             });
         } else {
             setTitle(containingView.getContext().getString(R.string.title_create_color));
+            editText.setText("#");
+            editText.setSelection(1);
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -92,6 +94,7 @@ public final class ColorDialog extends AlertDialog.Builder {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (editText.length() == 0) {
                         editText.setText(activity.getString(R.string.pound_sign));
+                        editText.setSelection(1);
                     } else if (isProperInput(editText) && editText.length() == 7){
                         view.setBackgroundColor(Color.parseColor(editText.getText().toString()));
                     }

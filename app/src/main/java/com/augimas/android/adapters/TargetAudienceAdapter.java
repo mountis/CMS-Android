@@ -57,15 +57,15 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
     @Override
     public TargetAudienceAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_target_audience_single, parent, false);
+                .inflate(R.layout.list_item_target_audience_brand_item, parent, false);
         return new TargetAudienceAdapter.ViewHolder(view);
     }
     @Override
     public void onBindViewHolder(final TargetAudienceAdapter.ViewHolder holder, int position) {
         final int POSITION = holder.getAdapterPosition();
+        holder.hideButtons();
         setupView(holder,POSITION);
         holder.mView.startAnimation(bounceFasterAnimation);
-        holder.hideButtons();
         addTextChangedListener(holder);
         addItemAdapters(brandingName,holder,POSITION,null);
         addOnClickListener(brandingName,holder,POSITION);
