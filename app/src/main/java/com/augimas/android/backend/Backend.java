@@ -66,7 +66,6 @@ public final class Backend {
 //    Sign In/Out/Up & Re-Authenticate Methods
     public static void signIn(final User user, final View view, final Activity activity) {
         final Context context = view.getContext();
-        final DatabaseReference usersRef = getReference(R.string.firebase_users_directory, activity);
         final ProgressDialog loadingProgress = buildProgressDialog(R.string.progress_signing_in, view);
         // To dismiss the dialog
         if (PROTOTYPE_MODE) {
@@ -74,7 +73,7 @@ public final class Backend {
             context.startActivity(homeIntent);
         } else {
             if (user != null) {
-                usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                getReference(R.string.firebase_users_directory, activity).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.hasChildren()) {
@@ -89,10 +88,9 @@ public final class Backend {
                                     }
 
                                     // Sign In
-                                    final FirebaseAuth mAuth = FirebaseAuth.getInstance();
                                     user.setEmail(newUser.getEmail());
 
-                                    mAuth.signInWithEmailAndPassword(newUser.getEmail(), user.getPassword())
+                                    FirebaseAuth.getInstance().signInWithEmailAndPassword(newUser.getEmail(), user.getPassword())
                                             .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<AuthResult>() {
                                                 @Override
                                                 public void onComplete(@android.support.annotation.NonNull com.google.android.gms.tasks.Task<AuthResult> task) {
@@ -121,24 +119,28 @@ public final class Backend {
                                                     }
 
                                                     loadingProgress.dismiss();
-
                                                 }
                                             });
-                                } else {
-                                    loadingProgress.dismiss();
-                                    display(SNACKBAR, R.string.error_incorrect_signin_general, view);
+
+                                    return;
                                 }
                             }
+                            loadingProgress.dismiss();
+                            display(SNACKBAR, R.string.error_incorrect_signin_general, view);
                         } else {
                             loadingProgress.dismiss();
                             display(SNACKBAR, R.string.error_incorrect_signin_general, view);
                         }
                     }
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {loadingProgress.dismiss();}
+                    public void onCancelled(DatabaseError databaseError) {
+                        loadingProgress.dismiss();
+                        display(SNACKBAR, R.string.error_incorrect_signin_general, view);
+                    }
                 });
             } else {
                 loadingProgress.dismiss();
+                display(SNACKBAR, R.string.error_incorrect_signin_general, view);
             }
         }
     }

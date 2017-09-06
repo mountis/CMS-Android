@@ -7,6 +7,12 @@ public final class Constants {
             public static final int CHAT          = 0x8816231;
             public static final int RECENT_ACTIVITIES = 0x4718591;
             public static final int SETTINGS      = 0x9102612;
+            public final class IDs {
+                public static final int DASHBOARD     = 0;
+                public static final int CHAT          = 1;
+                public static final int RECENT_ACTIVITIES = 2;
+                public static final int SETTINGS      = 3;
+            }
         }
         public static final class UIDs {
             public static final int UID                 = 10;

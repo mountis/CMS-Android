@@ -71,7 +71,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
         setContentView(R.layout.activity_home);
 
         final FragmentManager manager = getSupportFragmentManager();
-        navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         final Bundle bundle = getIntent().getExtras();
@@ -331,7 +331,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     Backend.getReference(R.string.firebase_users_directory, activity).child(currentUser.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot userSnapshot) {
-            final BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+            final BottomNavigationView navigationView = findViewById(R.id.navigation);
 
             final Menu menu = navigationView.getMenu();
             final User currentUser = new User(userSnapshot);
@@ -339,10 +339,11 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
                 menu.removeItem(R.id.navigation_chat);
                 if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
-//                    menu.removeItem(R.id.navigation_dashboard);
-                    menu.getItem(R.id.navigation_dashboard).setEnabled(false);
-//                    menu.removeItem(R.id.navigation_recent_activities);
-                    menu.getItem(R.id.navigation_recent_activities).setEnabled(false);
+                    menu.getItem(0).setEnabled(false);
+                    menu.getItem(1).setEnabled(false);
+                } else {
+                    menu.getItem(0).setEnabled(true);
+                    menu.getItem(1).setEnabled(true);
                 }
             } else {
                 if (!currentUser.getTeamUID().equals("")) {
@@ -352,18 +353,20 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             if (teamSnapshot.exists()) {
                                 final Team currentTeam = new Team(teamSnapshot);
                                 if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.APPROVED) {
-//                                    menu.removeItem(R.id.navigation_dashboard);
-                                    menu.getItem(R.id.navigation_dashboard).setEnabled(false);
+                                    menu.getItem(0).setEnabled(false);
+                                } else {
+                                    menu.getItem(0).setEnabled(true);
                                 }
 
                                 if (!currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.VIEWER)) {
                                     navigationView.setSelectedItemId(R.id.navigation_settings);
-//                                    menu.removeItem(R.id.navigation_chat);
-                                    menu.getItem(R.id.navigation_chat).setEnabled(false);
-//                                    menu.removeItem(R.id.navigation_recent_activities);
-                                    menu.getItem(R.id.navigation_recent_activities).setEnabled(false);
+                                    menu.getItem(1).setEnabled(false);
+                                    menu.getItem(2).setEnabled(false);
                                     final android.app.FragmentManager manager = getFragmentManager();
                                     handleSettingsNavigation(manager);
+                                } else {
+                                    menu.getItem(1).setEnabled(true);
+                                    menu.getItem(2).setEnabled(true);
                                 }
                             }
                         }
@@ -373,12 +376,12 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                     });
                 } else {
                     navigationView.setSelectedItemId(R.id.navigation_settings);
-//                    menu.removeItem(R.id.navigation_chat);
-                    menu.getItem(R.id.navigation_chat).setEnabled(false);
-//                    menu.removeItem(R.id.navigation_dashboard);
-                    menu.getItem(R.id.navigation_dashboard).setEnabled(false);
-//                    menu.removeItem(R.id.navigation_recent_activities);
-                    menu.getItem(R.id.navigation_recent_activities).setEnabled(false);
+                    // Chat is Item 1
+                    menu.getItem(1).setEnabled(false);
+                    // Dashboard is Item 0
+                    menu.getItem(0).setEnabled(false);
+                    // Recent Activities is Item 2
+                    menu.getItem(2).setEnabled(false);
                     final android.app.FragmentManager manager = getFragmentManager();
                     handleSettingsNavigation(manager);
                 }
