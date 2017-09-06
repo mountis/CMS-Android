@@ -1,13 +1,11 @@
 package com.augimas.android.helpers;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -24,16 +22,6 @@ import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets
  */
 
 public final class NetworkConnectionHelper {
-    public static void register(final Activity activity){
-        try {
-            BroadcastReceiver receiverDataChange = new NetworkChangeReceiver();
-            IntentFilter filterData = new IntentFilter();
-            filterData.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            activity.registerReceiver(receiverDataChange, filterData);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-    }
     public static class NetworkChangeReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {

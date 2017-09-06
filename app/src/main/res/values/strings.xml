@@ -1,7 +1,7 @@
 <resources>
     <!--App Strings -->
     <string name="app_name">Augimas</string>
-    <string name="app_build_version">v0.0.255542</string>
+    <string name="app_build_version">v0.0.255545</string>
 
     <!-- Firebase Strings -->
 
@@ -187,4 +187,5 @@
     <string name="okay_text">Okay</string>
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dictum placerat neque, sit amet cursus nisl sodales at. In pellentesque cursus libero, vitae gravida est euismod non. Sed cursus neque.</string>
     <string name="message_network_connection_connected">You are connected to the network!</string>
+    <string name="at_sign">\@</string>
 </resources>

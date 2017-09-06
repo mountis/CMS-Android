@@ -199,23 +199,15 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
             mModifyButton.setEnabled(false);
             mModifyButton.setClickable(false);
             mModifyButton.startAnimation(close);
-            mModifyButton.post(new Runnable() {
-                @Override
-                public void run() {
-                    mModifyButton.setVisibility(View.GONE);
-                }
-            });
+            mModifyButton.setVisibility(View.GONE);
+
         }
         void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
-            mCreateButton.post(new Runnable() {
-                @Override
-                public void run() {
-                    mCreateButton.setVisibility(View.GONE);
-                }
-            });
+            mCreateButton.setVisibility(View.GONE);
+
         }
         void revealModifyButton(){
             mModifyButton.setEnabled(true);

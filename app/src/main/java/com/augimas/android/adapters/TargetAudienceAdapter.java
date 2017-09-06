@@ -207,12 +207,7 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mCreateButton.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        holder.hideButtons();
-                                    }
-                                });
+                                holder.hideButtons();
                                 holder.editing = false;
                                 holder.setEnabled(false);
                                 holder.setClickable(false);
@@ -394,8 +389,8 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         }
 
         boolean inputsFilled() {
-            return !mOccupationEditText.getText().toString().equals("") &&
-                    !mAgeEditText.getText().toString().equals("") &&
+            return mOccupationEditText.getText().toString().length() > 4 &&
+                    mAgeEditText.getText().toString().length() > 0 &&
                     mSexSpinner.getSelectedItemPosition() != 0 &&
                     mEducationSpinner.getSelectedItemPosition() != 0 &&
                     mIncomeSpinner.getSelectedItemPosition() != 0;

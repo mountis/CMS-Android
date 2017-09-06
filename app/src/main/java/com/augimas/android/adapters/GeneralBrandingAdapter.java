@@ -99,40 +99,23 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (holder.editing) {
                     if (s.length() != 0) {
-                        holder.turnButtonToCreate();
+                        if (BrandingElement.hasProperInput(s.toString(),brandingName)) {
+                            holder.turnButtonToCreate();
+                        } else {
+                            holder.turnButtonToDelete();
+                        }
                     } else {
+                        if (brandingName.getType().equals(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)) {
+                            holder.mBrandItemInputText.setText(activity.getString(R.string.at_sign));
+                            holder.mBrandItemInputText.setSelection(1);
+                        }
                         holder.turnButtonToDelete();
                     }
                 }
             }
             @Override
-            public void afterTextChanged(Editable s) {
-                if (position > brandingName.getData().size()-1) {
-
-                } else {
-                    if (!s.toString().equals(brandingName.getData().get(position))) {
-                        if (holder.buttonRotated) {
-                            holder.turnButtonToCreate();
-                        }
-                    }
-                }
-                if (holder.buttonRotated) {
-
-                }
-            }
+            public void afterTextChanged(Editable s) {}
         });
-    }
-    private String getCharsPerLineString(String text){
-        String charsPerLineString = "";
-        int maxLength = 25;
-        while (text.length() > maxLength) {
-
-            String buffer = text.substring(0, maxLength);
-            charsPerLineString = charsPerLineString + buffer + System.getProperty("line.separator");
-            text = text.substring(maxLength);
-        }
-        charsPerLineString = charsPerLineString + text;
-        return charsPerLineString;
     }
     private void setupView(final ViewHolder holder, final int POSITION) {
         if ((getCurrentUser() != null ? getCurrentUser().getUID(): null) != null) {
@@ -149,7 +132,7 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                             if (POSITION > brandingName.getData().size()-1) {
                                 holder.hideView();
                             } else {
-                                holder.mBrandItemInputText.setText(getCharsPerLineString(brandingName.getData().get(POSITION)));
+                                holder.mBrandItemInputText.setText(brandingName.getData().get(POSITION));
                                 holder.editing = false;
                                 holder.mBrandItemInputText.setEnabled(false);
                                 holder.mBrandItemInputText.setClickable(false);
@@ -164,10 +147,13 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
                         if (POSITION > brandingName.getData().size()-1) {
                             holder.hideInput(false);
                             holder.revealCreateButton();
+                            if (brandingName.getType().equals(BrandingElement.ElementType.SOCIAL_MEDIA_NAME)) {
+                                holder.mBrandItemInputText.setText(activity.getString(R.string.at_sign));
+                                holder.mBrandItemInputText.setSelection(1);
+                            }
                         } else {
                             holder.editing = false;
                             holder.revealInputAndTurnButtonToDelete(false);
-//                            holder.mBrandItemInputText.setText(getCharsPerLineString(brandingName.getData().get(POSITION)));
                             holder.mBrandItemInputText.setText(brandingName.getData().get(POSITION));
                         }
 
@@ -179,23 +165,15 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
         }
     }
     private void handleInput(final ViewHolder holder, final int position) {
-        if (BrandingElement.checkInput(holder.mBrandItemInputText.getText().toString().trim(), brandingName)) {
-            if (brandingName.getType() == BrandingElement.ElementType.DOMAIN_NAME) {
-                for(String domain:brandingName.getData()) {
-                    if (holder.mBrandItemInputText.getText().toString().trim().equals(domain)) {
-                        return;
-                    }
-                }
-            }
+        final String trimmedInput = holder.mBrandItemInputText.getText().toString().trim();
+        if (BrandingElement.hasProperInput(trimmedInput, brandingName)) {
             if (position == brandingName.getData().size()) {
-                brandingName.getData().add(holder.mBrandItemInputText.getText().toString().trim());
-                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,holder.mBrandItemInputText.getText().toString().trim(), null);
+                brandingName.getData().add(trimmedInput);
+                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.ADD,trimmedInput, null);
             } else if (position < brandingName.getData().size()){
-                if (!holder.mBrandItemInputText.getText().toString().trim().equals(brandingName.getData().get(position))) {
-                    final String previousName = brandingName.getData().get(position).trim();
-                    brandingName.getData().set(position,holder.mBrandItemInputText.getText().toString().trim());
-                    sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, holder.mBrandItemInputText.getText().toString().trim());
-                }
+                final String previousName = brandingName.getData().get(position).trim();
+                brandingName.getData().set(position,trimmedInput);
+                sendBrandingElementNotification(brandingName, RecentActivity.ActivityVerbType.UPDATE,previousName, trimmedInput);
             }
             holder.editing = false;
             holder.creating = false;
@@ -203,10 +181,8 @@ public class GeneralBrandingAdapter extends RecyclerView.Adapter<GeneralBranding
             // Improper Input
             holder.mBrandItemInputText.setText("");
             switch (brandingName.getType()) {
-                case DOMAIN_NAME:
-                    FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
-                    break;
                 default:
+                    FragmentHelper.display(TOAST,R.string.tld_not_valid,holder.mView.getRootView());
                     break;
             }
         }

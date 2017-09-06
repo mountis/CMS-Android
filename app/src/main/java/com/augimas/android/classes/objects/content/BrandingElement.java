@@ -482,22 +482,24 @@ public class BrandingElement extends FirebaseContent {
                 break;
         }
     }
-    public static boolean checkInput(String input, BrandingElement element) {
+    public static boolean hasProperInput(String input, BrandingElement element) {
+        // Make sure none of the items match exactly.
+        if (!element.getType().equals(ElementType.BRAND_STYLE)) {
+            for (String dat:element.getData()) {
+                if (dat.equals(input)) {
+                    return false;
+                }
+            }
+        }
         switch (element.getType()){
             case DOMAIN_NAME:
-                for (String dat:element.getData()) {
-                    if (dat.equals(input)) {
-                        return false;
-                    }
-                }
-                return input.matches("^(?:[-A-Za-z0-9]+\\.)+[A-Za-z]{2,6}$");
-//                if (input.matches("^(?:[-A-Za-z0-9]+\\.)+[A-Za-z]{2,6}$")) {
-//                    return true;
-//                }
-//                for (Branding.TLD tld:Branding.TLD.getAllTLDs()) {
-//                    if (input.endsWith(tld.toString())) return true;
-//                }
-//                break;
+                return input.matches("^(?:[-A-Za-z0-9]+\\.)+[A-Za-z]{2,63}$");
+            case SOCIAL_MEDIA_NAME:
+                return input.length() >= 7;
+            case PRODUCTS_SERVICES:
+                return input.length() >= 3;
+            case MISSION_STATEMENT:
+                return input.length() >= 10;
             default:
                 return true;
         }
