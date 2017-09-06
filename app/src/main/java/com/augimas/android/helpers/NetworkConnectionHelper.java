@@ -55,6 +55,11 @@ public final class NetworkConnectionHelper {
         }
     }
 
+    public static int getState(final Context context) {
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        return telephonyManager.getDataState();
+    }
+
     private static void sendNotification(Context context) {
         // Send Notification Stating Connection Lost
         final int flags = Intent.FLAG_ACTIVITY_CLEAR_TASK |

@@ -8,12 +8,14 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatButton;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.augimas.android.helpers.NetworkConnectionHelper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -37,6 +39,7 @@ import static com.augimas.android.classes.constants.Constants.Ints.Views.Buttons
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_BUTTON;
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.PROGRESS_DIALOG;
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
+import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.augimas.android.helpers.DeviceHelper.dismissKeyboard;
 import static com.augimas.android.helpers.FragmentHelper.display;
 
@@ -176,7 +179,12 @@ public final class SignUpFragment extends Fragment {
                             passwordIsAppropriateLength(inputs, layouts, view) &&
                             emailIsValid(inputs, layouts, view)) {
                         dismissKeyboard(view);
-                        attemptToCreateNewUser((User) createObjectFromFields(Constants.Ints.FIREBASE_USER,view), view, activity);
+
+                        if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+                            attemptToCreateNewUser((User) createObjectFromFields(Constants.Ints.FIREBASE_USER,view), view, activity);
+                        } else {
+                            FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
+                        }
                     }
                 } else {
                     display(SNACKBAR, R.string.feature_unavailable, view);

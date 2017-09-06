@@ -135,8 +135,10 @@ public final class Backend {
                         }
                     }
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {}
+                    public void onCancelled(DatabaseError databaseError) {loadingProgress.dismiss();}
                 });
+            } else {
+                loadingProgress.dismiss();
             }
         }
     }

@@ -8,6 +8,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatButton;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -16,6 +17,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.augimas.android.helpers.FragmentHelper;
+import com.augimas.android.helpers.NetworkConnectionHelper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -39,6 +42,7 @@ import static com.augimas.android.classes.constants.Constants.Ints.Views.Buttons
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_IN_BUTTON;
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Buttons.Indices.SIGN_UP_TEXT_BUTTON;
 import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.SNACKBAR;
+import static com.augimas.android.classes.constants.Constants.Ints.Views.Widgets.IDs.TOAST;
 import static com.augimas.android.helpers.DeviceHelper.dismissKeyboard;
 import static com.augimas.android.helpers.FragmentHelper.buildProgressDialog;
 import static com.augimas.android.helpers.FragmentHelper.display;
@@ -71,7 +75,11 @@ public final class SignInFragment extends Fragment {
         // Forgot Password Button (Transition to Forgot Password Section)
         setupForgotPasswordButtonsOnClickListener(buttons.get(FORGOT_PASSWORD_BUTTON), view, activity);
 
-        checkIfUserIsLoggedIn(getCurrentUser(), view, activity);
+        if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+            checkIfUserIsLoggedIn(getCurrentUser(), view, activity);
+        } else {
+            FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
+        }
 
         return view;
     }
@@ -181,7 +189,11 @@ public final class SignInFragment extends Fragment {
                         display(SNACKBAR, R.string.feature_unavailable, view);
                     }
 
-                    Backend.signIn(user, view, activity);
+                    if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+                        Backend.signIn(user, view, activity);
+                    } else {
+                        FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
+                    }
                 }
             }
         });
