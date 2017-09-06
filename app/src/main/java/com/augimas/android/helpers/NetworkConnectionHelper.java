@@ -45,7 +45,7 @@ public final class NetworkConnectionHelper {
                     case TelephonyManager.DATA_DISCONNECTED: // off
 //                        new NetworkConnectionDialog(context.getApplicationContext());
                         FragmentHelper.display(TOAST,R.string.message_network_connection_lost,context);
-                        sendNotification(context);
+//                        sendNotification(context);
                         break;
                     case TelephonyManager.DATA_CONNECTED:
                         FragmentHelper.display(TOAST,R.string.message_network_connection_connected,context);

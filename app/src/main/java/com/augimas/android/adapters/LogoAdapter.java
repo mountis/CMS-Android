@@ -2,7 +2,6 @@ package com.augimas.android.adapters;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatImageView;
@@ -14,19 +13,17 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import com.augimas.android.dialogs.ConfirmActionDialog;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.constants.Constants;
 import com.augimas.android.classes.objects.FirebaseEntity;
 import com.augimas.android.classes.objects.content.BrandingElement;
-import com.augimas.android.classes.objects.content.RecentActivity;
-import com.augimas.android.classes.objects.entities.Team;
 import com.augimas.android.classes.objects.entities.User;
+import com.augimas.android.dialogs.ConfirmActionDialog;
 import com.augimas.android.helpers.DeviceHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -131,6 +128,12 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
                 if (POSITION < brandingName.getData().size()) {
                     String previousData = brandingName.getData().get(POSITION);
                     new ConfirmActionDialog(previousData,previousData,"",brandingName,activity);
+                } else {
+                    holder.creating = false;
+                    holder.hideModifyButton();
+                    holder.revealCreateButton();
+                    holder.turnButtonToCreate();
+                    holder.hideInput(true);
                 }
             }
         });
@@ -152,57 +155,6 @@ public final class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHold
                         e.printStackTrace();
                     }
                 }
-            });
-        }
-    }
-    private void sendBrandingElementNotification(final BrandingElement brandingName, final RecentActivity.ActivityVerbType verbType) {
-        if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
-            Backend.getReference(R.string.firebase_teams_directory,activity).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    final ArrayMap<FirebaseEntity.EntityType,Team> teamMap = Team.toClientAndHostTeamMap(dataSnapshot,brandingName.getTeamUID());
-                    Backend.getReference(R.string.firebase_users_directory,activity).child(getCurrentUser().getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            final User currentUser = new User(dataSnapshot);
-
-                            if (currentUser.hasInclusiveAccess(FirebaseEntity.EntityRole.EDITOR)) {
-                                final RecentActivity hostRecentActivity;
-                                final RecentActivity clientRecentActivity;
-
-                                switch (verbType) {
-                                    case UPDATE:
-                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName());
-                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType);
-                                        } else {
-                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType);
-                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType);
-                                        }
-                                        break;
-                                    default:
-                                        if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                            hostRecentActivity = new RecentActivity(currentUser,brandingName, verbType, teamMap.get(FirebaseEntity.EntityType.CLIENT).getName());
-                                            clientRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.HOST),brandingName, verbType);
-                                        } else {
-                                            hostRecentActivity = new RecentActivity(teamMap.get(FirebaseEntity.EntityType.CLIENT),brandingName, verbType);
-                                            clientRecentActivity = new RecentActivity(currentUser,brandingName, verbType);
-                                        }
-                                        break;
-                                }
-
-                                Backend.sendUpstreamNotification(hostRecentActivity,teamMap.get(FirebaseEntity.EntityType.HOST).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-                                Backend.sendUpstreamNotification(clientRecentActivity,teamMap.get(FirebaseEntity.EntityType.CLIENT).getUID(),currentUser.getUID(),brandingName.getType().toString(),activity, true);
-
-                                Backend.update(brandingName, activity);
-                            }
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-                }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
             });
         }
     }

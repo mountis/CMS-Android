@@ -170,8 +170,8 @@ public class RecentActivitiesAdapter extends RecyclerView.Adapter<RecentActiviti
         public ViewHolder(View view) {
             super(view);
             mView = view.findViewById(R.id.notification_view_id);
-            mNotificationText = (AppCompatTextView) mView.findViewById(R.id.item_label_notification_text);
-            mIconLetterMoniker = (AppCompatButton) mView.findViewById(R.id.item_team_icon_letter_moniker);
+            mNotificationText = mView.findViewById(R.id.item_label_notification_text);
+            mIconLetterMoniker = mView.findViewById(R.id.item_team_icon_letter_moniker);
         }
 
         @Override

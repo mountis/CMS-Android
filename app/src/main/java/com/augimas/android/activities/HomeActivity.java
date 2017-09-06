@@ -104,11 +104,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         final FragmentManager supportFragmentManager = getSupportFragmentManager();
-
-        final RecentActivity recentActivity = new RecentActivity();
-
-        recentActivity.navigate(this);
-
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 if ((getCurrentUser() != null ? getCurrentUser().getUID():null) != null) {
@@ -118,95 +113,24 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                             if (dataSnapshot.exists()) {
                                 final User currentUser = new User(dataSnapshot);
                                 checkNavigationItem(currentUser,HomeActivity.this);
-                                switch (selectedTopFragment) {
-                                    case Constants.Ints.Fragments.DASHBOARD:
-                                        final TeamsFragment teamsFragment = (TeamsFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAMS);
-                                        if (teamsFragment != null && teamsFragment.isVisible()) {
-                                            supportFragmentManager.beginTransaction().setTransition(
-                                                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                    new TeamsFragment(),
-                                                    Constants.Strings.Fragments.TEAMS).commit();
-                                        } else {
-                                            final BrandingElementsFragment brandingElementsFragment = (BrandingElementsFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENTS);
-                                            if (brandingElementsFragment != null && brandingElementsFragment.isVisible()) {
-                                                String teamUID = brandingElementsFragment.getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
-
-                                                if (teamUID != null && !teamUID.equals("")) {
-                                                    supportFragmentManager.beginTransaction().setTransition(
-                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                            BrandingElementsFragment.newInstance(teamUID),
-                                                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
-                                                } else {
-                                                    supportFragmentManager.beginTransaction().setTransition(
-                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                            new BrandingElementsFragment(),
-                                                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
-                                                }
-
-                                            } else {
-                                                final BrandingElementFragment brandingElementFragment = (BrandingElementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENT);
-                                                if (brandingElementFragment != null && brandingElementFragment.isVisible()) {
-                                                    supportFragmentManager.beginTransaction().setTransition(
-                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                            BrandingElementFragment.newInstance(brandingElementFragment.getArguments()),
-                                                            Constants.Strings.Fragments.BRANDING_ELEMENT).commit();
-                                                } else {
-                                                    final TeamManagementFragment teamManagementFragment = (TeamManagementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAM_MANAGEMENT);
-                                                    if (teamManagementFragment != null && teamManagementFragment.isVisible()) {
-                                                        supportFragmentManager.beginTransaction().setTransition(
-                                                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                                TeamManagementFragment.newInstance((Team) teamManagementFragment.getArguments().getSerializable(Constants.Strings.TEAM)),
-                                                                Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    case Constants.Ints.Fragments.RECENT_ACTIVITIES:
-                                        final RecentActivitiesFragment recentActivitiesFragment = (RecentActivitiesFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.RECENT_ACTIVITIES);
-                                        if (recentActivitiesFragment != null && recentActivitiesFragment.isVisible()) {
-                                            supportFragmentManager.beginTransaction().setTransition(
-                                                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                    new RecentActivitiesFragment(),
-                                                    Constants.Strings.Fragments.RECENT_ACTIVITIES).commit();
-                                        }
-                                        break;
-                                    case Constants.Ints.Fragments.SETTINGS:
-                                        final android.app.FragmentManager fragmentManager = getFragmentManager();
-                                        SettingsFragment settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS);
-                                        if (settingsFragment != null && settingsFragment.isVisible()) {
-                                            fragmentManager.beginTransaction().setTransition(
-                                                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                    new SettingsFragment(),
-                                                    Constants.Strings.Fragments.SETTINGS).commit();
-                                        } else {
-                                            final TeamManagementFragment teamManagementFragment = (TeamManagementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAM_MANAGEMENT);
-                                            if (teamManagementFragment != null && teamManagementFragment.isVisible()) {
-                                                if (teamManagementFragment.getArguments() != null) {
-                                                    final Team teamItem = (Team) teamManagementFragment.getArguments().getSerializable(Constants.Strings.TEAM);
-                                                    if (teamItem != null) {
-                                                        supportFragmentManager.beginTransaction().setTransition(
-                                                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                                TeamManagementFragment.newInstance(teamItem),
-                                                                Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
-                                                    }
-                                                } else {
-                                                    supportFragmentManager.beginTransaction().setTransition(
-                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                            new TeamManagementFragment(),
-                                                            Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
-                                                }
-                                            } else {
-                                                final AccountFragment accountFragment = (AccountFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.ACCOUNT);
-                                                if (accountFragment != null && accountFragment.isVisible()) {
-                                                    supportFragmentManager.beginTransaction().setTransition(
-                                                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
-                                                            AccountFragment.newInstance(accountFragment.getArguments().getString(Constants.Strings.UIDs.USER_UID)),
-                                                            Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
-                                                }
-                                            }
-                                        }
-                                        break;
+                                if (currentUser.getType().equals(FirebaseEntity.EntityType.HOST)) {
+                                    if (navigation.getMenu().getItem(0).isChecked()) {
+                                        checkDashboard(supportFragmentManager);
+                                    } else if (navigation.getMenu().getItem(1).isChecked()){
+                                        checkRecentActivities(supportFragmentManager);
+                                    } else {
+                                        checkSettings(supportFragmentManager);
+                                    }
+                                } else {
+                                    if (navigation.getMenu().getItem(0).isChecked()) {
+                                        checkDashboard(supportFragmentManager);
+                                    } else if (navigation.getMenu().getItem(1).isChecked()){
+                                        selectedTopFragment = Constants.Ints.Fragments.CHAT;
+                                    } else if (navigation.getMenu().getItem(2).isChecked()){
+                                        checkRecentActivities(supportFragmentManager);
+                                    } else {
+                                        checkSettings(supportFragmentManager);
+                                    }
                                 }
                             }
                         }
@@ -219,6 +143,100 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void checkSettings(FragmentManager supportFragmentManager) {
+        selectedTopFragment = Constants.Ints.Fragments.SETTINGS;
+        final android.app.FragmentManager fragmentManager = getFragmentManager();
+        SettingsFragment settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag(Constants.Strings.Fragments.SETTINGS);
+        if (settingsFragment != null && settingsFragment.isVisible()) {
+            fragmentManager.beginTransaction().setTransition(
+                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                    new SettingsFragment(),
+                    Constants.Strings.Fragments.SETTINGS).commit();
+        } else {
+            final TeamManagementFragment teamManagementFragment = (TeamManagementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAM_MANAGEMENT);
+            if (teamManagementFragment != null && teamManagementFragment.isVisible()) {
+                if (teamManagementFragment.getArguments() != null) {
+                    final Team teamItem = (Team) teamManagementFragment.getArguments().getSerializable(Constants.Strings.TEAM);
+                    if (teamItem != null) {
+                        supportFragmentManager.beginTransaction().setTransition(
+                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                                TeamManagementFragment.newInstance(teamItem),
+                                Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
+                    }
+                } else {
+                    supportFragmentManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                            new TeamManagementFragment(),
+                            Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
+                }
+            } else {
+                final AccountFragment accountFragment = (AccountFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.ACCOUNT);
+                if (accountFragment != null && accountFragment.isVisible()) {
+                    supportFragmentManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                            AccountFragment.newInstance(accountFragment.getArguments().getString(Constants.Strings.UIDs.USER_UID)),
+                            Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
+                }
+            }
+        }
+    }
+
+    private void checkRecentActivities(FragmentManager supportFragmentManager) {
+        selectedTopFragment = Constants.Ints.Fragments.RECENT_ACTIVITIES;
+        final RecentActivitiesFragment recentActivitiesFragment = (RecentActivitiesFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.RECENT_ACTIVITIES);
+        if (recentActivitiesFragment != null && recentActivitiesFragment.isVisible()) {
+            supportFragmentManager.beginTransaction().setTransition(
+                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                    new RecentActivitiesFragment(),
+                    Constants.Strings.Fragments.RECENT_ACTIVITIES).commit();
+        }
+    }
+
+    private void checkDashboard(FragmentManager supportFragmentManager) {
+        selectedTopFragment = Constants.Ints.Fragments.DASHBOARD;
+        final TeamsFragment teamsFragment = (TeamsFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAMS);
+        if (teamsFragment != null && teamsFragment.isVisible()) {
+            supportFragmentManager.beginTransaction().setTransition(
+                    android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                    new TeamsFragment(),
+                    Constants.Strings.Fragments.TEAMS).commit();
+        } else {
+            final BrandingElementsFragment brandingElementsFragment = (BrandingElementsFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENTS);
+            if (brandingElementsFragment != null && brandingElementsFragment.isVisible()) {
+                String teamUID = brandingElementsFragment.getArguments().getString(Constants.Strings.UIDs.TEAM_UID);
+
+                if (teamUID != null && !teamUID.equals("")) {
+                    supportFragmentManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                            BrandingElementsFragment.newInstance(teamUID),
+                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                } else {
+                    supportFragmentManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                            new BrandingElementsFragment(),
+                            Constants.Strings.Fragments.BRANDING_ELEMENTS).commit();
+                }
+
+            } else {
+                final BrandingElementFragment brandingElementFragment = (BrandingElementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.BRANDING_ELEMENT);
+                if (brandingElementFragment != null && brandingElementFragment.isVisible()) {
+                    supportFragmentManager.beginTransaction().setTransition(
+                            android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                            BrandingElementFragment.newInstance(brandingElementFragment.getArguments()),
+                            Constants.Strings.Fragments.BRANDING_ELEMENT).commit();
+                } else {
+                    final TeamManagementFragment teamManagementFragment = (TeamManagementFragment) supportFragmentManager.findFragmentByTag(Constants.Strings.Fragments.TEAM_MANAGEMENT);
+                    if (teamManagementFragment != null && teamManagementFragment.isVisible()) {
+                        supportFragmentManager.beginTransaction().setTransition(
+                                android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.container,
+                                TeamManagementFragment.newInstance((Team) teamManagementFragment.getArguments().getSerializable(Constants.Strings.TEAM)),
+                                Constants.Strings.Fragments.TEAM_MANAGEMENT).commit();
+                    }
+                }
+            }
+        }
     }
     private void setupActionBar(final ActionBar actionBar, final String title) {
         if (actionBar != null) {
@@ -308,8 +326,6 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
             startActivity(new Intent(this,SignInActivity.class));
         }
     }
-
-
     //    Navigation Methods
     private void checkNavigationItem(final User currentUser, final Activity activity) {
     Backend.getReference(R.string.firebase_users_directory, activity).child(currentUser.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -665,7 +681,7 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
                         final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                         final JSONObject object = DeviceHelper.readFromJSONFile(HomeActivity.this);
-                        final String myBase64Image = encodeToBase64(selectedImage, Bitmap.CompressFormat.JPEG, 100);
+                        final String myBase64Image = encodeToBase64(selectedImage, Bitmap.CompressFormat.JPEG, 25);
                         final String brandingElementUID = object.getString(Constants.Strings.UIDs.BRANDING_ELEMENT_UID);
                         final int itemPosition = object.getInt(Constants.Strings.Fields.SELECTED_INDEX);
                         if (brandingElementUID != null && !brandingElementUID.equals("") && itemPosition != -1) {

@@ -548,26 +548,16 @@ public final class RecentActivity extends FirebaseContent {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
                                         final BrandingElement brandingElement = new BrandingElement(dataSnapshot);
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                navigation.getMenu().getItem(0).setChecked(true);
-                                            }
-                                        });
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Bundle bundle = new Bundle();
-                                                bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
-                                                bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
-                                                (activity)
-                                                        .getSupportFragmentManager()
-                                                        .beginTransaction()
-                                                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                                        .replace(R.id.container, BrandingElementFragment.newInstance(bundle))
-                                                        .commit();
-                                            }
-                                        });
+                                        navigation.getMenu().getItem(0).setChecked(true);
+                                        Bundle bundle = new Bundle();
+                                        bundle.putSerializable(Constants.Strings.BRANDING_ELEMENT,brandingElement);
+                                        bundle.putSerializable(Constants.Strings.UIDs.BRANDING_ELEMENT_UID,brandingElement.getUID());
+                                        (activity)
+                                                .getSupportFragmentManager()
+                                                .beginTransaction()
+                                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                .replace(R.id.container, BrandingElementFragment.newInstance(bundle),Constants.Strings.Fragments.BRANDING_ELEMENT)
+                                                .commit();
                                     }
                                 }
                                 @Override
@@ -580,19 +570,9 @@ public final class RecentActivity extends FirebaseContent {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     final Message messageItem = new Message(dataSnapshot);
                                     if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                navigation.getMenu().getItem(0).setChecked(true);
-                                            }
-                                        });
+                                        navigation.getMenu().getItem(0).setChecked(true);
                                     } else {
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                navigation.getMenu().getItem(2).setChecked(true);
-                                            }
-                                        });
+                                        navigation.getMenu().getItem(2).setChecked(true);
                                     }
                                     // Get Sender UID to find out what team the sender was if the host
                                     // Get the Current User UID to pass in to get the Chat
@@ -619,12 +599,7 @@ public final class RecentActivity extends FirebaseContent {
                                                                     @Override
                                                                     public void onDataChange(final DataSnapshot teamSnapshot) {
                                                                         if (teamSnapshot.exists()) {
-                                                                            navigation.post(new Runnable() {
-                                                                                @Override
-                                                                                public void run() {
-                                                                                    FragmentHelper.transitionUserToChatFragment(new Team(teamSnapshot),activity, messageItem.getChannelUID());
-                                                                                }
-                                                                            });
+                                                                            FragmentHelper.transitionUserToChatFragment(new Team(teamSnapshot),activity, messageItem.getChannelUID());
                                                                         }
                                                                     }
 
@@ -646,12 +621,7 @@ public final class RecentActivity extends FirebaseContent {
                                         });
 
                                     } else {
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                FragmentHelper.transitionClientUserToChatFragment(currentUser,activity, messageItem.getChannelUID());
-                                            }
-                                        });
+                                        FragmentHelper.transitionClientUserToChatFragment(currentUser,activity, messageItem.getChannelUID());
                                     }
                                 }
                                 @Override
@@ -671,41 +641,21 @@ public final class RecentActivity extends FirebaseContent {
                                             activity.setShouldHandleNavigation(false);
                                             if (currentUser.getType() == FirebaseEntity.EntityType.HOST) {
                                                 if (userObjectElement.getType() == FirebaseEntity.EntityType.HOST) {
-                                                    navigation.post(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            navigation.getMenu().getItem(3).setChecked(true);
-                                                        }
-                                                    });
+                                                    navigation.getMenu().getItem(3).setChecked(true);
                                                 } else {
-                                                    navigation.post(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            navigation.getMenu().getItem(0).setChecked(true);
-                                                        }
-                                                    });
+                                                    navigation.getMenu().getItem(0).setChecked(true);
                                                 }
                                             } else {
-                                                navigation.post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        navigation.getMenu().getItem(3).setChecked(true);
-                                                    }
-                                                });
+                                                navigation.getMenu().getItem(3).setChecked(true);
                                             }
 
-                                            navigation.post(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    (activity)
-                                                            .getSupportFragmentManager()
-                                                            .beginTransaction()
-                                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                                            .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
-                                                            .commit();
-                                                    activity.setShouldHandleNavigation(true);
-                                                }
-                                            });
+                                            (activity)
+                                                    .getSupportFragmentManager()
+                                                    .beginTransaction()
+                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                    .replace(R.id.container, TeamManagementFragment.newInstance(teamElement),Constants.Strings.Fragments.TEAM_MANAGEMENT)
+                                                    .commit();
+                                            activity.setShouldHandleNavigation(true);
                                         }
 
                                         @Override
@@ -726,34 +676,20 @@ public final class RecentActivity extends FirebaseContent {
 
                                     activity.setShouldHandleNavigation(false);
                                     if (currentUser.getTeamUID().equals(teamElement.getUID())) {
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                navigation.getMenu().getItem(0).setChecked(true);
-                                            }
-                                        });
+                                        navigation.getMenu().getItem(0).setChecked(true);
+
                                     } else {
-                                        navigation.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                navigation.getMenu().getItem(3).setChecked(true);
-                                            }
-                                        });
+                                        navigation.getMenu().getItem(3).setChecked(true);
+
                                     }
 
-                                    navigation.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            (activity)
-                                                    .getSupportFragmentManager()
-                                                    .beginTransaction()
-                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                                    .replace(R.id.container, TeamManagementFragment.newInstance(teamElement))
-                                                    .commit();
-                                            activity.setShouldHandleNavigation(true);
-                                        }
-                                    });
-
+                                    (activity)
+                                            .getSupportFragmentManager()
+                                            .beginTransaction()
+                                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                            .replace(R.id.container, TeamManagementFragment.newInstance(teamElement),Constants.Strings.Fragments.TEAMS)
+                                            .commit();
+                                    activity.setShouldHandleNavigation(true);
                                 }
 
                                 @Override

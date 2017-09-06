@@ -475,7 +475,7 @@ public final class Constants {
         }
         public static final class Preferences {
             public static final class Items {
-                public static final String BUILD_VERSION = "0.1";
+                public static final String BUILD_VERSION = "v0.0.255542";
                 public static final String SIGN_OUT = "Sign Out";
                 public static final String SWITCH_ACCOUNTS = "Switch Accounts";
                 public static final String MANAGE_TEAM = "Manage Team";

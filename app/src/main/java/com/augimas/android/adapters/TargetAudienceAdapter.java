@@ -65,8 +65,8 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         final int POSITION = holder.getAdapterPosition();
         holder.hideButtons();
         setupView(holder,POSITION);
-        holder.mView.startAnimation(bounceFasterAnimation);
         addTextChangedListener(holder);
+        holder.mView.startAnimation(bounceFasterAnimation);
         addItemAdapters(brandingName,holder,POSITION,null);
         addOnClickListener(brandingName,holder,POSITION);
     }
@@ -115,6 +115,12 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                 if (position < brandingName.getData().size()) {
                     if (holder.inputsFilled()) {
                         handleInput(holder,position);
+                    }
+                } else {
+                    if (holder.inputsFilled()) {
+                        holder.turnButtonToSave();
+                    } else {
+                        holder.turnButtonToDelete();
                     }
                 }
             }
@@ -165,23 +171,24 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         return "";
     }
     private void addTextChangedListener(final TargetAudienceAdapter.ViewHolder holder) {
-        AppCompatEditText[] inputs = {holder.mAgeEditText,holder.mOccupationEditText};
+        final AppCompatEditText[] inputs = {holder.mAgeEditText,holder.mOccupationEditText};
         for (AppCompatEditText input:inputs) {
             input.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+                @Override
+                public void afterTextChanged(Editable s) {
                     if (holder.editing) {
-                        if (s.length() != 0) {
+                        if (holder.inputsFilled()) {
                             holder.turnButtonToSave();
                         } else {
                             holder.turnButtonToDelete();
                         }
                     }
                 }
-                @Override
-                public void afterTextChanged(Editable s) {}
             });
         }
     }
@@ -274,7 +281,9 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                         new ConfirmActionDialog(previousText,null,null, brandingName,activity);
                     } else {
                         holder.creating = false;
+                        holder.clearFields();
                         holder.hideButtons();
+                        holder.turnButtonToSave();
                         holder.hideInput(true);
                         holder.revealCreateButton();
                     }
@@ -283,10 +292,12 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
                         handleInput(holder,POSITION);
                     } else {
                         holder.creating = false;
+                        holder.clearFields();
                         holder.turnButtonToSave();
                         holder.hideButtons();
                         holder.hideInput(true);
                         holder.revealCreateButton();
+                        holder.buttonRotated = false;
                     }
                 }
             }
@@ -426,30 +437,20 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
             mModifyButton.setEnabled(false);
             mModifyButton.setClickable(false);
             mModifyButton.startAnimation(close);
-            mModifyButton.post(new Runnable() {
-                @Override
-                public void run() {
-                    mModifyButton.setVisibility(View.GONE);
-                }
-            });
+            mModifyButton.setVisibility(View.GONE);
+
         }
         void hideCreateButton() {
             mCreateButton.setEnabled(false);
             mCreateButton.setClickable(false);
             mCreateButton.startAnimation(close);
-            mCreateButton.post(new Runnable() {
-                @Override
-                public void run() {
-                    mCreateButton.setVisibility(View.GONE);
-                }
-            });
+            mCreateButton.setVisibility(View.GONE);
         }
         void revealModifyButton(){
             mModifyButton.setEnabled(true);
             mModifyButton.setClickable(true);
             mModifyButton.setVisibility(View.VISIBLE);
             mModifyButton.startAnimation(open);
-
         }
         void revealCreateButton() {
             mCreateButton.setEnabled(true);
@@ -508,6 +509,14 @@ public final class TargetAudienceAdapter extends RecyclerView.Adapter<TargetAudi
         @Override
         public String toString() {
             return super.toString() + " '" + getText() + "'";
+        }
+
+        public void clearFields() {
+            mAgeEditText.setText("");
+            mOccupationEditText.setText("");
+            mIncomeSpinner.setSelection(0);
+            mSexSpinner.setSelection(0);
+            mEducationSpinner.setSelection(0);
         }
     }
 }
