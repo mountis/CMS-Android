@@ -39,6 +39,7 @@ import com.augimas.android.fragments.TeamManagementFragment;
 import com.augimas.android.fragments.TeamsFragment;
 import com.augimas.android.helpers.DeviceHelper;
 import com.augimas.android.helpers.FragmentHelper;
+import com.augimas.android.helpers.NetworkConnectionHelper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -409,25 +410,30 @@ public final class HomeActivity extends AppCompatActivity implements ChatListFra
                                     final android.app.FragmentManager rManager = getFragmentManager();
                                     if (currentTeam.getStatus() != FirebaseEntity.EntityStatus.BLOCKED) {
                                         if (shouldHandleNavigation) {
-                                            switch (item.getItemId()) {
-                                                case R.id.navigation_dashboard:
-                                                    handleNonSupportFragmentRemoval(rManager);
-                                                    if (currentTeam.getStatus() == FirebaseEntity.EntityStatus.APPROVED) {
-                                                        handleDashboardNavigation(currentUser,manager);
-                                                    }
-                                                    break;
-                                                case R.id.navigation_chat:
-                                                    handleNonSupportFragmentRemoval(rManager);
-                                                    handleChatNavigation(currentUser, manager);
-                                                    break;
-                                                case R.id.navigation_recent_activities:
-                                                    handleNonSupportFragmentRemoval(rManager);
-                                                    handleRecentActivitiesNavigation(currentUser,manager);
-                                                    break;
-                                                case R.id.navigation_settings:
-                                                    handleSettingsNavigation(rManager);
-                                                    break;
+                                            if (NetworkConnectionHelper.isConnected(HomeActivity.this)) {
+                                                switch (item.getItemId()) {
+                                                    case R.id.navigation_dashboard:
+                                                        handleNonSupportFragmentRemoval(rManager);
+                                                        if (currentTeam.getStatus() == FirebaseEntity.EntityStatus.APPROVED) {
+                                                            handleDashboardNavigation(currentUser,manager);
+                                                        }
+                                                        break;
+                                                    case R.id.navigation_chat:
+                                                        handleNonSupportFragmentRemoval(rManager);
+                                                        handleChatNavigation(currentUser, manager);
+                                                        break;
+                                                    case R.id.navigation_recent_activities:
+                                                        handleNonSupportFragmentRemoval(rManager);
+                                                        handleRecentActivitiesNavigation(currentUser,manager);
+                                                        break;
+                                                    case R.id.navigation_settings:
+                                                        handleSettingsNavigation(rManager);
+                                                        break;
+                                                }
+                                            } else {
+                                                FragmentHelper.display(TOAST,R.string.message_network_connection_lost,HomeActivity.this);
                                             }
+
                                         }
                                     } else {
                                         FragmentHelper.display(SNACKBAR,R.string.you_dont_have_access,item.getActionView());

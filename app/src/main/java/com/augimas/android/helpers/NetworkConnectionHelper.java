@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
@@ -28,24 +29,24 @@ public final class NetworkConnectionHelper {
             String action = intent.getAction();
             if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
                 TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                int state = telephonyManager.getDataState();
-                switch (state){
-                    case TelephonyManager.DATA_DISCONNECTED: // off
-//                        new NetworkConnectionDialog(context.getApplicationContext());
-                        FragmentHelper.display(TOAST,R.string.message_network_connection_lost,context);
-//                        sendNotification(context);
-                        break;
-                    case TelephonyManager.DATA_CONNECTED:
-                        FragmentHelper.display(TOAST,R.string.message_network_connection_connected,context);
-                        break;
+                if (isConnected(context)){
+                    FragmentHelper.display(TOAST,R.string.message_network_connection_connected,context);
+                } else {
+                    FragmentHelper.display(TOAST,R.string.message_network_connection_lost,context);
                 }
             }
         }
     }
 
-    public static int getState(final Context context) {
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        return telephonyManager.getDataState();
+    /**
+     * Check if there is any connectivity
+     * @param context
+     * @return
+     */
+    public static boolean isConnected(Context context){
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        return (info != null && info.isConnected());
     }
 
     private static void sendNotification(Context context) {

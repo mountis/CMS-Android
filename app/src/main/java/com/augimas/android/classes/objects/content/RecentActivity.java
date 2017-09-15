@@ -676,11 +676,9 @@ public final class RecentActivity extends FirebaseContent {
 
                                     activity.setShouldHandleNavigation(false);
                                     if (currentUser.getTeamUID().equals(teamElement.getUID())) {
-                                        navigation.getMenu().getItem(0).setChecked(true);
-
-                                    } else {
                                         navigation.getMenu().getItem(3).setChecked(true);
-
+                                    } else {
+                                        navigation.getMenu().getItem(0).setChecked(true);
                                     }
 
                                     (activity)
@@ -874,6 +872,8 @@ public final class RecentActivity extends FirebaseContent {
                                         case TARGET_AUDIENCE:
                                             setMessageText(subjectPart + "removed a target audience from " + teamName + objectType);
                                             break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "removed a logo from " + teamName + objectType);
                                         default:
                                             setMessageText(subjectPart + "removed " + extraString + " from " + teamName + objectType);
                                             break;
@@ -950,6 +950,8 @@ public final class RecentActivity extends FirebaseContent {
                                         case TARGET_AUDIENCE:
                                             setMessageText(subjectPart + "removed a target audience from " + objectType);
                                             break;
+                                        case LOGO:
+                                            setMessageText(subjectPart + "removed a logo from " + objectType);
                                         default:
                                             setMessageText(subjectPart + "removed " + extraString + " from the " + objectType);
                                             break;
@@ -1238,7 +1240,6 @@ public final class RecentActivity extends FirebaseContent {
 
         return getSubjectType();
     }
-
     public String getHeader() {
         return header;
     }

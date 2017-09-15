@@ -8,17 +8,12 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatButton;
-import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.augimas.android.helpers.NetworkConnectionHelper;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.augimas.android.R;
 import com.augimas.android.backend.Backend;
 import com.augimas.android.classes.constants.Constants;
@@ -26,6 +21,10 @@ import com.augimas.android.classes.objects.FirebaseObject;
 import com.augimas.android.classes.objects.entities.User;
 import com.augimas.android.helpers.DeviceHelper;
 import com.augimas.android.helpers.FragmentHelper;
+import com.augimas.android.helpers.NetworkConnectionHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -174,13 +173,9 @@ public final class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (Constants.Bools.FeaturesAvailable.SIGN_UP) {
-                    if (allTextFieldsAreFilled(view,layouts,inputs) &&
-                            passwordsMatch(inputs, layouts, view) &&
-                            passwordIsAppropriateLength(inputs, layouts, view) &&
-                            emailIsValid(inputs, layouts, view)) {
+                    if (inputIsValid(view,layouts,inputs)) {
                         dismissKeyboard(view);
-
-                        if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+                        if (NetworkConnectionHelper.isConnected(getContext())) {
                             attemptToCreateNewUser((User) createObjectFromFields(Constants.Ints.FIREBASE_USER,view), view, activity);
                         } else {
                             FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
@@ -191,6 +186,11 @@ public final class SignUpFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private boolean inputIsValid(View view, ArrayList<TextInputLayout> layouts, ArrayList<TextInputEditText> inputs) {
+        return allTextFieldsAreFilled(view,layouts,inputs) && passwordsMatch(inputs, layouts, view) &&
+                passwordIsAppropriateLength(inputs, layouts, view) && emailIsValid(inputs, layouts, view);
     }
 //    Input Verification Methods
     private boolean emailIsValid(final ArrayList<TextInputEditText> inputs, final ArrayList<TextInputLayout> layouts, final View view) {

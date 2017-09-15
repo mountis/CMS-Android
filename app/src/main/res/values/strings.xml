@@ -1,7 +1,7 @@
 <resources>
     <!--App Strings -->
     <string name="app_name">Augimas</string>
-    <string name="app_build_version">v0.0.255545</string>
+    <string name="app_build_version">v0.0.26</string>
 
     <!-- Firebase Strings -->
 

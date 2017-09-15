@@ -75,7 +75,7 @@ public final class SignInFragment extends Fragment {
         // Forgot Password Button (Transition to Forgot Password Section)
         setupForgotPasswordButtonsOnClickListener(buttons.get(FORGOT_PASSWORD_BUTTON), view, activity);
 
-        if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+        if (NetworkConnectionHelper.isConnected(getContext())) {
             checkIfUserIsLoggedIn(getCurrentUser(), view, activity);
         } else {
             FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
@@ -189,7 +189,7 @@ public final class SignInFragment extends Fragment {
                         display(SNACKBAR, R.string.feature_unavailable, view);
                     }
 
-                    if (NetworkConnectionHelper.getState(getActivity()) != TelephonyManager.DATA_DISCONNECTED) {
+                    if (NetworkConnectionHelper.isConnected(getContext())) {
                         Backend.signIn(user, view, activity);
                     } else {
                         FragmentHelper.display(TOAST,R.string.message_network_connection_lost,getActivity());
